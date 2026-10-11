@@ -251,3 +251,6 @@ select.in{appearance:none;-webkit-appearance:none;background:transparent url("da
 .login .slogan{font-size:12px;font-weight:700;letter-spacing:.06em;opacity:.7;text-align:center;margin-top:20px}
 .otp{letter-spacing:14px;text-align:center;font-size:30px!important;font-weight:800!important}
 @media (min-width:900px){body.wide .title h1{font-size:52px}}
+/* .line(결재선) 클래스와 겹치는 외곽선 버튼 보정 */
+.pill.line{display:inline-flex;align-items:center;justify-content:center;padding:0 24px;overflow:visible}
+.pill.sm.line{padding:0 16px}
