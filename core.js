@@ -44,15 +44,32 @@ const chip = (st,label)=>`<span class="chip c-${esc(st)}">${esc(label||st)}</spa
 const monday = d=>{const x=new Date(d);const k=(x.getDay()+6)%7;x.setDate(x.getDate()-k);return ymd(x)};
 const addD = (s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return ymd(d)};
 function toast(m,ms=2400){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),ms)}
+const READ_RE=/^(inbox|calendar|board|console|file\.get|admin\.users|notice\.stats|onb\.get|close\.preview|schedule\.(week|overview)|\w+\.(list|get))$/;
+S.mem={};
+/* 읽기 요청은 60초 동안 화면 전환 시 즉시 재사용, 쓰기 요청이 성공하면 비움 */
 async function api(action,data={},tries=0){
+  const key=action+JSON.stringify(data);
+  if(!tries&&READ_RE.test(action)&&action!=='file.get'){const hit=S.mem[key];if(hit&&Date.now()-hit.t<60000){if(hit.p)return hit.p;return JSON.parse(hit.v)}
+    const p=apiRaw(action,data).then(j=>{S.mem[key]={t:Date.now(),v:JSON.stringify(j)};return j}).catch(e=>{delete S.mem[key];throw e});S.mem[key]={t:Date.now(),p};return p}
+  const j=await apiRaw(action,data,tries);
+  if(!READ_RE.test(action)&&!/^(me|auth\.|logout)/.test(action))S.mem={};
+  return j;
+}
+async function apiRaw(action,data={},tries=0){
   let j;
   try{const r = await fetch(API,{method:'POST',credentials:'omit',cache:'no-store',body:JSON.stringify({...data,action,token:S.token})});const t=await r.text();j=JSON.parse(t)}
-  catch(e){ if(tries<2&&/^(me|inbox|calendar|board|console|file\.get|admin\.users|notice\.stats|onb\.get|close\.preview|schedule\.(week|overview)|\w+\.(list|get))$/.test(action)){await new Promise(r=>setTimeout(r,800*(tries+1)));return api(action,data,tries+1)} throw new Error(/^(me|inbox|calendar|board|console)$|\.(list|get|week|overview|preview|stats)$/.test(action)?'연결이 불안정해요. 다시 시도해 주세요':'응답을 못 받았어요. 처리됐을 수 있으니 새로고침해서 확인해 주세요') }
+  catch(e){ if(tries<2&&/^(me|inbox|calendar|board|console|file\.get|admin\.users|notice\.stats|onb\.get|close\.preview|schedule\.(week|overview)|\w+\.(list|get))$/.test(action)){await new Promise(r=>setTimeout(r,800*(tries+1)));return apiRaw(action,data,tries+1)} throw new Error(/^(me|inbox|calendar|board|console)$|\.(list|get|week|overview|preview|stats)$/.test(action)?'연결이 불안정해요. 다시 시도해 주세요':'응답을 못 받았어요. 처리됐을 수 있으니 새로고침해서 확인해 주세요') }
   if(j.error==='AUTH'){logout(true);throw new Error('AUTH')}
   if(!j.ok) throw new Error(j.message||j.error||'오류가 발생했어요');
   return j;
 }
-function logout(silent){api('logout').catch(()=>{});localStorage.removeItem('tsbp_token');S.token='';S.data=null;if(!silent)toast('로그아웃했어요');renderLogin()}
+function prefetch(){
+  if(!S.data)return; const me=S.data.me, x=S.data.x||{}, wk=monday(new Date());
+  const list=[['inbox',{}],['notice.list',{}],['schedule.week',{branch:me.branch,start:wk}],['exp.list',{}],['log.list',{}],['kudos.list',{}],['swap.list',{}],['payslip.list',{}],['cert.list',{}],['quiz.get',{}],['inc.list',{}],['check.get',{kind:'오픈'}],['check.get',{kind:'마감'}]];
+  if(x.isHQ)list.unshift(['console',{}],['schedule.overview',{start:wk}]);
+  (async()=>{for(const [a,d] of list){try{await api(a,d)}catch(e){}}})();
+}
+function logout(silent){S.mem={};api('logout').catch(()=>{});localStorage.removeItem('tsbp_token');S.token='';S.data=null;if(!silent)toast('로그아웃했어요');renderLogin()}
 function greet(){const h=new Date().getHours();return h<6?'늦은 밤까지 수고 많아요':h<11?'좋은 아침이에요':h<17?'좋은 오후예요':'좋은 저녁이에요'}
 function openSheet(html,onMount){const m=document.createElement('div');m.className='mask';m.innerHTML=`<div class="sheet"><button class="x" data-close>닫기</button>${html}</div>`;m.addEventListener('click',e=>{if(e.target===m||e.target.hasAttribute('data-close'))m.remove()});document.body.appendChild(m);onMount&&onMount(m);return m}
 const busy=(b,on,txt)=>{if(!b)return;if(on){b.dataset.t=b.innerHTML;b.classList.add('busy');b.innerHTML=txt||'<div class="spin"></div>'}else{b.classList.remove('busy');b.innerHTML=b.dataset.t||b.innerHTML}};
@@ -109,12 +126,13 @@ function renderRegister(me,pending){
 }
 /* ── shell ── */
 async function boot(){
+  S.mem={};
   if(!S.token) return renderLogin();
   $('#root').innerHTML = `<div class="app"><div class="hero" style="height:300px"></div>${loading()}</div>`;
   try{
     const j = await api('me');
     if(j.pending) return renderRegister(j.me, j.me.status==='대기');
-    S.data=j; shell(); route();
+    S.data=j; shell(); route(); setTimeout(prefetch,1500);
   }catch(e){ if(e.message!=='AUTH'){ $('#root').innerHTML=`<div class="app"><div class="title" style="padding-top:120px"><h1>연결이<br>불안정해요.</h1><p>잠시 후 다시 시도해 주세요.</p></div><div class="btnrow"><button class="pill ink" onclick="boot()">다시 시도</button></div></div>` } }
 }
 async function refresh(){try{const j=await api('me');S.data=j;shell(true)}catch(e){}}
