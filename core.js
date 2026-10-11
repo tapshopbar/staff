@@ -1,6 +1,7 @@
 /* TAP SHOP BAR People · core (shell, 로그인, 홈, 출퇴근, 휴가, 결재, 캘린더, 더보기, 관리) */
 const API = 'https://script.google.com/macros/s/AKfycbzQac5fduY9sPhRXr9-nrvq0jV2ghsrJhug7b6DnSoLVPbv5V8Ays2eGZRPr202BtH8cQ/exec';
 const LOGO = 'assets/tsb_wordmark_h.png';
+const GOOGLE_CLIENT_ID = '207804770718-9ilhgaprc47k3ul52nnreofbbu62lpt3.apps.googleusercontent.com';
 const TYPES = [
   {g:'연차',k:'연차',label:'연차',sub:'1일 · 유급',pol:'입사 1년 미만은 한 달 개근 시 1일(최대 11일), 1년 이상은 15일(2년마다 +1일, 최대 25일). 입사일 기준으로 관리해요.',docs:''},
   {g:'연차',k:'오전 반차',label:'오전 반차',sub:'0.5일 · 4시간',half:'오전',pol:'반차는 0.5일(4시간)이에요. 신청 → 점장 승인 → 매니저 승인 → 스케줄 반영 순서예요.',docs:''},
@@ -94,7 +95,9 @@ function renderLogin(step='email',email=''){
     ${step==='email'
       ?`<label for="em" style="display:block;font-size:12px;font-weight:800;letter-spacing:.04em;margin-bottom:6px">회사 이메일</label><input class="in" id="em" name="email" type="email" inputmode="email" autocomplete="username email" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="name@tsb.wine" value="${esc(email||localStorage.getItem('tsbp_email')||'')}"><div id="lerr" style="display:none;background:rgba(244,49,49,.92);color:#fff;padding:12px 14px;margin-top:10px;font-size:14px;line-height:1.5;font-weight:600"></div><button class="pill" id="go">코드 받기</button>`
       :`<input class="in otp" id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="······"><button class="pill" id="go">시작하기</button><button class="pill line" style="color:#fff;margin-top:10px" id="re">다른 이메일로</button>`}
+    ${step==='email'&&GOOGLE_CLIENT_ID.indexOf('__')<0?`<div style="display:flex;align-items:center;gap:12px;margin:22px 0 14px;font-size:12px;font-weight:800;letter-spacing:.1em;opacity:.75"><span style="flex:1;height:1px;background:rgba(255,255,255,.5)"></span>또는<span style="flex:1;height:1px;background:rgba(255,255,255,.5)"></span></div><div id="gbtn" style="display:flex;justify-content:center;min-height:44px"></div>`:''}
     <div class="slogan">wine is second americano</div></div></div>`;
+  if(step==='email')initGoogle();
   const go=$('#go');
   if(step==='email'){
     const f=async()=>{const em=$('#em').value.trim().toLowerCase();const er=$('#lerr');er.style.display='none';if(!em)return;busy(go,true,'확인 중…');
@@ -108,6 +111,19 @@ function renderLogin(step='email',email=''){
       try{const j=await api('auth.verify',{email,code:c.value});S.token=j.token;localStorage.setItem('tsbp_token',j.token);boot()}catch(e){toast(e.message);busy(go,false)}};
     go.onclick=f;c.oninput=()=>{c.value=c.value.replace(/\D/g,'');if(c.value.length===6)f()};
   }
+}
+function initGoogle(){
+  if(GOOGLE_CLIENT_ID.indexOf('__')===0)return;
+  const draw=()=>{const el=$('#gbtn');if(!el||!window.google||!google.accounts)return;
+    google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:onGoogle,ux_mode:'popup',auto_select:false});
+    google.accounts.id.renderButton(el,{theme:'filled_black',size:'large',shape:'pill',text:'signin_with',locale:'ko',width:Math.min(380,el.clientWidth||320)})};
+  if(window.google&&google.accounts)return draw();
+  if(!document.getElementById('gsi')){const s=document.createElement('script');s.id='gsi';s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=draw;document.head.appendChild(s)}else setTimeout(draw,600);
+}
+async function onGoogle(resp){
+  const er=$('#lerr');if(er)er.style.display='none';
+  try{const j=await api('auth.google',{credential:resp.credential});S.token=j.token;localStorage.setItem('tsbp_token',j.token);localStorage.setItem('tsbp_email',j.me.email);boot()}
+  catch(e){if(er){er.innerHTML=/직원 이메일이 아니/.test(e.message)?`<b>탭샵바 직원 이메일이 아니에요.</b><br>${esc(e.message.replace(/^.*\(/,'(').replace(/\)$/,')'))} 등록된 회사 계정으로 로그인하거나, 점장님께 등록을 요청해 주세요.`:esc(e.message);er.style.display='block'}else toast(e.message)}
 }
 function renderRegister(me,pending){
   $('#root').innerHTML = `<div class="login"><div class="top"><img src="${LOGO}" alt="TAP SHOP BAR"><span class="new">PEOPLE</span></div><div class="bot">
