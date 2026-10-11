@@ -44,9 +44,10 @@ const chip = (st,label)=>`<span class="chip c-${esc(st)}">${esc(label||st)}</spa
 const monday = d=>{const x=new Date(d);const k=(x.getDay()+6)%7;x.setDate(x.getDate()-k);return ymd(x)};
 const addD = (s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return ymd(d)};
 function toast(m,ms=2400){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),ms)}
-async function api(action,data={}){
-  const r = await fetch(API,{method:'POST',body:JSON.stringify({action,token:S.token,...data})});
-  const j = await r.json();
+async function api(action,data={},tries=0){
+  let j;
+  try{const r = await fetch(API,{method:'POST',body:JSON.stringify({action,token:S.token,...data})});const t=await r.text();j=JSON.parse(t)}
+  catch(e){ if(tries<2&&/^(me|inbox|calendar|board|console|file\.get|admin\.users|notice\.stats|onb\.get|close\.preview|schedule\.(week|overview)|\w+\.(list|get))$/.test(action)){await new Promise(r=>setTimeout(r,800*(tries+1)));return api(action,data,tries+1)} throw new Error('연결이 불안정해요. 다시 시도해 주세요') }
   if(j.error==='AUTH'){logout(true);throw new Error('AUTH')}
   if(!j.ok) throw new Error(j.error||'오류가 발생했어요');
   return j;
