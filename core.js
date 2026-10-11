@@ -46,8 +46,8 @@ const addD = (s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return ymd(d)};
 function toast(m,ms=2400){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),ms)}
 async function api(action,data={},tries=0){
   let j;
-  try{const r = await fetch(API,{method:'POST',body:JSON.stringify({action,token:S.token,...data})});const t=await r.text();j=JSON.parse(t)}
-  catch(e){ if(tries<2&&/^(me|inbox|calendar|board|console|file\.get|admin\.users|notice\.stats|onb\.get|close\.preview|schedule\.(week|overview)|\w+\.(list|get))$/.test(action)){await new Promise(r=>setTimeout(r,800*(tries+1)));return api(action,data,tries+1)} throw new Error('연결이 불안정해요. 다시 시도해 주세요') }
+  try{const r = await fetch(API,{method:'POST',credentials:'omit',cache:'no-store',body:JSON.stringify({...data,action,token:S.token})});const t=await r.text();j=JSON.parse(t)}
+  catch(e){ if(tries<2&&/^(me|inbox|calendar|board|console|file\.get|admin\.users|notice\.stats|onb\.get|close\.preview|schedule\.(week|overview)|\w+\.(list|get))$/.test(action)){await new Promise(r=>setTimeout(r,800*(tries+1)));return api(action,data,tries+1)} throw new Error(/^(me|inbox|calendar|board|console)$|\.(list|get|week|overview|preview|stats)$/.test(action)?'연결이 불안정해요. 다시 시도해 주세요':'응답을 못 받았어요. 처리됐을 수 있으니 새로고침해서 확인해 주세요') }
   if(j.error==='AUTH'){logout(true);throw new Error('AUTH')}
   if(!j.ok) throw new Error(j.error||'오류가 발생했어요');
   return j;
@@ -134,7 +134,7 @@ function shell(keep){
   else{const v=$('#view').innerHTML;$('.app').innerHTML=html;$('#view').innerHTML=v;}
   markNav();
 }
-function markNav(){const r=(location.hash.replace(/^#\/?/,'').split('/')[0]||'');const map={req:'apply',new:'apply',exp:'apply',swap:'schedule',close:'more',notice:'more',payslip:'more',cert:'more',onb:'more',pay:'more',cal:'schedule',att:'more',admin:'more',console:'more'};
+function markNav(){const r=(location.hash.replace(/^#\/?/,'').split('/')[0]||'');const map={avail:'schedule',check:'',incident:'apply',quiz:'',kudos:'',req:'apply',new:'apply',exp:'apply',swap:'schedule',close:'more',notice:'more',payslip:'more',cert:'more',onb:'more',pay:'more',cal:'schedule',att:'more',admin:'more',console:'more'};
   document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===(map[r]||r)));const hd=$('#hdr');if(hd)hd.classList.toggle('dark',r==='')}
 const ROUTES = {};
 function route(){
@@ -166,6 +166,9 @@ ROUTES['']=function vHome(v){
   ${x.unreadRequired?`<a class="bn y" href="#/notice"><div><b>필독 공지 ${x.unreadRequired}건</b><span>읽고 확인 버튼을 눌러 주세요</span></div><span class="go">읽기</span></a>`:''}
   ${d.inboxCount?`<a class="bn n" href="#/inbox"><div><b>결재할 문서 ${d.inboxCount}건</b><span>기다리고 있어요</span></div><span class="go">결재하기</span></a>`:''}
   ${d.pendingUsers?`<a class="bn w" href="#/admin"><div><b>가입 요청 ${d.pendingUsers}명</b><span>확인 후 승인해 주세요</span></div><span class="go">확인</span></a>`:''}
+  ${!x.availDone&&(me.role==='직원'||me.role==='점장')?`<a class="bn" href="#/avail/${x.nextMon}"><div><b>다음 주 근무 가능 시간</b><span>${fmtDay(x.nextMon)} 주 · 아직 안 냈어요</span></div><span class="go">제출</span></a>`:''}
+  ${x.kudosNew?`<a class="bn y" href="#/kudos"><div><b>칭찬카드 ${x.kudosNew}장 도착!</b><span>동료가 고마운 마음을 보냈어요</span></div><span class="go">열기</span></a>`:''}
+  ${x.incOpen?`<a class="bn w" href="#/incident"><div><b>처리 중인 사고·클레임 ${x.incOpen}건</b><span>확인하고 처리 완료해 주세요</span></div><span class="go">보기</span></a>`:''}
   ${x.swapOpen?`<a class="bn" href="#/swap"><div><b>대타 구해요 ${x.swapOpen}건</b><span>우리 지점 동료가 도움을 기다려요</span></div><span class="go">보기</span></a>`:''}
   ${mine.map(c=>`<section class="cele"><span class="new" style="background:var(--ink);color:#fff">TODAY</span><h3 style="margin-top:10px">${esc(c.title)},<br>${esc(me.name)}님!</h3><p>${c.kind==='생일'?'오늘 하루 와인처럼 무르익는 날 되세요.':'탭샵바와 함께해 줘서 고마워요.'}</p>${(x.celebrate.cheers||[]).map(ch=>`<div class="cheer"><b>${esc(ch.from)}</b> · ${esc(ch.msg)}</div>`).join('')}</section>`).join('')}
   ${others.map(c=>`<section class="cele" style="background:var(--grey)"><span class="new">TODAY</span><h3 style="margin-top:10px;font-size:22px">오늘은 ${esc(c.name)}님<br>${esc(c.title.replace(' 축하해요',''))}!</h3><button class="pill sm ink" style="margin-top:12px" onclick="sendCheer('${esc(c.email)}','${esc(c.name)}','${esc(c.kind)}')">축하 카드 보내기</button></section>`).join('')}
@@ -184,6 +187,15 @@ ROUTES['']=function vHome(v){
     <a class="tile" href="#/swap"><b>대타<br>게시판</b><small>${x.swapOpen?x.swapOpen+'건 모집중':'근무 바꾸기'}</small></a>
     <a class="tile y" href="#/payslip"><b>급여<br>명세서</b><small>바로 열람</small></a>
     <a class="tile" href="#/cert"><b>증명서</b><small>재직·경력</small></a>
+  </div>
+  <div class="sec"><h2>매장 · 성장</h2></div>
+  <div class="grid g3">
+    <a class="tile ${x.check&&x.check['오픈']?'':'y'}" href="#/check/오픈"><b>오픈<br>체크</b><small>${x.check&&x.check['오픈']?'✓ '+esc(x.check['오픈'].by)+' '+esc(x.check['오픈'].at):'아직 안 했어요'}</small></a>
+    <a class="tile ${x.check&&x.check['마감']?'':'n'}" href="#/check/마감"><b>마감<br>체크</b><small>${x.check&&x.check['마감']?'✓ '+esc(x.check['마감'].by)+' '+esc(x.check['마감'].at):'아직 안 했어요'}</small></a>
+    <a class="tile w" href="#/incident/new"><b>사고 ·<br>클레임</b><small>바로 보고</small></a>
+    <a class="tile p" href="#/quiz" style="background-image:url(assets/americano.jpg)"><b>와인<br>퀴즈</b><small>이번 달 랭킹</small></a>
+    <a class="tile" href="#/kudos"><b>칭찬<br>카드</b><small>고마운 동료에게</small></a>
+    <a class="tile" href="#/avail"><b>근무<br>가능 시간</b><small>${x.availDone?'다음 주 제출함':'다음 주 제출'}</small></a>
   </div>
   ${(x.notices||[]).length?`<div class="sec"><h2>공지 · 매뉴얼</h2><a href="#/notice">전체</a></div><div class="list">${x.notices.slice(0,3).map(n=>`<a class="li" href="#/notice/${n.id}"><div class="m"><div class="t1">${n.pinned?'<i class="new" style="margin-right:6px">PIN</i>':''}${esc(n.title)}</div><div class="t2">${esc(n.by)} · ${esc(String(n.at).slice(5,10))}</div></div>${n.required?chip(n.read?'읽음':'안읽음',n.read?'확인함':'필독'):''}</a>`).join('')}</div>`:''}
   <div class="sec"><h2>내 신청</h2><a href="#/apply">전체</a></div>
@@ -243,7 +255,7 @@ ROUTES.apply=function(v){
   const d=S.data;
   v.innerHTML=`<div class="title"><h1>신청</h1><p>필요한 걸 고르면, 결재선은 알아서 잡혀요.</p></div>
   <div class="list" style="margin-top:14px">
-   ${[['#/new/연차','연차 · 반차','점장 승인 → 박한울 매니저 승인 · 장분도·나기정 보고'],['#/new/휴가','휴가 (경조·병가·공가 등)','점장 → 매니저 → 이사 승인 · 대표 보고'],['#/exp/new','경비 · 소모품 청구','영수증 사진만 찍으면 이체 메모까지 자동'],['#/swap','대타 요청','내 근무를 동료에게 넘기기 · 점장 승인'],['#/cert','재직 · 경력증명서','PDF로 바로 발급'],['#/payslip','급여명세서','본인만 열람']].map(([h,t,s])=>`<a class="li" href="${h}"><div class="m"><div class="t1">${t}</div><div class="t2">${s}</div></div><span class="ar">${I('next',18)}</span></a>`).join('')}
+   ${[['#/new/연차','연차 · 반차','점장 승인 → 박한울 매니저 승인 · 장분도·나기정 보고'],['#/new/휴가','휴가 (경조·병가·공가 등)','점장 → 매니저 → 이사 승인 · 대표 보고'],['#/exp/new','경비 · 소모품 청구','영수증 사진만 찍으면 이체 메모까지 자동'],['#/swap','대타 요청','내 근무를 동료에게 넘기기 · 점장 승인'],['#/incident/new','사고 · 클레임 보고','유형·긴급도는 AI가 자동 분류'],['#/avail','근무 가능 시간','다음 주 가능한 시간 제출'],['#/cert','재직 · 경력증명서','PDF로 바로 발급'],['#/payslip','급여명세서','본인만 열람']].map(([h,t,s])=>`<a class="li" href="${h}"><div class="m"><div class="t1">${t}</div><div class="t2">${s}</div></div><span class="ar">${I('next',18)}</span></a>`).join('')}
   </div>
   <a class="blk" href="${esc(d.policyUrl)}" target="_blank" rel="noopener" style="display:block;margin-top:18px;background:var(--grey)"><span class="tag"><i class="new">규정</i></span><div style="font-size:20px;font-weight:800;letter-spacing:-.03em;margin-top:8px">휴가 및 휴직 가이드</div><span class="u" style="margin-top:10px;font-size:13px">Notion에서 전문 읽기</span></a>
   <div class="sec"><h2>내 휴가 신청</h2></div><div class="list">${reqRows(d.requests)||'<div class="empty">아직 없어요</div>'}</div>
@@ -365,6 +377,11 @@ ROUTES.more=function(v){
     ${item('#/att','내 출퇴근 기록','최근 7일')}
     ${item('#/onb','온보딩 체크리스트','입사 준비 현황')}
     ${item('#/cal','휴가 캘린더','우리 지점 휴가')}
+    ${item('#/check/오픈','오픈 · 마감 체크리스트','사진 인증 · 점장 알림')}
+    ${item('#/incident','사고 · 클레임','보고 · 처리 현황',x.incOpen?chip('신청',x.incOpen+'건'):'')}
+    ${item('#/quiz','와인 퀴즈','이번 달 랭킹 · 레벨')}
+    ${item('#/kudos','칭찬카드','보내기 · 피드 · 칭찬왕')}
+    ${item('#/avail','근무 가능 시간','다음 주 제출')}
     <a class="li" href="${esc(d.policyUrl)}" target="_blank" rel="noopener"><div class="m"><div class="t1">휴가 및 휴직 가이드</div><div class="t2">Notion 규정 전문</div></div><span class="ar">${I('next',18)}</span></a>
    </div>
    ${d.canAdmin?`<div class="sec"><h2>관리</h2></div><div class="list">
