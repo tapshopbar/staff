@@ -108,7 +108,7 @@ function renderLogin(step='email',email=''){
    <div class="bot"><span class="tag"><i class="new">NEW</i> 직원 전용 앱</span>
     <h1>${step==='email'?'함께 일하는<br>사람들의 공간.':'메일로 받은<br>6자리 코드.'}</h1>
     <p>${step==='email'?'출퇴근, 스케줄, 휴가, 경비까지. 폰 하나로 끝내요.':esc(email)+' 으로 코드를 보냈어요.'}</p>
-    ${step==='email'&&GOOGLE_CLIENT_ID.indexOf('__')<0?`<div id="gbtn" style="display:flex;justify-content:center;min-height:44px"></div><div style="display:flex;align-items:center;gap:12px;margin:18px 0 14px;font-size:12px;font-weight:800;letter-spacing:.1em;opacity:.75"><span style="flex:1;height:1px;background:rgba(255,255,255,.5)"></span>또는<span style="flex:1;height:1px;background:rgba(255,255,255,.5)"></span></div>`:''}
+    ${step==='email'&&GOOGLE_CLIENT_ID.indexOf('__')<0?`<button class="pill" id="gbtn" type="button" style="width:100%;margin-top:0"><svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Google 계정으로 계속하기</button><div style="display:flex;align-items:center;gap:12px;margin:18px 0 14px;font-size:12px;font-weight:800;letter-spacing:.1em;opacity:.75"><span style="flex:1;height:1px;background:rgba(255,255,255,.5)"></span>또는<span style="flex:1;height:1px;background:rgba(255,255,255,.5)"></span></div>`:''}
     ${step==='email'
       ?`<label for="em" style="display:block;font-size:12px;font-weight:800;letter-spacing:.04em;margin-bottom:6px">회사 이메일</label><input class="in" id="em" name="email" type="email" inputmode="email" autocomplete="username email" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="name@tsb.wine" value="${esc(email||localStorage.getItem('tsbp_email')||'')}"><div id="lerr" style="display:none;background:rgba(244,49,49,.92);color:#fff;padding:12px 14px;margin-top:10px;font-size:14px;line-height:1.5;font-weight:600"></div><button class="pill" id="go">코드 받기</button>`
       :`<input class="in otp" id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="······"><button class="pill" id="go">시작하기</button><button class="pill line" style="color:#fff;margin-top:10px" id="re">다른 이메일로</button>`}
@@ -130,16 +130,16 @@ function renderLogin(step='email',email=''){
 }
 function initGoogle(){
   if(GOOGLE_CLIENT_ID.indexOf('__')===0)return;
-  const draw=()=>{const el=$('#gbtn');if(!el||!window.google||!google.accounts)return;
-    google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:onGoogle,ux_mode:'popup',auto_select:false});
-    google.accounts.id.renderButton(el,{theme:'filled_black',size:'large',shape:'pill',text:'continue_with',locale:'ko',width:Math.min(400,el.clientWidth||320)})};
-  if(window.google&&google.accounts)return draw();
-  if(!document.getElementById('gsi')){const s=document.createElement('script');s.id='gsi';s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=draw;document.head.appendChild(s)}else setTimeout(draw,600);
+  const btn=$('#gbtn'); if(!btn)return;
+  const ready=()=>{ if(!window.google||!google.accounts||!google.accounts.oauth2)return false;
+    S.gtc=S.gtc||google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:'openid email profile',callback:r=>{if(r&&r.access_token)onGoogle({access_token:r.access_token});else{const b=$('#gbtn');if(b)busy(b,false)}},error_callback:()=>{const b=$('#gbtn');if(b)busy(b,false)}});return true};
+  if(!document.getElementById('gsi')){const s=document.createElement('script');s.id='gsi';s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=ready;document.head.appendChild(s)}else ready();
+  btn.onclick=()=>{ if(!ready())return toast('구글 로그인을 불러오는 중이에요. 잠시 후 다시 눌러 주세요'); busy(btn,true,'구글 확인 중…'); S.gtc.requestAccessToken({prompt:''}); setTimeout(()=>{const b=$('#gbtn');if(b&&b.classList.contains('busy'))busy(b,false)},20000) };
 }
 async function onGoogle(resp){
   const er=$('#lerr');if(er)er.style.display='none';
-  try{const j=await api('auth.google',{credential:resp.credential});S.token=j.token;localStorage.setItem('tsbp_token',j.token);localStorage.setItem('tsbp_email',j.me.email);boot()}
-  catch(e){if(er){er.innerHTML=/직원 이메일이 아니/.test(e.message)?`<b>탭샵바 직원 이메일이 아니에요.</b><br>${esc(e.message.replace(/^.*\(/,'(').replace(/\)$/,')'))} 등록된 회사 계정으로 로그인하거나, 점장님께 등록을 요청해 주세요.`:esc(e.message);er.style.display='block'}else toast(e.message)}
+  try{const j=await api('auth.google',resp.access_token?{access_token:resp.access_token}:{credential:resp.credential});S.token=j.token;localStorage.setItem('tsbp_token',j.token);localStorage.setItem('tsbp_email',j.me.email);boot()}
+  catch(e){const gb=$('#gbtn');if(gb)busy(gb,false);if(er){er.innerHTML=/직원 이메일이 아니/.test(e.message)?`<b>탭샵바 직원 이메일이 아니에요.</b><br>${esc(e.message.replace(/^.*\(/,'(').replace(/\)$/,')'))} 등록된 회사 계정으로 로그인하거나, 점장님께 등록을 요청해 주세요.`:esc(e.message);er.style.display='block'}else toast(e.message)}
 }
 function renderRegister(me,pending){
   $('#root').innerHTML = `<div class="login"><div class="top"><img src="${LOGO}" alt="TAP SHOP BAR"><span class="new">PEOPLE</span></div><div class="bot">
