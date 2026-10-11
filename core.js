@@ -180,7 +180,7 @@ ROUTES['']=function vHome(v){
   <div class="grid g3">
     <a class="tile w" href="#/new/연차"><b>연차<br>반차</b><small>점장 → 매니저</small></a>
     <a class="tile n" href="#/new/휴가"><b>휴가</b><small>경조·병가·공가</small></a>
-    <a class="tile p" href="#/exp/new" style="background-image:url(assets/app_tap.jpg)"><b>경비<br>청구</b><small>영수증 찰칵</small></a>
+    <a class="tile p" href="#/exp/new" style="background-image:url(assets/a26_men_B.jpg);background-position:50% 25%"><b>경비<br>청구</b><small>영수증 찰칵</small></a>
     <a class="tile" href="#/swap"><b>대타<br>게시판</b><small>${x.swapOpen?x.swapOpen+'건 모집중':'근무 바꾸기'}</small></a>
     <a class="tile y" href="#/payslip"><b>급여<br>명세서</b><small>바로 열람</small></a>
     <a class="tile" href="#/cert"><b>증명서</b><small>재직·경력</small></a>
