@@ -152,3 +152,23 @@ ROUTES.kudos=async function(v){
   v.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{v.querySelectorAll('[data-v]').forEach(x=>x.classList.remove('on'));b.classList.add('on');val=b.dataset.v});
   $('#sd').onclick=async e=>{busy(e.currentTarget,true);try{await api('kudos.send',{email:$('#to').value,value:val,message:$('#mg').value,public:$('#pb').checked});toast('칭찬카드를 보냈어요');ROUTES.kudos(v)}catch(er){toast(er.message);busy(e.currentTarget,false)}};
 };
+
+/* ── 업무일지 ── */
+ROUTES.log=async function(v,arg){
+  let [date,branch]=(arg||'').split('@');
+  v.innerHTML=`<div class="title"><h1>업무일지</h1></div>${loading()}`;
+  const j=await api('log.list',{date,branch});
+  date=j.date; let cat=j.cats[0], photo='';
+  const today=(()=>{const d=new Date(Date.now()-6*3600e3);return ymd(d)})();
+  v.innerHTML=`${back()}<div class="title"><h1>업무일지</h1><p>누구나 한 줄씩. 매일 저녁 본사(장분도 · 박한울)로 모아서 메일이 가요.</p></div>
+   ${date===today?`<div class="form"><textarea class="in" id="tx" style="min-height:90px" placeholder="예) 19시 단체 예약 12명, 와인 3병 추가 판매 · 냉장고 2번 온도 높음"></textarea>
+   <div class="presets">${j.cats.map((c,i)=>`<button data-c="${esc(c)}" class="${i===0?'on':''}">${esc(c)}</button>`).join('')}<label class="u" style="margin-left:auto;align-self:center;font-size:13px">사진<input type="file" accept="image/*" capture="environment" hidden id="pf"></label></div><div id="pv"></div></div>
+   <div class="btnrow"><button class="pill wine" id="sb">남기기</button></div>`:''}
+   <div class="wk"><a href="#/log/${addD(date,-1)}${branch?'@'+encodeURIComponent(branch):''}">${I('back',18)}</a><b>${fmtDay(date)} · ${esc(j.scope)}</b>${date<today?`<a href="#/log/${addD(date,1)}${branch?'@'+encodeURIComponent(branch):''}">${I('next',18)}</a>`:'<span style="width:34px"></span>'}</div>
+   ${j.branches?`<div class="presets" style="padding:0 var(--pad);margin-top:0">${['',...j.branches].map(b=>`<a href="#/log/${date}${b?'@'+encodeURIComponent(b):''}"><button class="${(branch||'')===b?'on':''}">${b||'전 지점'}</button></a>`).join('')}</div>`:''}
+   <div class="list" style="margin-top:12px">${j.items.map(i=>`<div class="li" style="cursor:default;align-items:flex-start">${ava(i.name,'직원',36)}<div class="m"><div class="t1" style="font-size:14.5px">${esc(i.name)} <span style="color:var(--mute);font-weight:600;font-size:12.5px">${esc(i.branch)} · ${esc(String(i.at).slice(11,16))}</span> ${i.cat==='퇴근 한 줄'?'<i class="new">퇴근 한 줄</i>':`<span class="chip c-미확정">${esc(i.cat)}</span>`}</div><div style="font-size:15px;font-weight:500;margin-top:4px;line-height:1.55;white-space:pre-wrap">${esc(i.text)}</div>${i.photo?`<button class="u" style="font-size:12.5px;margin-top:6px" onclick="openFile('${i.photo}','업무일지 사진')">사진 보기</button>`:''}</div></div>`).join('')||'<div class="empty">아직 기록이 없어요</div>'}</div>`;
+  if(date!==today)return;
+  v.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{v.querySelectorAll('[data-c]').forEach(x=>x.classList.remove('on'));b.classList.add('on');cat=b.dataset.c});
+  $('#pf').onchange=async e=>{const f=e.target.files[0];if(!f)return;photo=await fileToDataUrl(f,1200,.72);$('#pv').innerHTML=`<img src="${photo}" style="width:120px;margin-top:10px">`};
+  $('#sb').onclick=async e=>{const t=$('#tx').value.trim();if(!t)return toast('내용을 적어 주세요');busy(e.currentTarget,true);try{await api('log.add',{text:t,cat,photo});toast('남겼어요');ROUTES.log(v,arg)}catch(er){toast(er.message);busy(e.currentTarget,false)}};
+};

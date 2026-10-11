@@ -49,7 +49,7 @@ async function api(action,data={},tries=0){
   try{const r = await fetch(API,{method:'POST',credentials:'omit',cache:'no-store',body:JSON.stringify({...data,action,token:S.token})});const t=await r.text();j=JSON.parse(t)}
   catch(e){ if(tries<2&&/^(me|inbox|calendar|board|console|file\.get|admin\.users|notice\.stats|onb\.get|close\.preview|schedule\.(week|overview)|\w+\.(list|get))$/.test(action)){await new Promise(r=>setTimeout(r,800*(tries+1)));return api(action,data,tries+1)} throw new Error(/^(me|inbox|calendar|board|console)$|\.(list|get|week|overview|preview|stats)$/.test(action)?'연결이 불안정해요. 다시 시도해 주세요':'응답을 못 받았어요. 처리됐을 수 있으니 새로고침해서 확인해 주세요') }
   if(j.error==='AUTH'){logout(true);throw new Error('AUTH')}
-  if(!j.ok) throw new Error(j.error||'오류가 발생했어요');
+  if(!j.ok) throw new Error(j.message||j.error||'오류가 발생했어요');
   return j;
 }
 function logout(silent){api('logout').catch(()=>{});localStorage.removeItem('tsbp_token');S.token='';S.data=null;if(!silent)toast('로그아웃했어요');renderLogin()}
@@ -75,13 +75,14 @@ function renderLogin(step='email',email=''){
     <h1>${step==='email'?'함께 일하는<br>사람들의 공간.':'메일로 받은<br>6자리 코드.'}</h1>
     <p>${step==='email'?'출퇴근, 스케줄, 휴가, 경비까지. 폰 하나로 끝내요.':esc(email)+' 으로 코드를 보냈어요.'}</p>
     ${step==='email'
-      ?`<label for="em" style="display:block;font-size:12px;font-weight:800;letter-spacing:.04em;margin-bottom:6px">회사 이메일</label><input class="in" id="em" name="email" type="email" inputmode="email" autocomplete="username email" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="name@tsb.wine" value="${esc(email)}"><button class="pill" id="go">코드 받기</button>`
+      ?`<label for="em" style="display:block;font-size:12px;font-weight:800;letter-spacing:.04em;margin-bottom:6px">회사 이메일</label><input class="in" id="em" name="email" type="email" inputmode="email" autocomplete="username email" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="name@tsb.wine" value="${esc(email||localStorage.getItem('tsbp_email')||'')}"><div id="lerr" style="display:none;background:rgba(244,49,49,.92);color:#fff;padding:12px 14px;margin-top:10px;font-size:14px;line-height:1.5;font-weight:600"></div><button class="pill" id="go">코드 받기</button>`
       :`<input class="in otp" id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="······"><button class="pill" id="go">시작하기</button><button class="pill line" style="color:#fff;margin-top:10px" id="re">다른 이메일로</button>`}
     <div class="slogan">wine is second americano</div></div></div>`;
   const go=$('#go');
   if(step==='email'){
-    const f=async()=>{const em=$('#em').value.trim();if(!em)return;busy(go,true,'보내는 중…');
-      try{await api('auth.request',{email:em});renderLogin('code',em)}catch(e){toast(e.message);busy(go,false)}};
+    const f=async()=>{const em=$('#em').value.trim().toLowerCase();const er=$('#lerr');er.style.display='none';if(!em)return;busy(go,true,'확인 중…');
+      try{await api('auth.request',{email:em});localStorage.setItem('tsbp_email',em);renderLogin('code',em)}
+      catch(e){busy(go,false);er.innerHTML=/직원 이메일이 아니/.test(e.message)?`<b>탭샵바 직원 이메일이 아니에요.</b><br>등록된 회사 이메일로 다시 확인해 주시고, 처음이라면 점장님께 등록을 요청해 주세요.`:esc(e.message);er.style.display='block'}};
     go.onclick=f;$('#em').onkeydown=e=>e.key==='Enter'&&f();
   }else{
     $('#re').onclick=()=>renderLogin('email',email);
@@ -134,7 +135,7 @@ function shell(keep){
   else{const v=$('#view').innerHTML;$('.app').innerHTML=html;$('#view').innerHTML=v;}
   markNav();
 }
-function markNav(){const r=(location.hash.replace(/^#\/?/,'').split('/')[0]||'');const map={avail:'schedule',check:'',incident:'apply',quiz:'',kudos:'',req:'apply',new:'apply',exp:'apply',swap:'schedule',close:'more',notice:'more',payslip:'more',cert:'more',onb:'more',pay:'more',cal:'schedule',att:'more',admin:'more',console:'more'};
+function markNav(){const r=(location.hash.replace(/^#\/?/,'').split('/')[0]||'');const map={log:'',avail:'schedule',check:'',incident:'apply',quiz:'',kudos:'',req:'apply',new:'apply',exp:'apply',swap:'schedule',close:'more',notice:'more',payslip:'more',cert:'more',onb:'more',pay:'more',cal:'schedule',att:'more',admin:'more',console:'more'};
   document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===(map[r]||r)));const hd=$('#hdr');if(hd)hd.classList.toggle('dark',r==='')}
 const ROUTES = {};
 function route(){
@@ -190,12 +191,12 @@ ROUTES['']=function vHome(v){
   </div>
   <div class="sec"><h2>매장 · 성장</h2></div>
   <div class="grid g3">
+    <a class="tile w" href="#/log"><b>업무<br>일지</b><small>한 줄 남기기</small></a>
     <a class="tile ${x.check&&x.check['오픈']?'':'y'}" href="#/check/오픈"><b>오픈<br>체크</b><small>${x.check&&x.check['오픈']?'✓ '+esc(x.check['오픈'].by)+' '+esc(x.check['오픈'].at):'아직 안 했어요'}</small></a>
     <a class="tile ${x.check&&x.check['마감']?'':'n'}" href="#/check/마감"><b>마감<br>체크</b><small>${x.check&&x.check['마감']?'✓ '+esc(x.check['마감'].by)+' '+esc(x.check['마감'].at):'아직 안 했어요'}</small></a>
-    <a class="tile w" href="#/incident/new"><b>사고 ·<br>클레임</b><small>바로 보고</small></a>
+    <a class="tile n" href="#/incident/new"><b>사고 ·<br>클레임</b><small>바로 보고</small></a>
     <a class="tile p" href="#/quiz" style="background-image:url(assets/americano.jpg)"><b>와인<br>퀴즈</b><small>이번 달 랭킹</small></a>
     <a class="tile" href="#/kudos"><b>칭찬<br>카드</b><small>고마운 동료에게</small></a>
-    <a class="tile" href="#/avail"><b>근무<br>가능 시간</b><small>${x.availDone?'다음 주 제출함':'다음 주 제출'}</small></a>
   </div>
   ${(x.notices||[]).length?`<div class="sec"><h2>공지 · 매뉴얼</h2><a href="#/notice">전체</a></div><div class="list">${x.notices.slice(0,3).map(n=>`<a class="li" href="#/notice/${n.id}"><div class="m"><div class="t1">${n.pinned?'<i class="new" style="margin-right:6px">PIN</i>':''}${esc(n.title)}</div><div class="t2">${esc(n.by)} · ${esc(String(n.at).slice(5,10))}</div></div>${n.required?chip(n.read?'읽음':'안읽음',n.read?'확인함':'필독'):''}</a>`).join('')}</div>`:''}
   <div class="sec"><h2>내 신청</h2><a href="#/apply">전체</a></div>
@@ -215,11 +216,21 @@ window.sendCheer=(email,name,kind)=>openSheet(`<h2>${esc(name)}님께</h2><p cla
 function reqRows(list){return list.map(r=>`<a class="li" href="#/req/${r.id}"><div class="m"><div class="t1">${esc(r.type)} <span style="color:var(--mute);font-weight:600;font-size:13px">${r.days}일</span></div><div class="t2">${period(r)}${r.name&&r.email!==S.data.me.email?' · '+esc(r.name):''}</div></div>${chip(r.status,r.status==='진행중'?stepLabel(r):r.status)}</a>`).join('')}
 function stepLabel(r){const s=r.steps[r.stepIdx];return s?`${s.name} 결재중`:'진행중'}
 /* ── punch ── */
-function doPunch(kind){
+function doPunch(kind,extra={}){
+  if(kind==='퇴근'&&extra.line===undefined){
+    return openSheet(`<h2>오늘 한 줄</h2><p class="note" style="padding:2px 0 0">오늘 매장에서 있었던 일, 내일 알아야 할 것을 한 줄만. 매일 저녁 본사로 모아서 보내요.</p>
+      <textarea class="in" id="ol" style="margin-top:12px" placeholder="예) 단체 12명 예약 손님 만족, 3번 탭 노즐 물 샘"></textarea>
+      <div class="presets">${['특이사항 없음','바빴어요, 무사 마감','재고 확인 필요','손님 칭찬 받음'].map(t=>`<button data-q="${t}">${t}</button>`).join('')}</div>
+      <div class="btnrow" style="padding:20px 0 0"><button class="pill line" id="sk">건너뛰기</button><button class="pill wine" id="ok">남기고 퇴근</button></div>`,m=>{
+      m.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{m.querySelector('#ol').value=b.dataset.q});
+      m.querySelector('#sk').onclick=()=>{m.remove();doPunch(kind,{line:''})};
+      m.querySelector('#ok').onclick=()=>{const v=m.querySelector('#ol').value.trim();if(!v)return toast('한 줄만 적어 주세요 (또는 건너뛰기)');m.remove();doPunch(kind,{line:v})};
+    });
+  }
   if(!localStorage.getItem('tsbp_geo_ok')){
     return openSheet(`<h2>위치 확인 동의</h2><div style="font-size:15px;line-height:1.75;font-weight:500;margin-top:8px">출퇴근 버튼을 누르는 <b>그 순간에만</b> 위치를 1번 확인해요.<br>· 목적: 근무지 출퇴근 확인 · 급여 정산 참고<br>· 열람: 회사 관리자(대외비 시트)만<br>· 평소에는 위치를 추적하지 않아요</div>
       <button class="pill wine full" style="margin-top:18px" id="ok">동의하고 계속</button>`,m=>{
-      m.querySelector('#ok').onclick=()=>{localStorage.setItem('tsbp_geo_ok','1');m.remove();doPunch(kind)}});
+      m.querySelector('#ok').onclick=()=>{localStorage.setItem('tsbp_geo_ok','1');m.remove();doPunch(kind,extra)}});
   }
   const pb=$('#pb'); busy(pb,true,'<div class="spin d"></div>');
   const hav=(a,b,c2,d)=>{const R=6371000,t=Math.PI/180,x=Math.sin((c2-a)*t/2)**2+Math.cos(a*t)*Math.cos(c2*t)*Math.sin((d-b)*t/2)**2;return 2*R*Math.asin(Math.sqrt(x))};
@@ -245,7 +256,7 @@ function doPunch(kind){
   };
   const send=async(pos,err)=>{
     try{
-      const j=await api('punch',{kind,lat:pos?pos.coords.latitude:null,lng:pos?pos.coords.longitude:null,acc:pos?pos.coords.accuracy:null,note:err||''});
+      const j=await api('punch',{kind,lat:pos?pos.coords.latitude:null,lng:pos?pos.coords.longitude:null,acc:pos?pos.coords.accuracy:null,note:err||'',oneLine:extra.line||''});
       S.data.attendance=j.attendance; if(navigator.vibrate) navigator.vibrate(30);
       ROUTES[''](  $('#view') );
       const ok=String(j.verdict).indexOf('정상')===0;
@@ -260,7 +271,7 @@ function doPunch(kind){
     busy(pb,false);
     openSheet(`<h2>위치를 켜 주세요</h2><div style="font-size:14.5px;line-height:1.75;font-weight:500;margin-top:8px">출퇴근은 위치 확인이 필요해요.<br><br><b>iPhone</b> 설정 → 개인정보 보호 → 위치 서비스 → Safari(또는 Chrome) → 앱을 사용하는 동안<br><b>Android</b> 주소창 자물쇠 → 권한 → 위치 허용</div>
       <button class="pill wine full" style="margin-top:16px" id="rt">다시 시도</button><button class="pill line full" style="margin-top:8px" id="nl">위치 없이 기록 (점장 확인 필요)</button>`,m=>{
-      m.querySelector('#rt').onclick=()=>{m.remove();doPunch(kind)};m.querySelector('#nl').onclick=()=>{m.remove();send(null,'위치 거부: '+err.message)}});
+      m.querySelector('#rt').onclick=()=>{m.remove();doPunch(kind,extra)};m.querySelector('#nl').onclick=()=>{m.remove();send(null,'위치 거부: '+err.message)}});
   },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
 }
 function drawMap(lat,lng,near){
@@ -398,6 +409,7 @@ ROUTES.more=function(v){
     ${item('#/att','내 출퇴근 기록','최근 7일')}
     ${item('#/onb','온보딩 체크리스트','입사 준비 현황')}
     ${item('#/cal','휴가 캘린더','우리 지점 휴가')}
+    ${item('#/log','업무일지','매장 기록 · 퇴근 한 줄 · 저녁 요약 메일')}
     ${item('#/check/오픈','오픈 · 마감 체크리스트','사진 인증 · 점장 알림')}
     ${item('#/incident','사고 · 클레임','보고 · 처리 현황',x.incOpen?chip('신청',x.incOpen+'건'):'')}
     ${item('#/quiz','와인 퀴즈','이번 달 랭킹 · 레벨')}
@@ -424,7 +436,7 @@ ROUTES.more=function(v){
   $('#a2h').onclick=()=>openSheet(`<h2>홈 화면에 추가</h2><div style="font-size:15px;line-height:1.8;font-weight:500;margin-top:8px"><b>iPhone (Safari)</b><br>아래 공유 버튼 → 홈 화면에 추가<br><br><b>Android (Chrome)</b><br>오른쪽 위 ⋮ → 홈 화면에 추가 또는 앱 설치</div>`);
   if($('#unimp'))$('#unimp').onclick=()=>{S.token=localStorage.getItem('tsbp_admin_token');localStorage.setItem('tsbp_token',S.token);localStorage.removeItem('tsbp_admin_token');location.hash='#/';boot()};
   if(d.canImpersonate) $('#imp').onclick=async()=>{const j=await api('admin.users');
-    openSheet(`<h2>누구로 볼까요?</h2><div class="list" style="padding:0;margin-top:12px">${j.users.filter(u=>u.status==='재직').map(u=>`<div class="li" data-e="${esc(u.email)}">${ava(u.name,u.role,34)}<div class="m"><div class="t1">${esc(u.name)}</div><div class="t2">${esc(u.branch)} · ${esc(u.role)}</div></div></div>`).join('')}</div>`,m=>{
+    openSheet(`<h2>누구로 볼까요?</h2><div class="list" style="padding:0;margin-top:12px">${j.users.filter(u=>u.status==='재직'||u.status==='초대전').map(u=>`<div class="li" data-e="${esc(u.email)}">${ava(u.name,u.role,34)}<div class="m"><div class="t1">${esc(u.name)}</div><div class="t2">${esc(u.branch)} · ${esc(u.role)}</div></div></div>`).join('')}</div>`,m=>{
       m.querySelectorAll('[data-e]').forEach(r=>r.onclick=async()=>{const k=await api('admin.impersonate',{email:r.dataset.e});if(!localStorage.getItem('tsbp_admin_token'))localStorage.setItem('tsbp_admin_token',S.token);S.token=k.token;localStorage.setItem('tsbp_token',k.token);m.remove();location.hash='#/';boot()})})};
 };
 ROUTES.att=function(v){
@@ -444,14 +456,24 @@ ROUTES.admin=async function(v){
   const row=u=>`<div class="li" data-e="${esc(u.email)}">${ava(u.name,u.role,38)}<div class="m"><div class="t1">${esc(u.name)} <span style="color:var(--mute);font-weight:600;font-size:12.5px">${esc(u.branch)} · ${esc(u.role)}</span></div><div class="t2">${u.hire?'입사 '+esc(u.hire):'입사일 미등록'}${u.balance&&u.balance.known?' · 잔여 '+u.balance.remain+'일':''}</div></div>${u.status!=='재직'?chip(u.status==='대기'?'신청':'취소',u.status):''}</div>`;
   v.innerHTML=`${back('#/more','더보기')}<div class="title"><h1>직원 관리</h1><p>입사일·생년월일은 연차 계산, 축하 카드, 증명서에 쓰여요.</p></div>
    ${pend.length?`<div class="sec"><h2>가입 요청 ${pend.length}</h2></div><div class="list">${pend.map(row).join('')}</div>`:''}
+   <div class="btnrow"><button class="pill wine" id="add">직원 추가</button></div>
+   <p class="note">등록된 이메일만 로그인할 수 있어요. "초대전"은 결재선에는 들어가지만 아직 로그인은 막혀 있는 상태예요.</p>
    <div class="sec"><h2>직원 ${act.length}</h2></div><div class="list">${act.map(row).join('')}</div>`;
+  $('#add').onclick=()=>openSheet(`<h2>직원 추가</h2><p class="note" style="padding:2px 0 0">추가하면 이 이메일로 바로 로그인할 수 있어요.</p>
+     <label class="f">이메일</label><input class="in" id="a_em" type="email" autocapitalize="off" placeholder="name@tsb.wine 또는 개인 이메일">
+     <label class="f">이름</label><input class="in" id="a_nm">
+     <div class="two"><div><label class="f">지점</label><select class="in" id="a_br" ${j.canEditRole?'':'disabled'}>${j.branches.map(b=>`<option ${b===S.data.me.branch?'selected':''}>${esc(b)}</option>`).join('')}</select></div>
+     <div><label class="f">역할</label><select class="in" id="a_rl" ${j.canEditRole?'':'disabled'}>${['직원','점장','매니저','임원','이사','대표'].map(x=>`<option>${x}</option>`).join('')}</select></div></div>
+     <div class="two"><div><label class="f">입사일</label><input class="in" type="date" id="a_hd"></div><div><label class="f">생년월일</label><input class="in" type="date" id="a_bd"></div></div>
+     <button class="pill wine full" style="margin-top:20px" id="a_sv">추가하기</button>`,m=>{
+     m.querySelector('#a_sv').onclick=async e=>{busy(e.currentTarget,true);try{await api('admin.addUser',{email:m.querySelector('#a_em').value,name:m.querySelector('#a_nm').value,branch:m.querySelector('#a_br').value,role:m.querySelector('#a_rl').value,hire:m.querySelector('#a_hd').value,birth:m.querySelector('#a_bd').value});m.remove();toast('추가했어요');ROUTES.admin(v)}catch(er){toast(er.message);busy(e.currentTarget,false)}}});
   v.querySelectorAll('[data-e]').forEach(r=>r.onclick=()=>{const u=j.users.find(x=>x.email===r.dataset.e);
     openSheet(`<h2>${esc(u.name)}</h2><div class="note" style="padding:0">${esc(u.email)}</div>
      <label class="f">이름</label><input class="in" id="u_nm" value="${esc(u.name)}">
      <div class="two"><div><label class="f">지점</label><select class="in" id="u_br" ${j.canEditRole?'':'disabled'}>${j.branches.map(b=>`<option ${b===u.branch?'selected':''}>${esc(b)}</option>`).join('')}</select></div>
      <div><label class="f">역할</label><select class="in" id="u_rl" ${j.canEditRole?'':'disabled'}>${['직원','점장','매니저','임원','이사','대표'].map(x=>`<option ${x===u.role?'selected':''}>${x}</option>`).join('')}</select></div></div>
      <div class="two"><div><label class="f">입사일</label><input class="in" type="date" id="u_hd" value="${esc(u.hire||'')}"></div><div><label class="f">연차 조정(±일)</label><input class="in" id="u_adj" inputmode="decimal" value="${esc(u.adj||'')}" placeholder="예) -3"></div></div>
-     <label class="f">상태</label><select class="in" id="u_st">${['대기','재직','퇴사'].map(x=>`<option ${x===u.status?'selected':''}>${x}</option>`).join('')}</select>
+     <label class="f">상태</label><select class="in" id="u_st">${['대기','초대전','재직','퇴사'].map(x=>`<option ${x===u.status?'selected':''}>${x}</option>`).join('')}</select>
      <div class="btnrow" style="padding:22px 0 0"><a class="pill line" href="#/onb/${encodeURIComponent(u.email)}" data-close>온보딩</a><button class="pill wine" id="u_sv">${u.status==='대기'?'승인하고 저장':'저장'}</button></div>`,m=>{
       m.querySelector('#u_sv').onclick=async()=>{const st=m.querySelector('#u_st').value;
         const body={email:u.email,name:m.querySelector('#u_nm').value,hire:m.querySelector('#u_hd').value,adj:m.querySelector('#u_adj').value,status:u.status==='대기'&&st==='대기'?'재직':st};
