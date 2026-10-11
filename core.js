@@ -53,6 +53,7 @@ function memLoad(){try{S.mem=JSON.parse(localStorage.getItem(MEMK())||'{}')}catc
 let memT=null;function memSave(){clearTimeout(memT);memT=setTimeout(()=>{try{const o={};Object.keys(S.mem).forEach(k=>{if(S.mem[k]&&S.mem[k].v)o[k]={t:S.mem[k].t,v:S.mem[k].v}});localStorage.setItem(MEMK(),JSON.stringify(o))}catch(e){}},800)}
 function busyUI(){const a=document.activeElement;return !!document.querySelector('.mask')||(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))}
 async function api(action,data={},tries=0,bg=false){
+  data=Object.fromEntries(Object.entries(data||{}).filter(([k,v])=>v!==undefined&&v!==''));
   const key=action+JSON.stringify(data);
   if(!bg&&S.curKeys)S.curKeys.add(key);
   const cacheable=!tries&&action!=='file.get'&&(READ_RE.test(action)||action==='me');
