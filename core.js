@@ -75,7 +75,7 @@ function renderLogin(step='email',email=''){
     <h1>${step==='email'?'함께 일하는<br>사람들의 공간.':'메일로 받은<br>6자리 코드.'}</h1>
     <p>${step==='email'?'출퇴근, 스케줄, 휴가, 경비까지. 폰 하나로 끝내요.':esc(email)+' 으로 코드를 보냈어요.'}</p>
     ${step==='email'
-      ?`<input class="in" id="em" type="email" inputmode="email" autocomplete="email" placeholder="이메일 (예: name@tsb.wine)" value="${esc(email)}"><button class="pill" id="go">코드 받기</button>`
+      ?`<label for="em" style="display:block;font-size:12px;font-weight:800;letter-spacing:.04em;margin-bottom:6px">회사 이메일</label><input class="in" id="em" name="email" type="email" inputmode="email" autocomplete="username email" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="name@tsb.wine" value="${esc(email)}"><button class="pill" id="go">코드 받기</button>`
       :`<input class="in otp" id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="······"><button class="pill" id="go">시작하기</button><button class="pill line" style="color:#fff;margin-top:10px" id="re">다른 이메일로</button>`}
     <div class="slogan">wine is second americano</div></div></div>`;
   const go=$('#go');
@@ -222,20 +222,41 @@ function doPunch(kind){
       m.querySelector('#ok').onclick=()=>{localStorage.setItem('tsbp_geo_ok','1');m.remove();doPunch(kind)}});
   }
   const pb=$('#pb'); busy(pb,true,'<div class="spin d"></div>');
+  const hav=(a,b,c2,d)=>{const R=6371000,t=Math.PI/180,x=Math.sin((c2-a)*t/2)**2+Math.cos(a*t)*Math.cos(c2*t)*Math.sin((d-b)*t/2)**2;return 2*R*Math.asin(Math.sqrt(x))};
+  const check=pos=>{
+    const {latitude:la,longitude:lo,accuracy:ac}=pos.coords; let near=null,dist=1e12;
+    S.data.branches.forEach(b=>{if(b.lat){const d=hav(la,lo,b.lat,b.lng);if(d<dist){dist=d;near=b}}});
+    const myB=S.data.branches.find(b=>b.name===S.data.me.branch);
+    const myD=myB&&myB.lat?hav(la,lo,myB.lat,myB.lng):null;
+    if(myD!=null&&myD<=myB.radius+Math.min(ac||0,100))return send(pos);
+    if(!myB||!myB.lat)return send(pos);
+    const other=near&&dist<=near.radius+Math.min(ac||0,100)&&near.name!==S.data.me.branch;
+    busy(pb,false);
+    openSheet(`<h2 style="color:var(--bad)">위치를 확인해 주세요</h2>
+      <div class="warn" style="font-size:14.5px;line-height:1.6">${other?`지금 <b>${esc(near.name)}점</b> 근처예요.<br>소속은 <b>${esc(S.data.me.branch)}점</b>이에요.`:`지금 <b>${esc(S.data.me.branch)}점</b>에서 <b>${myD>=1000?(myD/1000).toFixed(1)+'km':Math.round(myD)+'m'}</b> 떨어져 있어요.`}</div>
+      <p class="note" style="padding:10px 0 0">이대로 ${kind}하면 기록은 남지만 점장님께 "위치 확인" 알림이 가요.</p>
+      <label class="f">사유</label><div class="presets">${(other?['다른 지점 지원 근무','외부 업무 · 행사','GPS 오류 같아요','기타']:['외부 업무 · 행사','배달 · 장보기','GPS 오류 같아요','기타']).map((r,i)=>`<button data-r="${r}" class="${i===0?'on':''}">${r}</button>`).join('')}</div>
+      <input class="in" id="rn" placeholder="메모 (선택)" style="margin-top:10px">
+      <div class="btnrow" style="padding:20px 0 0"><button class="pill line" data-close>취소</button><button class="pill wine" id="go">이대로 ${kind}</button></div>`,m=>{
+      let reason=m.querySelector('[data-r].on').dataset.r;
+      m.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{m.querySelectorAll('[data-r]').forEach(x=>x.classList.remove('on'));b.classList.add('on');reason=b.dataset.r});
+      m.querySelector('#go').onclick=()=>{const n=m.querySelector('#rn').value.trim();m.remove();busy($('#pb'),true,'<div class="spin d"></div>');send(pos,reason+(n?' · '+n:''))};
+    });
+  };
   const send=async(pos,err)=>{
     try{
       const j=await api('punch',{kind,lat:pos?pos.coords.latitude:null,lng:pos?pos.coords.longitude:null,acc:pos?pos.coords.accuracy:null,note:err||''});
       S.data.attendance=j.attendance; if(navigator.vibrate) navigator.vibrate(30);
       ROUTES[''](  $('#view') );
-      const ok=j.verdict==='정상';
+      const ok=String(j.verdict).indexOf('정상')===0;
       $('#pres').innerHTML=`<div class="res">${chip(ok?'정상':'반경밖',j.verdict)}<b>${kind} ${esc(j.time)}</b><span style="opacity:.75">${j.nearest?`${esc(j.nearest)}점에서 ${j.dist}m`:'위치 없음'}</span></div>${pos?'<div class="map" id="mp"></div>':''}`;
-      toast(kind==='출근'?'출근 완료! 오늘도 잘 부탁해요':'퇴근 완료! 수고 많았어요');
+      toast(ok?(kind==='출근'?'출근 완료! 오늘도 잘 부탁해요':'퇴근 완료! 수고 많았어요'):`${kind} 기록 · 점장님께 위치 확인 알림이 갔어요`,3200);
       if(pos) drawMap(pos.coords.latitude,pos.coords.longitude,j.nearest);
       document.getElementById('punchBlk').scrollIntoView({behavior:'smooth',block:'center'});
     }catch(e){toast(e.message);ROUTES['']($('#view'))}
   };
   if(!navigator.geolocation) return send(null,'GPS 미지원 기기');
-  navigator.geolocation.getCurrentPosition(p=>send(p),err=>{
+  navigator.geolocation.getCurrentPosition(p=>check(p),err=>{
     busy(pb,false);
     openSheet(`<h2>위치를 켜 주세요</h2><div style="font-size:14.5px;line-height:1.75;font-weight:500;margin-top:8px">출퇴근은 위치 확인이 필요해요.<br><br><b>iPhone</b> 설정 → 개인정보 보호 → 위치 서비스 → Safari(또는 Chrome) → 앱을 사용하는 동안<br><b>Android</b> 주소창 자물쇠 → 권한 → 위치 허용</div>
       <button class="pill wine full" style="margin-top:16px" id="rt">다시 시도</button><button class="pill line full" style="margin-top:8px" id="nl">위치 없이 기록 (점장 확인 필요)</button>`,m=>{
