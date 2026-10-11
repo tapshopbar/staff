@@ -108,10 +108,10 @@ function renderLogin(step='email',email=''){
    <div class="bot"><span class="tag"><i class="new">NEW</i> 직원 전용 앱</span>
     <h1>${step==='email'?'함께 일하는<br>사람들의 공간.':'메일로 받은<br>6자리 코드.'}</h1>
     <p>${step==='email'?'출퇴근, 스케줄, 휴가, 경비까지. 폰 하나로 끝내요.':esc(email)+' 으로 코드를 보냈어요.'}</p>
+    ${step==='email'&&GOOGLE_CLIENT_ID.indexOf('__')<0?`<div id="gbtn" style="display:flex;justify-content:center;min-height:44px"></div><div style="display:flex;align-items:center;gap:12px;margin:18px 0 14px;font-size:12px;font-weight:800;letter-spacing:.1em;opacity:.75"><span style="flex:1;height:1px;background:rgba(255,255,255,.5)"></span>또는<span style="flex:1;height:1px;background:rgba(255,255,255,.5)"></span></div>`:''}
     ${step==='email'
       ?`<label for="em" style="display:block;font-size:12px;font-weight:800;letter-spacing:.04em;margin-bottom:6px">회사 이메일</label><input class="in" id="em" name="email" type="email" inputmode="email" autocomplete="username email" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="name@tsb.wine" value="${esc(email||localStorage.getItem('tsbp_email')||'')}"><div id="lerr" style="display:none;background:rgba(244,49,49,.92);color:#fff;padding:12px 14px;margin-top:10px;font-size:14px;line-height:1.5;font-weight:600"></div><button class="pill" id="go">코드 받기</button>`
       :`<input class="in otp" id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="······"><button class="pill" id="go">시작하기</button><button class="pill line" style="color:#fff;margin-top:10px" id="re">다른 이메일로</button>`}
-    ${step==='email'&&GOOGLE_CLIENT_ID.indexOf('__')<0?`<div style="display:flex;align-items:center;gap:12px;margin:22px 0 14px;font-size:12px;font-weight:800;letter-spacing:.1em;opacity:.75"><span style="flex:1;height:1px;background:rgba(255,255,255,.5)"></span>또는<span style="flex:1;height:1px;background:rgba(255,255,255,.5)"></span></div><div id="gbtn" style="display:flex;justify-content:center;min-height:44px"></div>`:''}
     <div class="slogan">wine is second americano</div></div></div>`;
   if(step==='email')initGoogle();
   const go=$('#go');
@@ -132,7 +132,7 @@ function initGoogle(){
   if(GOOGLE_CLIENT_ID.indexOf('__')===0)return;
   const draw=()=>{const el=$('#gbtn');if(!el||!window.google||!google.accounts)return;
     google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:onGoogle,ux_mode:'popup',auto_select:false});
-    google.accounts.id.renderButton(el,{theme:'filled_black',size:'large',shape:'pill',text:'signin_with',locale:'ko',width:Math.min(380,el.clientWidth||320)})};
+    google.accounts.id.renderButton(el,{theme:'filled_black',size:'large',shape:'pill',text:'continue_with',locale:'ko',width:Math.min(400,el.clientWidth||320)})};
   if(window.google&&google.accounts)return draw();
   if(!document.getElementById('gsi')){const s=document.createElement('script');s.id='gsi';s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=draw;document.head.appendChild(s)}else setTimeout(draw,600);
 }
