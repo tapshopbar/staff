@@ -81,7 +81,7 @@ async function apiRaw(action,data={},tries=0){
 }
 function prefetch(){
   if(!S.data)return; const me=S.data.me, x=S.data.x||{}, wk=monday(new Date());
-  const list=[['inbox',{}],['notice.list',{}],['schedule.week',{branch:me.branch,start:wk}],['exp.list',{}],['log.list',{}],['kudos.list',{}],['swap.list',{}],['payslip.list',{}],['cert.list',{}],['quiz.get',{}],['inc.list',{}],['check.get',{kind:'오픈'}],['check.get',{kind:'마감'}]];
+  const list=[...(S.data.canAdmin?[['board',{}]]:[]),['inbox',{}],['notice.list',{}],['schedule.week',{branch:me.branch,start:wk}],['exp.list',{}],['log.list',{}],['kudos.list',{}],['swap.list',{}],['payslip.list',{}],['cert.list',{}],['quiz.get',{}],['inc.list',{}],['check.get',{kind:'오픈'}],['check.get',{kind:'마감'}]];
   if(x.isHQ)list.unshift(['console',{}],['schedule.overview',{start:wk}]);
   let i=0;const lane=async()=>{while(i<list.length){const [a,d]=list[i++];try{await api(a,d,0,true)}catch(e){}}};for(let k=0;k<4;k++)lane();
 }
