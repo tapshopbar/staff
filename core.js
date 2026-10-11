@@ -47,13 +47,28 @@ const addD = (s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return ymd(d)};
 function toast(m,ms=2400){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),ms)}
 const READ_RE=/^(inbox|calendar|board|console|file\.get|admin\.users|notice\.stats|onb\.get|close\.preview|schedule\.(week|overview)|\w+\.(list|get))$/;
 S.mem={};
-/* 읽기 요청은 3분 동안 화면 전환 시 즉시 재사용, 쓰기 요청이 성공하면 비움 */
-async function api(action,data={},tries=0){
+/* 화면 데이터: 저장된 게 있으면 즉시 보여주고(0초), 뒤에서 최신으로 받아와 바뀌었으면 화면만 조용히 갱신 */
+const MEMK=()=>'tsbp_mem_'+(S.token||'').slice(0,12);
+function memLoad(){try{S.mem=JSON.parse(localStorage.getItem(MEMK())||'{}')}catch(e){S.mem={}}}
+let memT=null;function memSave(){clearTimeout(memT);memT=setTimeout(()=>{try{const o={};Object.keys(S.mem).forEach(k=>{if(S.mem[k]&&S.mem[k].v)o[k]={t:S.mem[k].t,v:S.mem[k].v}});localStorage.setItem(MEMK(),JSON.stringify(o))}catch(e){}},800)}
+function busyUI(){const a=document.activeElement;return !!document.querySelector('.mask')||(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))}
+async function api(action,data={},tries=0,bg=false){
   const key=action+JSON.stringify(data);
-  if(!tries&&READ_RE.test(action)&&action!=='file.get'){const hit=S.mem[key];if(hit&&Date.now()-hit.t<180000){if(hit.p)return hit.p;return JSON.parse(hit.v)}
-    const p=apiRaw(action,data).then(j=>{S.mem[key]={t:Date.now(),v:JSON.stringify(j)};return j}).catch(e=>{delete S.mem[key];throw e});S.mem[key]={t:Date.now(),p};return p}
+  if(!bg&&S.curKeys)S.curKeys.add(key);
+  const cacheable=!tries&&action!=='file.get'&&(READ_RE.test(action)||action==='me');
+  if(cacheable){
+    const hit=S.mem[key];
+    const fetchFresh=()=>{if(S.mem[key]&&S.mem[key].p)return S.mem[key].p;
+      const p=apiRaw(action,data).then(j=>{const v=JSON.stringify(j);const old=S.mem[key]&&S.mem[key].v;S.mem[key]={t:Date.now(),v};memSave();return {j,changed:old!==v}}).catch(e=>{if(S.mem[key])delete S.mem[key].p;throw e});
+      S.mem[key]=Object.assign({},S.mem[key]||{},{p});return p};
+    if(hit&&hit.v){
+      if(Date.now()-hit.t>15000){const h=location.hash;fetchFresh().then(r=>{if(!r.changed)return;if(action==='me'){S.data=r.j;shell(true);if(location.hash===h&&!busyUI()&&S.curKeys&&S.curKeys.has(key))route(true);return}if(location.hash===h&&!busyUI()&&S.curKeys&&S.curKeys.has(key))route(true)}).catch(()=>{})}
+      return JSON.parse(hit.v);
+    }
+    const r=await fetchFresh();return r.j;
+  }
   const j=await apiRaw(action,data,tries);
-  if(!READ_RE.test(action)&&!/^(me|auth\.|logout)/.test(action))S.mem={};
+  if(!READ_RE.test(action)&&!/^(me|auth\.|logout)/.test(action)){S.mem={};memSave()}
   return j;
 }
 async function apiRaw(action,data={},tries=0){
@@ -68,9 +83,9 @@ function prefetch(){
   if(!S.data)return; const me=S.data.me, x=S.data.x||{}, wk=monday(new Date());
   const list=[['inbox',{}],['notice.list',{}],['schedule.week',{branch:me.branch,start:wk}],['exp.list',{}],['log.list',{}],['kudos.list',{}],['swap.list',{}],['payslip.list',{}],['cert.list',{}],['quiz.get',{}],['inc.list',{}],['check.get',{kind:'오픈'}],['check.get',{kind:'마감'}]];
   if(x.isHQ)list.unshift(['console',{}],['schedule.overview',{start:wk}]);
-  let i=0;const lane=async()=>{while(i<list.length){const [a,d]=list[i++];try{await api(a,d)}catch(e){}}};for(let k=0;k<4;k++)lane();
+  let i=0;const lane=async()=>{while(i<list.length){const [a,d]=list[i++];try{await api(a,d,0,true)}catch(e){}}};for(let k=0;k<4;k++)lane();
 }
-function logout(silent){S.mem={};api('logout').catch(()=>{});localStorage.removeItem('tsbp_token');S.token='';S.data=null;if(!silent)toast('로그아웃했어요');renderLogin()}
+function logout(silent){try{localStorage.removeItem(MEMK())}catch(e){}S.mem={};api('logout').catch(()=>{});localStorage.removeItem('tsbp_token');S.token='';S.data=null;if(!silent)toast('로그아웃했어요');renderLogin()}
 function greet(){const h=new Date().getHours();return h<6?'늦은 밤까지 수고 많아요':h<11?'좋은 아침이에요':h<17?'좋은 오후예요':'좋은 저녁이에요'}
 function openSheet(html,onMount){const m=document.createElement('div');m.className='mask';m.innerHTML=`<div class="sheet"><button class="x" data-close>닫기</button>${html}</div>`;m.addEventListener('click',e=>{if(e.target===m||e.target.hasAttribute('data-close'))m.remove()});document.body.appendChild(m);onMount&&onMount(m);return m}
 const busy=(b,on,txt)=>{if(!b)return;if(on){b.dataset.t=b.innerHTML;b.classList.add('busy');b.innerHTML=txt||'<div class="spin"></div>'}else{b.classList.remove('busy');b.innerHTML=b.dataset.t||b.innerHTML}};
@@ -142,8 +157,8 @@ function renderRegister(me,pending){
 }
 /* ── shell ── */
 async function boot(){
-  S.mem={};
   if(!S.token) return renderLogin();
+  memLoad();
   $('#root').innerHTML = `<div class="app"><div class="hero" style="height:300px"></div>${loading()}</div>`;
   try{
     const j = await api('me');
@@ -151,7 +166,7 @@ async function boot(){
     S.data=j; shell(); route(); setTimeout(prefetch,1500);
   }catch(e){ if(e.message!=='AUTH'){ $('#root').innerHTML=`<div class="app"><div class="title" style="padding-top:120px"><h1>연결이<br>불안정해요.</h1><p>잠시 후 다시 시도해 주세요.</p></div><div class="btnrow"><button class="pill ink" onclick="boot()">다시 시도</button></div></div>` } }
 }
-async function refresh(){try{const j=await api('me');S.data=j;shell(true)}catch(e){}}
+async function refresh(){try{const j=await apiRaw('me');S.data=j;S.mem['me{}']={t:Date.now(),v:JSON.stringify(j)};memSave();shell(true)}catch(e){}}
 function shell(keep){
   const d=S.data, unread=d.notis.filter(n=>!n.read).length;
   const h=location.hash.replace(/^#\/?/,'').split('/')[0];
@@ -172,14 +187,16 @@ function shell(keep){
 function markNav(){const r=(location.hash.replace(/^#\/?/,'').split('/')[0]||'');const map={log:'',avail:'schedule',check:'',incident:'apply',quiz:'',kudos:'',req:'apply',new:'apply',exp:'apply',swap:'schedule',close:'more',notice:'more',payslip:'more',cert:'more',onb:'more',pay:'more',cal:'schedule',att:'more',admin:'more',console:'more'};
   document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===(map[r]||r)));const hd=$('#hdr');if(hd)hd.classList.toggle('dark',r==='')}
 const ROUTES = {};
-function route(){
+function route(keep){
   if(!S.data) return;
+  keep=keep===true; const sy=window.scrollY; S.curKeys=new Set(['me{}']);
   clearInterval(S.clockT); if(S.map){try{S.map.remove()}catch(e){} S.map=null}
   const h=location.hash.replace(/^#\/?/,''); const [p,...rest]=h.split('/'); const a=rest.map(decodeURIComponent).join('/');
   document.body.classList.toggle('wide',p==='console');
-  markNav(); window.scrollTo(0,0);
+  markNav(); if(!keep)window.scrollTo(0,0);
   const v=$('#view');
-  (ROUTES[p]||ROUTES[''])(v,a);
+  const r=(ROUTES[p]||ROUTES[''])(v,a);
+  if(keep)Promise.resolve(r).then(()=>window.scrollTo(0,sy));
 }
 window.addEventListener('hashchange',route);
 /* ── HOME ── */
