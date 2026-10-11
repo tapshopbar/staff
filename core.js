@@ -46,10 +46,10 @@ const addD = (s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return ymd(d)};
 function toast(m,ms=2400){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),ms)}
 const READ_RE=/^(inbox|calendar|board|console|file\.get|admin\.users|notice\.stats|onb\.get|close\.preview|schedule\.(week|overview)|\w+\.(list|get))$/;
 S.mem={};
-/* 읽기 요청은 60초 동안 화면 전환 시 즉시 재사용, 쓰기 요청이 성공하면 비움 */
+/* 읽기 요청은 3분 동안 화면 전환 시 즉시 재사용, 쓰기 요청이 성공하면 비움 */
 async function api(action,data={},tries=0){
   const key=action+JSON.stringify(data);
-  if(!tries&&READ_RE.test(action)&&action!=='file.get'){const hit=S.mem[key];if(hit&&Date.now()-hit.t<60000){if(hit.p)return hit.p;return JSON.parse(hit.v)}
+  if(!tries&&READ_RE.test(action)&&action!=='file.get'){const hit=S.mem[key];if(hit&&Date.now()-hit.t<180000){if(hit.p)return hit.p;return JSON.parse(hit.v)}
     const p=apiRaw(action,data).then(j=>{S.mem[key]={t:Date.now(),v:JSON.stringify(j)};return j}).catch(e=>{delete S.mem[key];throw e});S.mem[key]={t:Date.now(),p};return p}
   const j=await apiRaw(action,data,tries);
   if(!READ_RE.test(action)&&!/^(me|auth\.|logout)/.test(action))S.mem={};
@@ -67,7 +67,7 @@ function prefetch(){
   if(!S.data)return; const me=S.data.me, x=S.data.x||{}, wk=monday(new Date());
   const list=[['inbox',{}],['notice.list',{}],['schedule.week',{branch:me.branch,start:wk}],['exp.list',{}],['log.list',{}],['kudos.list',{}],['swap.list',{}],['payslip.list',{}],['cert.list',{}],['quiz.get',{}],['inc.list',{}],['check.get',{kind:'오픈'}],['check.get',{kind:'마감'}]];
   if(x.isHQ)list.unshift(['console',{}],['schedule.overview',{start:wk}]);
-  (async()=>{for(const [a,d] of list){try{await api(a,d)}catch(e){}}})();
+  let i=0;const lane=async()=>{while(i<list.length){const [a,d]=list[i++];try{await api(a,d)}catch(e){}}};for(let k=0;k<4;k++)lane();
 }
 function logout(silent){S.mem={};api('logout').catch(()=>{});localStorage.removeItem('tsbp_token');S.token='';S.data=null;if(!silent)toast('로그아웃했어요');renderLogin()}
 function greet(){const h=new Date().getHours();return h<6?'늦은 밤까지 수고 많아요':h<11?'좋은 아침이에요':h<17?'좋은 오후예요':'좋은 저녁이에요'}
