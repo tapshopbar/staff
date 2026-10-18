@@ -56,7 +56,7 @@ async function contractDetail(v,id){
       if(!st.read)return toast('계약서를 끝까지 읽어 주세요');if(st.ag.some(x=>!x))return toast('동의 항목을 모두 체크해 주세요');if(st.drawn<8)return toast('서명을 그려 주세요');
       const code=$('#code').value.trim();if(!/^\d{6}$/.test(code))return toast('인증 코드 6자리를 넣어 주세요');
       busy(e.currentTarget,true,'<div class="spin"></div>');toast('서명본 PDF 만드는 중이에요 (최대 30초)',5000);
-      try{const r=await api('contract.sign',{id,code,agrees:st.ag,readToEnd:true,sig:$('#pad').toDataURL('image/png'),ua});toast('서명 완료! 사본을 보내 드렸어요');contractDetail(v,id)}catch(er){toast(er.message);busy(e.currentTarget,false)}};
+      try{const r=await api('contract.sign',{id,code,agrees:st.ag,readToEnd:true,sig:$('#pad').toDataURL('image/png'),ua});toast('서명 완료! 사본을 보내 드렸어요');setTimeout(()=>ROUTES.contract(v,id),300)}catch(er){toast(er.message);busy(e.currentTarget,false)}};
   };
   function setupPad(){const cv=$('#pad'),r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1;cv.width=r.width*dpr;cv.height=r.height*dpr;const g=cv.getContext('2d');g.scale(dpr,dpr);g.lineWidth=2.6;g.lineCap='round';g.lineJoin='round';g.strokeStyle='#111';
     let on=false,last=null;const pt=e=>{const b=cv.getBoundingClientRect();return [e.clientX-b.left,e.clientY-b.top]};
@@ -101,4 +101,6 @@ async function contractNew(v){
   const save=send=>async e=>{if(send&&!confirm('직원에게 서명 요청을 보낼까요? (테스트모드면 hello@로만 가요)'))return;busy(e.currentTarget,true);try{const r=await api('contract.create',{email:$('#ce').value,tpl:$('#ct').value,fields:fields(),send,ua:navigator.userAgent});toast(send?'발송했어요':'저장했어요');location.hash='#/contract/'+r.id}catch(er){toast(er.message);busy(e.currentTarget,false)}};
   $('#sv').onclick=save(false);$('#sd').onclick=save(true);
 }
+/* 오류 시 빈 화면 대신 다시 시도 */
+['contract','contracts'].forEach(k=>{const f=ROUTES[k];ROUTES[k]=async function(v,a){try{return await f(v,a)}catch(e){if(e.message==='AUTH')return;v.innerHTML=`${back('#/more')}<div class="title"><h1>잠시 문제가 생겼어요</h1><p>${esc(e.message)}</p></div><div class="btnrow"><button class="pill wine" onclick="route()">다시 시도</button></div>`}}});
 })();
