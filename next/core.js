@@ -211,9 +211,18 @@ ROUTES['']=function vHome(v){
     <div class="hi">반갑습니다,</div>
     <h1>${esc(me.name)}님</h1>
     <div class="nmeta">${esc(me.branch)} · ${esc(me.role)} · ${todayK()}</div>
-    <a class="shiftline" href="#/schedule"><span>${ns?`다음 근무 ${fmtDay(ns.date)} ${esc(ns.start)}–${esc(ns.end)}${ns.pos?' · '+esc(ns.pos):''}`:'확정된 다음 근무가 없어요'}</span><span class="u" style="font-size:12.5px">${b.known?`연차 ${b.remain}일 남음`:'스케줄'}</span></a>
   </section>
-  <a class="expcard" href="${EXP_URL}"><div><b>개인경비 청구</b><span>영수증 찍고 1분이면 끝</span></div><i class="arr">${I('back',22)}</i></a>
+  <section class="blk navy" id="punchBlk">
+    <div class="punch"><div class="clock"><div class="t" id="clk">--:--</div><div class="s" id="clkd"></div>
+      ${at.working?`<div class="live" id="wk">근무 중 · ${esc(at.since)}부터</div>`:''}</div>
+      <button class="pill ${at.working?'y':''}" id="pb">${at.working?'퇴근하기':'출근하기'}</button></div>
+    <div id="pres"></div>
+  </section>
+  <div class="hcards">
+  <a class="hcard nt" href="#/notice"><div><b>공지사항${x.unreadRequired?`<i class="new hbadge">필독 ${x.unreadRequired}</i>`:''}</b><span>${(x.notices||[]).length?esc(x.notices[0].title):'새 공지가 없어요'}</span></div><i class="arr">${I('back',22)}</i></a>
+  <a class="hcard ex" href="${EXP_URL}"><div><b>개인경비 청구</b><span>영수증 찍고 1분이면 끝</span></div><i class="arr">${I('back',22)}</i></a>
+  <a class="hcard sc" href="#/schedule"><div><b>내 근무표</b><span>${ns?`다음 근무: ${shiftK(ns.date)} ${esc(ns.start)}~${esc(ns.end)}${(ns.branch||me.branch)?' · '+esc(ns.branch||me.branch):''}`:'확정된 다음 근무가 없어요'}</span></div><i class="arr">${I('back',22)}</i></a>
+  </div>
   ${x.unreadRequired?`<a class="bn y" href="#/notice"><div><b>필독 공지 ${x.unreadRequired}건</b><span>읽고 확인 버튼을 눌러 주세요</span></div><span class="go">읽기</span></a>`:''}
   ${d.inboxCount?`<a class="bn n" href="#/inbox"><div><b>결재할 문서 ${d.inboxCount}건</b><span>기다리고 있어요</span></div><span class="go">결재하기</span></a>`:''}
   ${d.pendingUsers?`<a class="bn w" href="#/admin"><div><b>가입 요청 ${d.pendingUsers}명</b><span>확인 후 승인해 주세요</span></div><span class="go">확인</span></a>`:''}
@@ -224,13 +233,8 @@ ROUTES['']=function vHome(v){
   ${mine.map(c=>`<section class="cele"><span class="new" style="background:var(--ink);color:#fff">TODAY</span><h3 style="margin-top:10px">${esc(c.title)},<br>${esc(me.name)}님!</h3><p>${c.kind==='생일'?'오늘 하루 와인처럼 무르익는 날 되세요.':'탭샵바와 함께해 줘서 고마워요.'}</p>${(x.celebrate.cheers||[]).map(ch=>`<div class="cheer"><b>${esc(ch.from)}</b> · ${esc(ch.msg)}</div>`).join('')}</section>`).join('')}
   ${others.map(c=>`<section class="cele" style="background:var(--grey)"><span class="new">TODAY</span><h3 style="margin-top:10px;font-size:22px">오늘은 ${esc(c.name)}님<br>${esc(c.title.replace(' 축하해요',''))}!</h3><button class="pill sm ink" style="margin-top:12px" onclick="sendCheer('${esc(c.email)}','${esc(c.name)}','${esc(c.kind)}')">축하 카드 보내기</button></section>`).join('')}
   ${x.onboarding?`<a class="blk" href="#/onb" style="display:block;background:var(--grey)"><span class="tag"><i class="new">WELCOME</i> 온보딩 ${x.onboarding.done}/${x.onboarding.total}</span><div style="font-size:20px;font-weight:800;letter-spacing:-.03em;margin-top:8px">다음: ${esc(x.onboarding.next.title)}</div><div class="prog"><i style="width:${x.onboarding.done/x.onboarding.total*100}%"></i></div></a>`:''}
-  <section class="blk navy" id="punchBlk">
-    <div class="punch"><div class="clock"><div class="t" id="clk">--:--</div><div class="s" id="clkd"></div>
-      ${at.working?`<div class="live" id="wk">근무 중 · ${esc(at.since)}부터</div>`:''}</div>
-      <button class="pill ${at.working?'y':''}" id="pb">${at.working?'퇴근하기':'출근하기'}</button></div>
-    <div id="pres"></div>
-  </section>
-  <div class="sec"><h2>탭샵바인</h2></div>
+  <div class="sec"><h2>전체 메뉴</h2></div>
+  <div class="subl">탭샵바인</div>
   <div class="grid g3">
     <a class="tile n" href="#/notice"><b>공지</b><small>${x.unreadRequired?'필독 '+x.unreadRequired+'건':'매뉴얼 · 소식'}</small></a>
     <a class="tile" href="#/schedule"><b>근무표</b><small>스케줄 · 대타</small></a>
@@ -242,7 +246,7 @@ ROUTES['']=function vHome(v){
     <a class="tile" href="#/policy"><b>회사<br>정책</b><small>꼭 알아둘 것</small></a>
     <a class="tile slk" href="#/slack"><b>슬랙<br>열기</b><small>소통은 슬랙에서</small></a>
   </div>
-  <div class="sec"><h2>매장 · 성장</h2></div>
+  <div class="subl">매장 · 성장</div>
   <div class="grid g3">
     <a class="tile w" href="#/log"><b>업무<br>일지</b><small>한 줄 남기기</small></a>
     <a class="tile ${x.check&&x.check['오픈']?'':'y'}" href="#/check/오픈"><b>오픈<br>체크</b><small>${x.check&&x.check['오픈']?'✓ '+esc(x.check['오픈'].by)+' '+esc(x.check['오픈'].at):'아직 안 했어요'}</small></a>

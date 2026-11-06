@@ -32,3 +32,14 @@
 .hback{display:inline-flex;align-items:center;gap:4px;border:0;background:none;color:inherit;font:700 15px 'Pretendard Variable',Pretendard,sans-serif;padding:6px 8px 6px 0;margin-left:-4px;cursor:pointer}
 #view a.back{display:none!important}
 .lolink{border:0;background:none;color:var(--mute);font:600 13px 'Pretendard Variable',Pretendard,sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:6px 10px}
+.hcards{display:flex;flex-direction:column;gap:10px;padding:14px var(--pad) 6px}
+.hcard{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:96px;padding:20px 22px;border-radius:20px;text-decoration:none;box-sizing:border-box}
+.hcard b{display:flex;align-items:center;gap:8px;font-size:22px;font-weight:800;letter-spacing:-.04em}
+.hcard span{display:block;font-size:14px;font-weight:600;opacity:.78;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:62vw}
+.hcard .arr{flex:none;width:50px;height:50px;border-radius:50%;display:grid;place-items:center;font-style:normal}
+.hcard .arr svg{transform:rotate(180deg)}
+.hcard.nt{background:#F2F2F0;color:#0E0E0E}.hcard.nt .arr{background:#0E0E0E;color:#fff}
+.hcard.ex{background:linear-gradient(135deg,#6E1426 0%,#4A0B18 55%,#3A0812 100%);color:#fff;box-shadow:0 10px 24px rgba(74,11,24,.28)}.hcard.ex .arr{background:var(--yellow);color:var(--ink)}
+.hcard.sc{background:#141B33;color:#fff}.hcard.sc .arr{background:#fff;color:#141B33}
+.hbadge{font-size:10.5px!important}
+.subl{padding:14px var(--pad) 8px;font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--mute)}
