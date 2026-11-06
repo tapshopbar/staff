@@ -51,6 +51,8 @@ ROUTES.ask=async function(v){
 };
 
 /* 뒤로 버튼: 앱 안 이동 기록이 있으면 history.back, 없으면 홈 */
+/* crew.tsb.wine 이 붙이는 #/sso=… 토큰은 주소창·기록에 남기지 않고 홈으로 */
+if(/^#\/?(sso=|home$|$)/.test(location.hash)&&location.hash){history.replaceState(null,'',location.pathname+location.search+'#/')}
 S.hist=[location.hash||'#/'];
 window.addEventListener('hashchange',()=>{const h=location.hash||'#/';const H=S.hist;if(H.length>1&&H[H.length-2]===h)H.pop();else if(H[H.length-1]!==h)H.push(h)});
 function goBack(){if(S.hist&&S.hist.length>1)history.back();else location.hash='#/'}
