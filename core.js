@@ -170,7 +170,7 @@ async function boot(){
 async function refresh(){try{const j=await apiRaw('me');S.data=j;S.mem['me{}']={t:Date.now(),v:JSON.stringify(j)};memSave();shell(true)}catch(e){}}
 function shell(keep){
   const d=S.data, unread=d.notis.filter(n=>!n.read).length;
-  const h=location.hash.replace(/^#\/?/,'').split('/')[0];
+  const h=routeKey();
   const html = `${d.testMode?'<div class="test">테스트 모드 · 알림 메일은 hello@ 로만 가요</div>':''}
    <header class="hdr ${h===''?'dark':''}" id="hdr"><button class="hback" id="hback" type="button" onclick="goBack()" style="${h===''?'display:none':''}">${I('back',18)}<span>뒤로</span></button><a class="brand" href="#/" style="${h===''?'':'display:none'}"><img class="logo" src="${LOGO}" alt="TAP SHOP BAR"><small>People</small></a>
    <div class="r">${d.x&&d.x.isHQ?`<a class="ic" href="#/console" title="본사 콘솔">${I('grid',20)}</a>`:''}<a class="ic" href="#/notis">${I('bell',21)}${unread?`<span class="dot">${unread}</span>`:''}</a></div></header>
@@ -185,7 +185,8 @@ function shell(keep){
   else{const v=$('#view').innerHTML;$('.app').innerHTML=html;$('#view').innerHTML=v;}
   markNav();
 }
-function markNav(){const r=(location.hash.replace(/^#\/?/,'').split('/')[0]||'');const map={log:'',avail:'schedule',check:'',incident:'apply',quiz:'',kudos:'',req:'apply',new:'apply',exp:'apply',swap:'schedule',close:'more',notice:'more',payslip:'more',cert:'more',onb:'more',pay:'more',cal:'schedule',att:'more',admin:'more',console:'more'};
+function routeKey(){const seg=location.hash.replace(/^#\/?/,'').split('/')[0].split('?')[0];return (!seg||seg==='home'||typeof ROUTES==='undefined'||!ROUTES[seg])?'':seg}
+function markNav(){const r=routeKey();const map={log:'',avail:'schedule',check:'',incident:'apply',quiz:'',kudos:'',req:'apply',new:'apply',exp:'apply',swap:'schedule',close:'more',notice:'more',payslip:'more',cert:'more',onb:'more',pay:'more',cal:'schedule',att:'more',admin:'more',console:'more'};
   document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===(map[r]||r)));const hd=$('#hdr');if(hd)hd.classList.toggle('dark',r==='');const hb=$('#hback'),br=$('#hdr .brand');if(hb)hb.style.display=r===''?'none':'';if(br)br.style.display=r===''?'':'none'}
 const ROUTES = {};
 function route(keep){
