@@ -106,7 +106,7 @@ function renderLogin(step='email',email=''){
   document.body.classList.remove('wide');
   $('#root').innerHTML = `<div class="login"><div class="top"><img src="${LOGO}" alt="TAP SHOP BAR"><span class="new">PEOPLE</span></div>
    <div class="bot"><span class="tag"><i class="new">NEW</i> 직원 전용 앱</span>
-    <h1>${step==='email'?'함께 일하는<br>사람들의 공간.':'메일로 받은<br>6자리 코드.'}</h1>
+    <h1>${step==='email'?'함께 일하는<br>탭샵바인의 공간.':'메일로 받은<br>6자리 코드.'}</h1>
     <p>${step==='email'?'출퇴근, 스케줄, 휴가, 경비까지. 폰 하나로 끝내요.':esc(email)+' 으로 코드를 보냈어요.'}</p>
     ${step==='email'&&GOOGLE_CLIENT_ID.indexOf('__')<0?`<button class="pill" id="gbtn" type="button" style="width:100%;margin-top:0"><svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Google 계정으로 계속하기</button><div style="display:flex;align-items:center;gap:12px;margin:18px 0 14px;font-size:12px;font-weight:800;letter-spacing:.1em;opacity:.75"><span style="flex:1;height:1px;background:rgba(255,255,255,.5)"></span>또는<span style="flex:1;height:1px;background:rgba(255,255,255,.5)"></span></div>`:''}
     ${step==='email'
@@ -124,7 +124,7 @@ function renderLogin(step='email',email=''){
     $('#re').onclick=()=>renderLogin('email',email);
     const c=$('#code');c.focus();
     const f=async()=>{if(c.value.length<6)return;busy(go,true,'확인 중…');
-      try{const j=await api('auth.verify',{email,code:c.value});S.token=j.token;localStorage.setItem('tsbp_token',j.token);boot()}catch(e){toast(e.message);busy(go,false)}};
+      try{const j=await api('auth.verify',{email,code:c.value});S.token=j.token;localStorage.setItem('tsbp_token',j.token);S.fresh=1;boot()}catch(e){toast(e.message);busy(go,false)}};
     go.onclick=f;c.oninput=()=>{c.value=c.value.replace(/\D/g,'');if(c.value.length===6)f()};
   }
 }
@@ -138,7 +138,7 @@ function initGoogle(){
 }
 async function onGoogle(resp){
   const er=$('#lerr');if(er)er.style.display='none';
-  try{const j=await api('auth.google',resp.access_token?{access_token:resp.access_token}:{credential:resp.credential});S.token=j.token;localStorage.setItem('tsbp_token',j.token);localStorage.setItem('tsbp_email',j.me.email);boot()}
+  try{const j=await api('auth.google',resp.access_token?{access_token:resp.access_token}:{credential:resp.credential});S.token=j.token;localStorage.setItem('tsbp_token',j.token);localStorage.setItem('tsbp_email',j.me.email);S.fresh=1;boot()}
   catch(e){const gb=$('#gbtn');if(gb)busy(gb,false);if(er){er.innerHTML=/직원 이메일이 아니/.test(e.message)?`<b>탭샵바 직원 이메일이 아니에요.</b><br>${esc(e.message.replace(/^.*\(/,'(').replace(/\)$/,')'))} 등록된 회사 계정으로 로그인하거나, 점장님께 등록을 요청해 주세요.`:esc(e.message);er.style.display='block'}else toast(e.message)}
 }
 function renderRegister(me,pending){
@@ -160,9 +160,9 @@ function renderRegister(me,pending){
 async function boot(){
   if(!S.token) return renderLogin();
   memLoad();
-  $('#root').innerHTML = `<div class="app"><div class="hero" style="height:300px"></div>${loading()}</div>`;
+  const sp=splash(S.fresh?1200:800); S.fresh=0;
   try{
-    const j = await api('me');
+    const j = await api('me'); await sp;
     if(j.pending) return renderRegister(j.me, j.me.status==='대기');
     S.data=j; shell(); route(); setTimeout(prefetch,1500);
   }catch(e){ if(e.message!=='AUTH'){ $('#root').innerHTML=`<div class="app"><div class="title" style="padding-top:120px"><h1>연결이<br>불안정해요.</h1><p>잠시 후 다시 시도해 주세요.</p></div><div class="btnrow"><button class="pill ink" onclick="boot()">다시 시도</button></div></div>` } }
@@ -172,7 +172,7 @@ function shell(keep){
   const d=S.data, unread=d.notis.filter(n=>!n.read).length;
   const h=location.hash.replace(/^#\/?/,'').split('/')[0];
   const html = `${d.testMode?'<div class="test">테스트 모드 · 알림 메일은 hello@ 로만 가요</div>':''}
-   <header class="hdr ${h===''?'dark':''}" id="hdr"><a class="brand" href="#/"><img class="logo" src="${LOGO}" alt="TAP SHOP BAR"><small>People</small></a>
+   <header class="hdr ${h===''?'dark':''}" id="hdr"><button class="hback" id="hback" type="button" onclick="goBack()" style="${h===''?'display:none':''}">${I('back',18)}<span>뒤로</span></button><a class="brand" href="#/" style="${h===''?'':'display:none'}"><img class="logo" src="${LOGO}" alt="TAP SHOP BAR"><small>People</small></a>
    <div class="r">${d.x&&d.x.isHQ?`<a class="ic" href="#/console" title="본사 콘솔">${I('grid',20)}</a>`:''}<a class="ic" href="#/notis">${I('bell',21)}${unread?`<span class="dot">${unread}</span>`:''}</a></div></header>
    <main id="view"></main>
    <nav class="nav">
@@ -186,7 +186,7 @@ function shell(keep){
   markNav();
 }
 function markNav(){const r=(location.hash.replace(/^#\/?/,'').split('/')[0]||'');const map={log:'',avail:'schedule',check:'',incident:'apply',quiz:'',kudos:'',req:'apply',new:'apply',exp:'apply',swap:'schedule',close:'more',notice:'more',payslip:'more',cert:'more',onb:'more',pay:'more',cal:'schedule',att:'more',admin:'more',console:'more'};
-  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===(map[r]||r)));const hd=$('#hdr');if(hd)hd.classList.toggle('dark',r==='')}
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===(map[r]||r)));const hd=$('#hdr');if(hd)hd.classList.toggle('dark',r==='');const hb=$('#hback'),br=$('#hdr .brand');if(hb)hb.style.display=r===''?'none':'';if(br)br.style.display=r===''?'':'none'}
 const ROUTES = {};
 function route(keep){
   if(!S.data) return;
@@ -207,15 +207,22 @@ ROUTES['']=function vHome(v){
   const ns=(x.shifts||[])[0];
   const cel=(x.celebrate&&x.celebrate.list)||[], mine=cel.filter(c=>c.mine), others=cel.filter(c=>!c.mine);
   v.innerHTML = `
-  <section class="hero">
-    <div class="hi">${greet()}</div>
-    <h1>${esc(me.name)}님,<br><span style="opacity:.7">${esc(me.branch)} · ${esc(me.role)}</span></h1>
-    ${b.known?`<div class="big"><b>${b.remain}</b><span>일 남은 연차</span>${b.pending?`<i class="new" style="margin:0 0 8px auto">결재중 ${b.pending}일</i>`:''}</div>
-    <div class="meter"><i style="width:${pct}%"></i></div>
-    <div class="meta"><span>발생 ${granted}일 · 사용 ${b.used}일</span><span>${b.firstYear?'입사 1년 차':`근속 ${b.years}년`}</span></div>`
-    :`<div class="big"><b>${b.used||0}</b><span>일 사용한 연차</span></div><div class="meta" style="margin-top:10px"><span>입사일이 등록되면 남은 연차를 보여드려요</span></div>`}
-    <a class="shiftline" href="#/schedule"><span>${ns?`다음 근무 ${fmtDay(ns.date)} ${esc(ns.start)}–${esc(ns.end)}${ns.pos?' · '+esc(ns.pos):''}`:'확정된 다음 근무가 없어요'}</span><span class="u" style="font-size:12.5px">스케줄</span></a>
+  <section class="hero nhero">
+    <div class="hi">반갑습니다,</div>
+    <h1>${esc(me.name)}님</h1>
+    <div class="nmeta">${esc(me.branch)} · ${esc(me.role)} · ${todayK()}</div>
   </section>
+  <section class="blk navy" id="punchBlk">
+    <div class="punch"><div class="clock"><div class="t" id="clk">--:--</div><div class="s" id="clkd"></div>
+      ${at.working?`<div class="live" id="wk">근무 중 · ${esc(at.since)}부터</div>`:''}</div>
+      <button class="pill ${at.working?'y':''}" id="pb">${at.working?'퇴근하기':'출근하기'}</button></div>
+    <div id="pres"></div>
+  </section>
+  <div class="hcards">
+  <a class="hcard nt" href="#/notice"><div><b>공지사항${x.unreadRequired?`<i class="new hbadge">필독 ${x.unreadRequired}</i>`:''}</b><span>${(x.notices||[]).length?esc(x.notices[0].title):'새 공지가 없어요'}</span></div><i class="arr">${I('back',22)}</i></a>
+  <a class="hcard ex" href="${EXP_URL}"><div><b>개인경비 청구</b><span>영수증 찍고 1분이면 끝</span></div><i class="arr">${I('back',22)}</i></a>
+  <a class="hcard sc" href="#/schedule"><div><b>내 근무표</b><span>${ns?`다음 근무: ${shiftK(ns.date)} ${esc(ns.start)}~${esc(ns.end)}${(ns.branch||me.branch)?' · '+esc(ns.branch||me.branch):''}`:'확정된 다음 근무가 없어요'}</span></div><i class="arr">${I('back',22)}</i></a>
+  </div>
   ${x.unreadRequired?`<a class="bn y" href="#/notice"><div><b>필독 공지 ${x.unreadRequired}건</b><span>읽고 확인 버튼을 눌러 주세요</span></div><span class="go">읽기</span></a>`:''}
   ${d.inboxCount?`<a class="bn n" href="#/inbox"><div><b>결재할 문서 ${d.inboxCount}건</b><span>기다리고 있어요</span></div><span class="go">결재하기</span></a>`:''}
   ${d.pendingUsers?`<a class="bn w" href="#/admin"><div><b>가입 요청 ${d.pendingUsers}명</b><span>확인 후 승인해 주세요</span></div><span class="go">확인</span></a>`:''}
@@ -226,22 +233,20 @@ ROUTES['']=function vHome(v){
   ${mine.map(c=>`<section class="cele"><span class="new" style="background:var(--ink);color:#fff">TODAY</span><h3 style="margin-top:10px">${esc(c.title)},<br>${esc(me.name)}님!</h3><p>${c.kind==='생일'?'오늘 하루 와인처럼 무르익는 날 되세요.':'탭샵바와 함께해 줘서 고마워요.'}</p>${(x.celebrate.cheers||[]).map(ch=>`<div class="cheer"><b>${esc(ch.from)}</b> · ${esc(ch.msg)}</div>`).join('')}</section>`).join('')}
   ${others.map(c=>`<section class="cele" style="background:var(--grey)"><span class="new">TODAY</span><h3 style="margin-top:10px;font-size:22px">오늘은 ${esc(c.name)}님<br>${esc(c.title.replace(' 축하해요',''))}!</h3><button class="pill sm ink" style="margin-top:12px" onclick="sendCheer('${esc(c.email)}','${esc(c.name)}','${esc(c.kind)}')">축하 카드 보내기</button></section>`).join('')}
   ${x.onboarding?`<a class="blk" href="#/onb" style="display:block;background:var(--grey)"><span class="tag"><i class="new">WELCOME</i> 온보딩 ${x.onboarding.done}/${x.onboarding.total}</span><div style="font-size:20px;font-weight:800;letter-spacing:-.03em;margin-top:8px">다음: ${esc(x.onboarding.next.title)}</div><div class="prog"><i style="width:${x.onboarding.done/x.onboarding.total*100}%"></i></div></a>`:''}
-  <section class="blk navy" id="punchBlk">
-    <div class="punch"><div class="clock"><div class="t" id="clk">--:--</div><div class="s" id="clkd"></div>
-      ${at.working?`<div class="live" id="wk">근무 중 · ${esc(at.since)}부터</div>`:''}</div>
-      <button class="pill ${at.working?'y':''}" id="pb">${at.working?'퇴근하기':'출근하기'}</button></div>
-    <div id="pres"></div>
-  </section>
-  <div class="sec"><h2>바로 신청</h2><a href="#/apply">전체</a></div>
+  <div class="sec"><h2>전체 메뉴</h2></div>
+  <div class="subl">탭샵바인</div>
   <div class="grid g3">
-    <a class="tile w" href="#/new/연차"><b>연차<br>반차</b><small>점장 → 매니저</small></a>
-    <a class="tile n" href="#/new/휴가"><b>휴가</b><small>경조·병가·공가</small></a>
-    <a class="tile p" href="#/exp/new" style="background-image:url(assets/a26_men_B.jpg);background-position:50% 25%"><b>경비<br>청구</b><small>영수증 찰칵</small></a>
-    <a class="tile" href="#/swap"><b>대타<br>게시판</b><small>${x.swapOpen?x.swapOpen+'건 모집중':'근무 바꾸기'}</small></a>
+    <a class="tile n" href="#/notice"><b>공지</b><small>${x.unreadRequired?'필독 '+x.unreadRequired+'건':'매뉴얼 · 소식'}</small></a>
+    <a class="tile" href="#/schedule"><b>근무표</b><small>스케줄 · 대타</small></a>
+    <a class="tile w" href="#/new/연차"><b>휴가</b><small>점장 → 매니저</small></a>
     <a class="tile y" href="#/payslip"><b>급여<br>명세서</b><small>바로 열람</small></a>
-    <a class="tile" href="#/cert"><b>증명서</b><small>재직·경력</small></a>
+    <a class="tile" href="#/cert"><b>증명서</b><small>재직 · 경력</small></a>
+    <a class="tile soon" href="#/edu"><b>교육</b><small><i class="new">준비중</i></small></a>
+    <a class="tile n" href="#/ask"><b>질문 ·<br>피드백</b><small>본사에 바로</small></a>
+    <a class="tile" href="#/policy"><b>회사<br>정책</b><small>꼭 알아둘 것</small></a>
+    <a class="tile slk" href="#/slack"><b>슬랙<br>열기</b><small>소통은 슬랙에서</small></a>
   </div>
-  <div class="sec"><h2>매장 · 성장</h2></div>
+  <div class="subl">매장 · 성장</div>
   <div class="grid g3">
     <a class="tile w" href="#/log"><b>업무<br>일지</b><small>한 줄 남기기</small></a>
     <a class="tile ${x.check&&x.check['오픈']?'':'y'}" href="#/check/오픈"><b>오픈<br>체크</b><small>${x.check&&x.check['오픈']?'✓ '+esc(x.check['오픈'].by)+' '+esc(x.check['오픈'].at):'아직 안 했어요'}</small></a>
@@ -249,12 +254,16 @@ ROUTES['']=function vHome(v){
     <a class="tile n" href="#/incident/new"><b>사고 ·<br>클레임</b><small>바로 보고</small></a>
     <a class="tile p" href="#/quiz" style="background-image:url(assets/americano.jpg)"><b>와인<br>퀴즈</b><small>이번 달 랭킹</small></a>
     <a class="tile" href="#/kudos"><b>칭찬<br>카드</b><small>고마운 동료에게</small></a>
+    <a class="tile" href="#/swap"><b>대타<br>게시판</b><small>${x.swapOpen?x.swapOpen+'건 모집중':'근무 바꾸기'}</small></a>
+    <a class="tile" href="#/avail/${x.nextMon||''}"><b>근무<br>가능 시간</b><small>${x.availDone?'제출 완료':'다음 주 제출'}</small></a>
+    <a class="tile" href="#/apply"><b>내 신청</b><small>진행 상황</small></a>
   </div>
   ${(x.notices||[]).length?`<div class="sec"><h2>공지 · 매뉴얼</h2><a href="#/notice">전체</a></div><div class="list">${x.notices.slice(0,3).map(n=>`<a class="li" href="#/notice/${n.id}"><div class="m"><div class="t1">${n.pinned?'<i class="new" style="margin-right:6px">PIN</i>':''}${esc(n.title)}</div><div class="t2">${esc(n.by)} · ${esc(String(n.at).slice(5,10))}</div></div>${n.required?chip(n.read?'읽음':'안읽음',n.read?'확인함':'필독'):''}</a>`).join('')}</div>`:''}
   <div class="sec"><h2>내 신청</h2><a href="#/apply">전체</a></div>
   <div class="list">${reqRows(d.requests.slice(0,3))||'<div class="empty">아직 신청 내역이 없어요</div>'}</div>
   ${d.canAdmin?`<div class="sec"><h2>오늘 우리 매장</h2>${x.isHQ?'<a href="#/console">본사 콘솔</a>':'<a href="#/schedule">스케줄</a>'}</div><div id="board" class="list"><div class="sk" style="height:60px"></div></div>`:''}
-  <div class="note" style="text-align:center;padding:34px 0 10px;letter-spacing:.06em">wine is second americano</div>`;
+  <div style="text-align:center;padding:30px 0 0"><button class="lolink" type="button" onclick="askLogout()">로그아웃</button></div>
+  <div class="note" style="text-align:center;padding:14px 0 10px;letter-spacing:.06em">wine is second americano</div>`;
   const tick=()=>{const n=new Date();const c=$('#clk');if(!c)return;c.textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}`;$('#clkd').textContent=`${n.getMonth()+1}월 ${n.getDate()}일 ${WD[n.getDay()]}요일`;
     if(at.working&&at.sinceTs&&$('#wk')){const m=Math.floor((Date.now()-at.sinceTs)/60000);$('#wk').textContent=`근무 중 · ${Math.floor(m/60)}시간 ${m%60}분째`}};
   tick(); S.clockT=setInterval(tick,15000);

@@ -1,0 +1,45 @@
+/* People next (2026-11 개편 미리보기) */
+.login{background:#0A0D1A url("assets/team_navy.jpg") center top/cover no-repeat}
+.login:before{background:linear-gradient(180deg,rgba(20,27,51,.15) 0%,rgba(20,27,51,.55) 45%,rgba(10,13,26,.97) 100%)!important}
+.splash{position:fixed;inset:0;z-index:100;background:#0E0E0E;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;opacity:0;transition:opacity .35s ease}
+.splash.on{opacity:1}
+.splash img{width:min(62vw,240px);filter:brightness(0) invert(1)}
+.splash .crew{display:flex;align-items:center;gap:10px;color:#fff;font-weight:800;font-size:15px;letter-spacing:.42em}
+.splash .crew i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.hdr.dark{background:var(--navy)}
+.hero.nhero{background:linear-gradient(180deg,#141B33 0%,#10162A 60%,#0A0D1A 100%);padding-top:34px;padding-bottom:36px}
+.hero.nhero .hi{margin-bottom:10px}
+.hero.nhero h1{margin:0 0 12px}
+.hero.nhero .nmeta{font-size:13px;font-weight:600;opacity:.8;margin-bottom:22px}
+.expcard{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:12px var(--pad) 6px;padding:26px 22px;border-radius:20px;color:#fff;background:linear-gradient(135deg,#6E1426 0%,#4A0B18 55%,#3A0812 100%);box-shadow:0 10px 24px rgba(74,11,24,.28);text-decoration:none}
+.expcard b{display:block;font-size:24px;font-weight:800;letter-spacing:-.04em}
+.expcard span{display:block;font-size:14px;font-weight:600;opacity:.8;margin-top:4px}
+.expcard .arr{flex:none;width:52px;height:52px;border-radius:50%;background:var(--yellow);color:var(--ink);display:grid;place-items:center;font-style:normal}
+.expcard .arr svg{transform:rotate(180deg)}
+.tile.soon{background:var(--grey);opacity:.85}
+.tile.slk{background:#3F0E40;color:#fff}.tile.slk small{color:rgba(255,255,255,.75)}
+.pol h3{font-size:16px;font-weight:800;letter-spacing:-.03em;margin:22px 0 8px}
+.pol ul{margin:0;padding-left:18px;line-height:1.7;font-size:14.5px}
+.pol li{margin:2px 0}
+.askk{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.askk button{border:1px solid var(--line,#ddd);background:#fff;border-radius:99px;padding:8px 14px;font:700 14px Pretendard Variable,Pretendard,sans-serif}
+.askk button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.qa{padding:14px 0;border-bottom:1px solid var(--line,#eee)}
+.qa .q{font-size:15px;line-height:1.55;white-space:pre-wrap}
+.qa .a{margin-top:8px;padding:10px 12px;background:var(--grey);font-size:14px;line-height:1.55;white-space:pre-wrap}
+.qa .m{font-size:12px;color:var(--mute);margin-bottom:4px}
+
+.hback{display:inline-flex;align-items:center;gap:4px;border:0;background:none;color:inherit;font:700 15px 'Pretendard Variable',Pretendard,sans-serif;padding:6px 8px 6px 0;margin-left:-4px;cursor:pointer}
+#view a.back{display:none!important}
+.lolink{border:0;background:none;color:var(--mute);font:600 13px 'Pretendard Variable',Pretendard,sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:6px 10px}
+.hcards{display:flex;flex-direction:column;gap:10px;padding:14px var(--pad) 6px}
+.hcard{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:96px;padding:20px 22px;border-radius:20px;text-decoration:none;box-sizing:border-box}
+.hcard b{display:flex;align-items:center;gap:8px;font-size:22px;font-weight:800;letter-spacing:-.04em}
+.hcard span{display:block;font-size:14px;font-weight:600;opacity:.78;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:62vw}
+.hcard .arr{flex:none;width:50px;height:50px;border-radius:50%;display:grid;place-items:center;font-style:normal}
+.hcard .arr svg{transform:rotate(180deg)}
+.hcard.nt{background:#F2F2F0;color:#0E0E0E}.hcard.nt .arr{background:#0E0E0E;color:#fff}
+.hcard.ex{background:linear-gradient(135deg,#6E1426 0%,#4A0B18 55%,#3A0812 100%);color:#fff;box-shadow:0 10px 24px rgba(74,11,24,.28)}.hcard.ex .arr{background:var(--yellow);color:var(--ink)}
+.hcard.sc{background:#141B33;color:#fff}.hcard.sc .arr{background:#fff;color:#141B33}
+.hbadge{font-size:10.5px!important}
+.subl{padding:14px var(--pad) 8px;font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--mute)}
