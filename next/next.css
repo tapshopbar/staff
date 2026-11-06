@@ -43,3 +43,31 @@
 .hcard.sc{background:#141B33;color:#fff}.hcard.sc .arr{background:#fff;color:#141B33}
 .hbadge{font-size:10.5px!important}
 .subl{padding:14px var(--pad) 8px;font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--mute)}
+/* 2026-11-07 crew 스타일 로그인 */
+.clogin{min-height:100vh;min-height:100svh;background:#0E0E0E;color:#fff;display:flex;align-items:center;justify-content:center;padding:40px 28px;box-sizing:border-box}
+.cbox{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.cwm{width:min(62vw,236px);filter:brightness(0) invert(1)}
+.clogin .crew{display:flex;align-items:center;gap:10px;margin-top:16px;font-weight:800;font-size:15px;letter-spacing:.42em}
+.clogin .crew i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.clogin .crew span{margin-left:8px}
+.cmsg{margin:46px 0 18px;color:#9A9A9A;font-size:14.5px;font-weight:600;line-height:1.6}
+.cpill{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;height:56px;border:0;border-radius:99px;background:#fff;color:#0E0E0E;font:800 16px 'Pretendard Variable',Pretendard,sans-serif;cursor:pointer}
+.cpill.line{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.55);margin-top:10px}
+.chint{margin:16px 0 0;color:#7A7A7A;font-size:12.5px;line-height:1.55;font-weight:500}
+.clink{margin-top:22px;border:0;background:none;color:#B5B5B5;font:600 13px 'Pretendard Variable',Pretendard,sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.cmail{width:100%;margin-top:14px}
+.cin{width:100%;box-sizing:border-box;height:52px;border-radius:14px;border:1.5px solid rgba(255,255,255,.25);background:#171717;color:#fff;padding:0 16px;font:600 16px 'Pretendard Variable',Pretendard,sans-serif}
+.cin.otp{text-align:center;letter-spacing:.4em;font-size:22px;margin-bottom:12px}
+.cerr{width:100%;margin-top:10px;background:rgba(244,49,49,.92);color:#fff;padding:12px 14px;font-size:13.5px;line-height:1.5;font-weight:600;text-align:left;border-radius:10px}
+/* 환영 화면 (스플래시 대체) */
+.welcome{position:fixed;inset:0;z-index:100;overflow:hidden;background:#0A0D1A;color:#fff;opacity:0;transition:opacity .2s ease-out}
+.welcome.on{opacity:1}.welcome.off{opacity:0;transition:opacity .35s ease-in}
+.welcome .wbg{position:absolute;inset:0;background:url("team_navy.jpg") center top/cover no-repeat;transform:scale(1);transform-origin:50% 35%}
+.welcome.on .wbg{transform:scale(1.06);transition:transform var(--wdur,1200ms) ease-out}
+.welcome .wshade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,27,51,.15) 0%,rgba(20,27,51,.55) 45%,rgba(10,13,26,.97) 100%)}
+.welcome .wtop{position:absolute;left:24px;right:24px;top:calc(26px + env(safe-area-inset-top,0px));display:flex;justify-content:space-between;align-items:center}
+.welcome .wtop img{height:24px;filter:brightness(0) invert(1)}
+.welcome .wbot{position:absolute;left:24px;right:24px;bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+.welcome .tag{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700}
+.welcome h1{font-size:40px;font-weight:800;letter-spacing:-.05em;line-height:1.12;margin:14px 0 14px;word-break:keep-all}
+.welcome p{margin:0;font-size:15px;font-weight:500;opacity:.88;line-height:1.5}
