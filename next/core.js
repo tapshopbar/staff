@@ -172,7 +172,7 @@ function shell(keep){
   const d=S.data, unread=d.notis.filter(n=>!n.read).length;
   const h=location.hash.replace(/^#\/?/,'').split('/')[0];
   const html = `${d.testMode?'<div class="test">테스트 모드 · 알림 메일은 hello@ 로만 가요</div>':''}
-   <header class="hdr ${h===''?'dark':''}" id="hdr"><a class="brand" href="#/"><img class="logo" src="${LOGO}" alt="TAP SHOP BAR"><small>People</small></a>
+   <header class="hdr ${h===''?'dark':''}" id="hdr"><button class="hback" id="hback" type="button" onclick="goBack()" style="${h===''?'display:none':''}">${I('back',18)}<span>뒤로</span></button><a class="brand" href="#/" style="${h===''?'':'display:none'}"><img class="logo" src="${LOGO}" alt="TAP SHOP BAR"><small>People</small></a>
    <div class="r">${d.x&&d.x.isHQ?`<a class="ic" href="#/console" title="본사 콘솔">${I('grid',20)}</a>`:''}<a class="ic" href="#/notis">${I('bell',21)}${unread?`<span class="dot">${unread}</span>`:''}</a></div></header>
    <main id="view"></main>
    <nav class="nav">
@@ -186,7 +186,7 @@ function shell(keep){
   markNav();
 }
 function markNav(){const r=(location.hash.replace(/^#\/?/,'').split('/')[0]||'');const map={log:'',avail:'schedule',check:'',incident:'apply',quiz:'',kudos:'',req:'apply',new:'apply',exp:'apply',swap:'schedule',close:'more',notice:'more',payslip:'more',cert:'more',onb:'more',pay:'more',cal:'schedule',att:'more',admin:'more',console:'more'};
-  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===(map[r]||r)));const hd=$('#hdr');if(hd)hd.classList.toggle('dark',r==='')}
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===(map[r]||r)));const hd=$('#hdr');if(hd)hd.classList.toggle('dark',r==='');const hb=$('#hback'),br=$('#hdr .brand');if(hb)hb.style.display=r===''?'none':'';if(br)br.style.display=r===''?'':'none'}
 const ROUTES = {};
 function route(keep){
   if(!S.data) return;
@@ -258,7 +258,8 @@ ROUTES['']=function vHome(v){
   <div class="sec"><h2>내 신청</h2><a href="#/apply">전체</a></div>
   <div class="list">${reqRows(d.requests.slice(0,3))||'<div class="empty">아직 신청 내역이 없어요</div>'}</div>
   ${d.canAdmin?`<div class="sec"><h2>오늘 우리 매장</h2>${x.isHQ?'<a href="#/console">본사 콘솔</a>':'<a href="#/schedule">스케줄</a>'}</div><div id="board" class="list"><div class="sk" style="height:60px"></div></div>`:''}
-  <div class="note" style="text-align:center;padding:34px 0 10px;letter-spacing:.06em">wine is second americano</div>`;
+  <div style="text-align:center;padding:30px 0 0"><button class="lolink" type="button" onclick="askLogout()">로그아웃</button></div>
+  <div class="note" style="text-align:center;padding:14px 0 10px;letter-spacing:.06em">wine is second americano</div>`;
   const tick=()=>{const n=new Date();const c=$('#clk');if(!c)return;c.textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}`;$('#clkd').textContent=`${n.getMonth()+1}월 ${n.getDate()}일 ${WD[n.getDay()]}요일`;
     if(at.working&&at.sinceTs&&$('#wk')){const m=Math.floor((Date.now()-at.sinceTs)/60000);$('#wk').textContent=`근무 중 · ${Math.floor(m/60)}시간 ${m%60}분째`}};
   tick(); S.clockT=setInterval(tick,15000);

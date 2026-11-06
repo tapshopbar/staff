@@ -7,9 +7,10 @@
 .splash .crew{display:flex;align-items:center;gap:10px;color:#fff;font-weight:800;font-size:15px;letter-spacing:.42em}
 .splash .crew i{width:9px;height:9px;border-radius:50%;display:inline-block}
 .hdr.dark{background:var(--navy)}
-.hero.nhero{background:linear-gradient(180deg,#141B33 0%,#10162A 60%,#0A0D1A 100%);padding-top:20px}
-.hero.nhero h1{margin:2px 0 6px}
-.hero.nhero .nmeta{font-size:13px;font-weight:600;opacity:.8;margin-bottom:16px}
+.hero.nhero{background:linear-gradient(180deg,#141B33 0%,#10162A 60%,#0A0D1A 100%);padding-top:34px;padding-bottom:36px}
+.hero.nhero .hi{margin-bottom:10px}
+.hero.nhero h1{margin:0 0 12px}
+.hero.nhero .nmeta{font-size:13px;font-weight:600;opacity:.8;margin-bottom:22px}
 .expcard{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:12px var(--pad) 6px;padding:26px 22px;border-radius:20px;color:#fff;background:linear-gradient(135deg,#6E1426 0%,#4A0B18 55%,#3A0812 100%);box-shadow:0 10px 24px rgba(74,11,24,.28);text-decoration:none}
 .expcard b{display:block;font-size:24px;font-weight:800;letter-spacing:-.04em}
 .expcard span{display:block;font-size:14px;font-weight:600;opacity:.8;margin-top:4px}
@@ -27,3 +28,7 @@
 .qa .q{font-size:15px;line-height:1.55;white-space:pre-wrap}
 .qa .a{margin-top:8px;padding:10px 12px;background:var(--grey);font-size:14px;line-height:1.55;white-space:pre-wrap}
 .qa .m{font-size:12px;color:var(--mute);margin-bottom:4px}
+
+.hback{display:inline-flex;align-items:center;gap:4px;border:0;background:none;color:inherit;font:700 15px 'Pretendard Variable',Pretendard,sans-serif;padding:6px 8px 6px 0;margin-left:-4px;cursor:pointer}
+#view a.back{display:none!important}
+.lolink{border:0;background:none;color:var(--mute);font:600 13px 'Pretendard Variable',Pretendard,sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:6px 10px}
