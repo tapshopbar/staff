@@ -52,7 +52,15 @@ ROUTES.ask=async function(v){
 
 /* 뒤로 버튼: 앱 안 이동 기록이 있으면 history.back, 없으면 홈 */
 /* crew.tsb.wine 이 붙이는 #/sso=… 토큰은 주소창·기록에 남기지 않고 홈으로 */
+const SSO_T=(location.hash.match(/^#\/?sso=([\w-]+\.[\w-]+)$/)||[])[1]||'';
 if(/^#\/?(sso=|home$|$)/.test(location.hash)&&location.hash){history.replaceState(null,'',location.pathname+location.search+'#/')}
+/* crew SSO: 로그인 안 된 상태면 티켓으로 세션 받기 (실패하면 조용히 로그인 화면). 이미 로그인돼 있으면 티켓 무시 */
+const _bootOrig=boot;
+boot=async function(){
+  if(SSO_T&&!S.ssoTried){S.ssoTried=1;
+    if(!S.token){try{const j=await apiRaw('auth.sso',{ticket:SSO_T});if(j&&j.token){S.token=j.token;localStorage.setItem('tsbp_token',j.token);if(j.me&&j.me.email)localStorage.setItem('tsbp_email',j.me.email);S.fresh=1}}catch(e){}}}
+  return _bootOrig();
+};
 S.hist=[location.hash||'#/'];
 window.addEventListener('hashchange',()=>{const h=location.hash||'#/';const H=S.hist;if(H.length>1&&H[H.length-2]===h)H.pop();else if(H[H.length-1]!==h)H.push(h)});
 function goBack(){if(S.hist&&S.hist.length>1)history.back();else location.hash='#/'}
