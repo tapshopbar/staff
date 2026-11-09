@@ -132,9 +132,9 @@ function initGoogle(){
   if(GOOGLE_CLIENT_ID.indexOf('__')===0)return;
   const btn=$('#gbtn'); if(!btn)return;
   const ready=()=>{ if(!window.google||!google.accounts||!google.accounts.oauth2)return false;
-    S.gtc=S.gtc||google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:'openid email profile',callback:r=>{if(r&&r.access_token)onGoogle({access_token:r.access_token});else{const b=$('#gbtn');if(b)busy(b,false)}},error_callback:()=>{const b=$('#gbtn');if(b)busy(b,false)}});return true};
+    S.gtc=S.gtc||google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:'openid email profile',hd:'tsb.wine',callback:r=>{if(r&&r.access_token)onGoogle({access_token:r.access_token});else{const b=$('#gbtn');if(b)busy(b,false)}},error_callback:()=>{const b=$('#gbtn');if(b)busy(b,false)}});return true};
   if(!document.getElementById('gsi')){const s=document.createElement('script');s.id='gsi';s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=ready;document.head.appendChild(s)}else ready();
-  btn.onclick=()=>{ if(!ready())return toast('구글 로그인을 불러오는 중이에요. 잠시 후 다시 눌러 주세요'); busy(btn,true,'구글 확인 중…'); S.gtc.requestAccessToken({prompt:''}); setTimeout(()=>{const b=$('#gbtn');if(b&&b.classList.contains('busy'))busy(b,false)},20000) };
+  btn.onclick=()=>{ if(!ready())return toast('구글 로그인을 불러오는 중이에요. 잠시 후 다시 눌러 주세요'); busy(btn,true,'구글 확인 중…'); S.gtc.requestAccessToken({prompt:'select_account'}); setTimeout(()=>{const b=$('#gbtn');if(b&&b.classList.contains('busy'))busy(b,false)},20000) };
 }
 async function onGoogle(resp){
   const er=$('#lerr');if(er)er.style.display='none';
