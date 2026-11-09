@@ -140,7 +140,7 @@ ROUTES.kudos=async function(v){
   v.innerHTML=`<div class="title"><h1>칭찬카드</h1></div>${loading()}`;
   const j=await api('kudos.list');
   let val=j.values[0], pub=true;
-  const byBr={};j.people.forEach(p=>{(byBr[p.branch]=byBr[p.branch]||[]).push(p)});
+  const byBr={};j.people.forEach(p=>{const g=typeof peopleGroup==='function'?peopleGroup(p):p.branch;(byBr[g]=byBr[g]||[]).push(p)});if(typeof sortGroups==='function'){const o={};sortGroups(Object.keys(byBr)).forEach(k=>o[k]=byBr[k]);Object.keys(byBr).forEach(k=>delete byBr[k]);Object.assign(byBr,o)}
   v.innerHTML=`${back()}<section class="hero photo" style="background-image:url(assets/a26_men_B.jpg);background-position:50% 25%;padding-top:80px"><span class="tag"><i class="new">KUDOS</i> 받은 칭찬 ${j.received}장</span><h1 style="margin:10px 0 0">고마운 동료에게<br>한 장.</h1></section>
    <div class="form"><label class="f">누구에게</label><select class="in" id="to"><option value="">동료 선택</option>${Object.keys(byBr).map(b=>`<optgroup label="${esc(b)}">${byBr[b].map(p=>`<option value="${esc(p.email)}">${esc(p.name)}</option>`).join('')}</optgroup>`).join('')}</select>
    <label class="f">어떤 점이 좋았나요?</label><div class="presets">${j.values.map((x,i)=>`<button data-v="${esc(x)}" class="${i===0?'on':''}">${esc(x)}</button>`).join('')}</div>

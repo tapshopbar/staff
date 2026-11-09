@@ -110,3 +110,36 @@ function splash(ms){return new Promise(res=>{const d=document.createElement('div
   d.style.setProperty('--wdur',ms+'ms');
   document.body.appendChild(d);requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add('on')));
   setTimeout(()=>{res();d.classList.remove('on');d.classList.add('off');setTimeout(()=>d.remove(),360)},ms)})}
+
+/* ── 직급 · 연차 · 배지 (2026-11-09 미리보기) ── */
+const TITLE_EN={'수습':'Probation','사원':'Crew','트레이너':'Trainer','부점장':'Assistant Manager','수쉐프':'Sous Chef','쉐프':'Chef','점장':'Store Manager','매니저':'Manager','샵매니저':'Shop Manager','CTO':'Chief Technology Officer','IT 팀장':'IT Lead','팀장':'Team Lead','팀원':'Staff','대표':'CEO','이사':'Director','사내이사':'Director','파트타임':'Part-time'};
+function tenure(hire){if(!hire)return null;const h=new Date(String(hire).replace(/\./g,'-').trim());if(isNaN(h))return null;const m=(new Date()-h)/2629800000;if(m<0)return null;return {y:Math.floor(m/12)+1,months:Math.floor(m),probation:m<3}}
+const TEN_TONE=['#E7CDD3','#B5707E','#8E1B32','#156DFF','#FFC100'];const TEN_INK=[1,0,0,0,1];
+function idChips(me){
+  const t=me.title||me.role||'';const en=TITLE_EN[t]||'';const tn=tenure(me.hire);
+  const ten=tn?(tn.probation?`<span class="idc ten" style="--tc:#8C8C88">수습 ${tn.months+1}개월</span>`:`<span class="idc ten" style="--tc:${TEN_TONE[Math.min(tn.y,5)-1]};${TEN_INK[Math.min(tn.y,5)-1]?'--ti:#0E0E0E':''}"><i></i>${tn.y}년 차</span>`):'';
+  return t?`<div class="idrow"><span class="idc rank"><b>${esc(t)}</b>${en?`<em>${esc(en)}</em>`:''}</span>${ten}</div>`:'';
+}
+const BADGES=[
+ {k:'hybrid',n:'Hybrid',ko:'하이브리드',d:'홀과 주방을 혼자서도 운영해요',c:'linear-gradient(90deg,#6E1426 50%,#141B33 50%)',i:'M7 4v7a2 2 0 0 0 4 0V4M9 11v9M16 4c-1.5 0-2.5 2-2.5 5s1 4 2.5 4v7'},
+ {k:'som1',n:'Sommelier I',ko:'소믈리에 1',d:'와인 기초 · WSET 1 인정',c:'#6E1426',s:1,i:'M8 3h8l-.5 5a3.5 3.5 0 0 1-7 0L8 3zM12 11.5V19M8.5 20h7'},
+ {k:'som2',n:'Sommelier II',ko:'소믈리에 2',d:'한 단계 더 · WSET 2 인정',c:'#6E1426',s:2,i:'M8 3h8l-.5 5a3.5 3.5 0 0 1-7 0L8 3zM12 11.5V19M8.5 20h7'},
+ {k:'som3',n:'Sommelier III',ko:'소믈리에 3',d:'전문가 · WSET 3 인정',c:'#4A0B18',s:3,i:'M8 3h8l-.5 5a3.5 3.5 0 0 1-7 0L8 3zM12 11.5V19M8.5 20h7'},
+ {k:'barista',n:'Barista',ko:'바리스타',d:'매일 커피 품질을 지켜요',c:'#6B4A35',i:'M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5V9zM16 10h1.5a2.5 2.5 0 0 1 0 5H16M8 3c0 1.5 1.5 1.5 1.5 3M12 3c0 1.5 1.5 1.5 1.5 3'},
+ {k:'tap',n:'Tap Master',ko:'탭 마스터',d:'64탭 세척·관리·재고',c:'#141B33',i:'M6 7h9v4H6zM15 9h3v6M10 11v3M8 14h4M10 17v2'},
+ {k:'lang',n:'Language',ko:'랭귀지',d:'영어·일어·중국어 응대',c:'#B5707E',i:'M4 5h16v10H9l-4 4v-4H4zM8 9h8M8 12h5'},
+ {k:'key',n:'Keyholder',ko:'키홀더',d:'오픈·마감 책임자 인증',c:'#8A6A2E',i:'M8 14a4 4 0 1 1 3.5-6L20 8v3h-2v2h-2v-2h-4.5A4 4 0 0 1 8 14z'},
+ {k:'kind',n:'Kindness',ko:'카인드니스',d:'지점별 매달 1명, 매달 바뀌어요',c:'#FFC100',dark:1,i:'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z'}
+];
+function badgeIcon(b,sz){const st=b.s?`<span class="bstars">${'★'.repeat(b.s)}</span>`:'';return `<span class="bdg" style="--bg:${b.c};--sz:${sz}px;${b.dark?'--fg:#0E0E0E':''}"><svg viewBox="0 0 24 24" width="${Math.round(sz*.52)}" height="${Math.round(sz*.52)}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${b.i}"/></svg>${st}</span>`}
+const STRIP_KEYS=['hybrid','som1','tap','kind'];
+function badgeStrip(){return `<a class="bstrip" href="#/badges" aria-label="배지 준비 중, 눌러서 보기">${BADGES.filter(b=>STRIP_KEYS.includes(b.k)).map(b=>badgeIcon(b,26)).join('')}<span class="soon">COMING SOON</span></a>`}
+ROUTES.badges=function(v){
+  v.innerHTML=`${back()}<section class="hero nhero bhero"><span class="tag"><i class="new">BADGE</i> COMING SOON</span><h1 style="margin:12px 0 8px">할 줄 아는 것이<br>배지가 돼요.</h1><p class="bsub">유니폼 왼쪽 가슴에 다는 진짜 배지. 지금 함께 만들고 있어요.</p></section>
+  <div class="bgrid">${BADGES.map(b=>`<div class="bcard">${badgeIcon(b,64)}<b>${esc(b.n)}</b><span class="ko">${esc(b.ko)}</span><span class="bd">${esc(b.d)}</span><i class="lock">준비 중</i></div>`).join('')}
+  <div class="bcard more"><span class="bdg" style="--bg:transparent;--sz:64px;border:1.5px dashed #C9C4BE;color:#9A948D"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span><b>New</b><span class="ko">새 배지</span><span class="bd">함께 정해서 더 만들 수 있어요</span></div></div>
+  <p class="bnote">배지 기준과 시작 시기는 정해지면 공지로 알려 드릴게요.</p>`;
+};
+const GROUP_ORDER=['대표','이사','매니저','IT Team','청계','상암','마곡','동대문','서여의도'];
+function peopleGroup(p){if(p.role==='대표')return '대표';if(p.role==='이사')return '이사';if(p.role==='매니저')return '매니저';if(/^(CTO|IT)/.test(p.title||''))return 'IT Team';return p.branch||'기타'}
+function sortGroups(ks){return ks.sort((a,b)=>{const ia=GROUP_ORDER.indexOf(a),ib=GROUP_ORDER.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)})}

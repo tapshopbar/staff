@@ -211,7 +211,9 @@ ROUTES['']=function vHome(v){
   <section class="hero nhero">
     <div class="hi">반갑습니다,</div>
     <h1>${esc(me.name)}님</h1>
-    <div class="nmeta">${esc(me.branch)} · ${esc(me.role)} · ${todayK()}</div>
+    ${typeof idChips==='function'?idChips(me):''}
+    <div class="nmeta">${esc(me.branch)} · ${todayK()}</div>
+    ${typeof badgeStrip==='function'?badgeStrip():''}
   </section>
   <section class="blk navy" id="punchBlk">
     <div class="punch"><div class="clock"><div class="t" id="clk">--:--</div><div class="s" id="clkd"></div>
