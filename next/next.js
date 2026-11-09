@@ -23,14 +23,14 @@ ROUTES.policy=function(v){v.innerHTML=`${back('#/')}<div class="title"><h1>회�
    <li>개인카드로 결제해도 되는 곳: 쿠팡 · 네이버 · 소금집. 결제 전에 수쉐프방에 거래처 · 금액을 먼저 올려 주세요.</li>
    <li>한 번에 10만원 미만으로 나눠 결제해 주세요.</li>
    <li>마감 · 업무 이동 택시비는 1회 3만원까지예요 (카카오T 이용내역 캡처 첨부).</li>
-   <li>CJ프레시웨이 · 커피 리브레 · 미트프렌즈 · 닭리닭매 · 에디션덴마크는 본사가 계좌이체로 결제해요. 개인카드로 결제하지 말고 본사에 발주 요청해 주세요.</li></ul>
+   <li>CJ프레시웨이 · 커피 리브레 · 미트프렌즈 · 닭리닭매 · 에디션덴마크는 서포트센터가 계좌이체로 결제해요. 개인카드로 결제하지 말고 서포트센터에 발주 요청해 주세요.</li></ul>
   <h3>휴가</h3><ul><li>연차 · 휴가는 점장 승인 후 매니저 승인으로 확정돼요.</li></ul>
   <a class="pill line full" style="margin-top:24px" href="https://www.notion.so/34ccdbb0aa9280b99452f801728669c6" target="_blank" rel="noopener">Notion에서 전체 보기</a>
  </div>`};
 const ASK_KINDS=['질문','제안','불편','칭찬'];
 ROUTES.ask=async function(v){
   const hq=S.data&&S.data.x&&S.data.x.isHQ;
-  v.innerHTML=`${back('#/')}<div class="title"><h1>질문 · 피드백</h1><p>궁금한 것, 제안, 불편한 점, 칭찬까지 본사에 바로 전해요.</p></div>
+  v.innerHTML=`${back('#/')}<div class="title"><h1>질문 · 피드백</h1><p>궁금한 것, 제안, 불편한 점, 칭찬까지 서포트센터에 바로 전해요.</p></div>
   <div class="blk"><div class="askk" id="kk">${ASK_KINDS.map((k,i)=>`<button data-k="${k}" class="${i?'':'on'}">${k}</button>`).join('')}</div>
    <textarea class="in" id="qb" rows="5" placeholder="내용을 적어 주세요"></textarea>
    <label style="display:flex;gap:8px;align-items:center;margin-top:10px;font-size:14px;font-weight:600"><input type="checkbox" id="qa"> 익명으로 보내기</label>
@@ -42,7 +42,7 @@ ROUTES.ask=async function(v){
     try{await api('ask.create',{kind,body,anon:$('#qa').checked?'1':''});toast('보냈어요. 답변이 오면 알려 드릴게요');ROUTES.ask(v)}catch(x){toast(x.message);busy(e.currentTarget,false)}};
   try{const j=await api('ask.list');const el=$('#ql');if(!el)return;
     el.innerHTML=j.items.length?j.items.map(q=>`<div class="qa"><div class="m">${esc(q.kind)} · ${esc(String(q.at).slice(5,16))}${hq?' · '+esc(q.name)+(q.branch?' ('+esc(q.branch)+')':''):''} · ${esc(q.status)}</div><div class="q">${esc(q.body)}</div>
-      ${q.answer?`<div class="a"><b>본사 답변</b><br>${esc(q.answer)}</div>`:''}
+      ${q.answer?`<div class="a"><b>서포트센터 답변</b><br>${esc(q.answer)}</div>`:''}
       ${hq&&!q.answer?`<textarea class="in" data-ans="${esc(q.id)}" rows="2" placeholder="답변 쓰기" style="margin-top:8px"></textarea><button class="pill sm ink" data-send="${esc(q.id)}" style="margin-top:6px">답변 보내기</button>`:''}
       ${q.mine&&q.status==='접수'?`<button class="pill sm line" data-del="${esc(q.id)}" style="margin-top:6px">취소</button>`:''}</div>`).join(''):'<div class="empty">아직 보낸 질문이 없어요</div>';
     el.querySelectorAll('[data-send]').forEach(b=>b.onclick=async()=>{const id=b.dataset.send;const t=el.querySelector(`[data-ans="${id}"]`).value.trim();if(!t)return toast('답변을 적어 주세요');busy(b,true);try{await api('ask.answer',{id,answer:t});toast('답변했어요');ROUTES.ask(v)}catch(x){toast(x.message);busy(b,false)}});
@@ -129,10 +129,11 @@ const BADGES=[
  {k:'tap',n:'Tap Master',ko:'탭 마스터',d:'64탭 세척·관리·재고',c:'#141B33',i:'M6 7h9v4H6zM15 9h3v6M10 11v3M8 14h4M10 17v2'},
  {k:'lang',n:'Language',ko:'랭귀지',d:'영어·일어·중국어 응대',c:'#B5707E',i:'M4 5h16v10H9l-4 4v-4H4zM8 9h8M8 12h5'},
  {k:'key',n:'Keyholder',ko:'키홀더',d:'오픈·마감 책임자 인증',c:'#8A6A2E',i:'M8 14a4 4 0 1 1 3.5-6L20 8v3h-2v2h-2v-2h-4.5A4 4 0 0 1 8 14z'},
+ {k:'pass',n:'Passport',ko:'패스포트',d:'다른 지점 지원을 갈 때마다 도장 한 칸. 5칸을 채우면 완성',c:'#2F4858',i:'M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM12 7.5a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM9.2 10.5h5.6M9.5 17h5'},
  {k:'kind',n:'Kindness',ko:'카인드니스',d:'지점별 매달 1명, 매달 바뀌어요',c:'#FFC100',dark:1,i:'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z'}
 ];
 function badgeIcon(b,sz){const st=b.s?`<span class="bstars">${'★'.repeat(b.s)}</span>`:'';return `<span class="bdg" style="--bg:${b.c};--sz:${sz}px;${b.dark?'--fg:#0E0E0E':''}"><svg viewBox="0 0 24 24" width="${Math.round(sz*.52)}" height="${Math.round(sz*.52)}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${b.i}"/></svg>${st}</span>`}
-const STRIP_KEYS=['hybrid','som1','tap','kind'];
+const STRIP_KEYS=['hybrid','som1','pass','kind'];
 function badgeStrip(){return `<a class="bstrip" href="#/badges" aria-label="배지 준비 중, 눌러서 보기">${BADGES.filter(b=>STRIP_KEYS.includes(b.k)).map(b=>badgeIcon(b,26)).join('')}<span class="soon">COMING SOON</span></a>`}
 ROUTES.badges=function(v){
   v.innerHTML=`${back()}<section class="hero nhero bhero"><span class="tag"><i class="new">BADGE</i> COMING SOON</span><h1 style="margin:12px 0 8px">할 줄 아는 것이<br>배지가 돼요.</h1><p class="bsub">유니폼 왼쪽 가슴에 다는 진짜 배지. 지금 함께 만들고 있어요.</p></section>
@@ -143,3 +144,5 @@ ROUTES.badges=function(v){
 const GROUP_ORDER=['대표','이사','매니저','IT Team','청계','상암','마곡','동대문','서여의도'];
 function peopleGroup(p){if(p.role==='대표')return '대표';if(p.role==='이사')return '이사';if(p.role==='매니저')return '매니저';if(/^(CTO|IT)/.test(p.title||''))return 'IT Team';return p.branch||'기타'}
 function sortGroups(ks){return ks.sort((a,b)=>{const ia=GROUP_ORDER.indexOf(a),ib=GROUP_ORDER.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)})}
+
+function brLabel(b){return b==='본사'?'전 지점':b}

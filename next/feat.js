@@ -24,7 +24,7 @@ ROUTES.schedule=async function(v,arg){
     <div class="legend"><span><i style="background:var(--wine)"></i>확정</span><span><i style="background:#8a5a62"></i>임시 (직원에게 안 보임)</span><span><i style="background:var(--yellow)"></i>휴가</span></div>
     ${j.canEdit?`<div class="btnrow" style="flex-wrap:wrap"><button class="pill line sm" id="cp">지난주 복사</button>${st.dirty?'<button class="pill ink sm" id="sv">임시 저장</button>':''}<button class="pill wine sm" id="pub" ${(!draft&&!st.dirty)?'disabled':''}>확정하고 알리기</button></div>
       <p class="note">빈 칸 + 를 눌러 근무를 넣고, 확정하면 직원에게 메일·앱 알림이 가요.</p>`:''}
-    <div class="list" style="margin-top:14px"><a class="li" href="#/avail/${addD(start,0)}"><div class="m"><div class="t1">근무 가능 시간 ${j.canEdit?'· 제출 현황':'제출'}</div><div class="t2">${(j.avail||[]).length?'이번 주 '+new Set(j.avail.map(a=>a.email)).size+'명 제출':'아직 제출한 사람이 없어요'} · 초록 글씨로 표에 보여요</div></div><span class="ar">${I('next',18)}</span></a><a class="li" href="#/swap"><div class="m"><div class="t1">대타 게시판</div><div class="t2">근무를 바꿔야 하면 여기서</div></div><span class="ar">${I('next',18)}</span></a><a class="li" href="#/cal"><div class="m"><div class="t1">휴가 캘린더</div><div class="t2">월간 휴가 현황</div></div><span class="ar">${I('next',18)}</span></a>${d.x&&d.x.isHQ?`<a class="li" href="#/console"><div class="m"><div class="t1">전 지점 스케줄 한눈에</div><div class="t2">본사 콘솔</div></div><span class="ar">${I('next',18)}</span></a>`:''}</div>`;
+    <div class="list" style="margin-top:14px"><a class="li" href="#/avail/${addD(start,0)}"><div class="m"><div class="t1">근무 가능 시간 ${j.canEdit?'· 제출 현황':'제출'}</div><div class="t2">${(j.avail||[]).length?'이번 주 '+new Set(j.avail.map(a=>a.email)).size+'명 제출':'아직 제출한 사람이 없어요'} · 초록 글씨로 표에 보여요</div></div><span class="ar">${I('next',18)}</span></a><a class="li" href="#/swap"><div class="m"><div class="t1">대타 게시판</div><div class="t2">근무를 바꿔야 하면 여기서</div></div><span class="ar">${I('next',18)}</span></a><a class="li" href="#/cal"><div class="m"><div class="t1">휴가 캘린더</div><div class="t2">월간 휴가 현황</div></div><span class="ar">${I('next',18)}</span></a>${d.x&&d.x.isHQ?`<a class="li" href="#/console"><div class="m"><div class="t1">전 지점 스케줄 한눈에</div><div class="t2">운영 콘솔</div></div><span class="ar">${I('next',18)}</span></a>`:''}</div>`;
     $('#pw').onclick=()=>location.hash=`#/schedule/${encodeURIComponent(branch)}@${addD(start,-7)}`;
     $('#nw').onclick=()=>location.hash=`#/schedule/${encodeURIComponent(branch)}@${addD(start,7)}`;
     if($('#bsel'))$('#bsel').onchange=e=>location.hash=`#/schedule/${encodeURIComponent(e.target.value)}@${start}`;
@@ -174,7 +174,7 @@ ROUTES.payslip=async function(v){
   const j=await api('payslip.list');
   v.innerHTML=`${back()}<div class="title"><h1>급여명세서</h1><p>본인만 열람할 수 있어요. 비밀번호 없이 바로 열려요. 급여일은 매월 10일.</p></div>
    <div class="list" style="margin-top:12px">${j.items.map(p=>`<div class="li" data-ps="${esc(p.id)}"><div class="m"><div class="t1">${p.month.slice(0,4)}년 ${Number(p.month.slice(5))}월</div><div class="t2">${p.opened?'열람함':'새 명세서'}</div></div>${p.opened?'':chip('신청','NEW')}<span class="ar">${I('next',18)}</span></div>`).join('')||'<div class="empty">아직 등록된 명세서가 없어요</div>'}</div>
-   ${j.canUpload?`<div class="sec"><h2>올리기 (본사)</h2></div><div class="form"><p class="note" style="padding:0 0 8px">파일 이름을 <b>2026-09_홍길동.pdf</b> 처럼 맞추면 여러 개를 한 번에 올릴 수 있어요.</p>
+   ${j.canUpload?`<div class="sec"><h2>올리기 (관리자)</h2></div><div class="form"><p class="note" style="padding:0 0 8px">파일 이름을 <b>2026-09_홍길동.pdf</b> 처럼 맞추면 여러 개를 한 번에 올릴 수 있어요.</p>
      <label class="photo-in" style="min-height:90px"><input type="file" accept="application/pdf" multiple id="pfs" hidden><span>PDF 여러 개 선택</span></label><div id="upl"></div></div>
      <div class="sec"><h2>최근 등록</h2></div><div class="tblw"><table class="tbl"><thead><tr><th>월</th><th>이름</th><th>열람</th></tr></thead><tbody>${(j.admin||[]).map(p=>`<tr><td>${esc(p.month)}</td><td><b>${esc(p.name)}</b></td><td>${p.opened?esc(String(p.opened).slice(5,16)):'<span style="color:var(--bad)">미열람</span>'}</td></tr>`).join('')}</tbody></table></div>`:''}`;
   // fix onclick for file ids (list holds record id; need file id)
@@ -240,10 +240,10 @@ ROUTES.close=async function(v,arg){
 };
 /* ── 본사 콘솔 ── */
 ROUTES.console=async function(v){
-  v.innerHTML=`<div class="title"><h1>본사 콘솔</h1></div>${loading()}`;
-  let j,ov;try{[j,ov]=await Promise.all([api('console'),api('schedule.overview',{start:monday(new Date())})])}catch(e){v.innerHTML=`<div class="title"><h1>본사 콘솔</h1><p>${esc(e.message)}</p></div>`;return}
+  v.innerHTML=`<div class="title"><h1>운영 콘솔</h1></div>${loading()}`;
+  let j,ov;try{[j,ov]=await Promise.all([api('console'),api('schedule.overview',{start:monday(new Date())})])}catch(e){v.innerHTML=`<div class="title"><h1>운영 콘솔</h1><p>${esc(e.message)}</p></div>`;return}
   const p=j.pending, days=[...Array(7)].map((_,i)=>addD(ov.start,i)), today=ymd(new Date());
-  v.innerHTML=`<section class="hero photo" style="background-image:url(../assets/loc_hall.jpg);padding:40px var(--pad) 30px"><span class="tag"><i class="new">HQ</i> ${fmtDay(j.today)}</span><h1 style="font-size:44px;margin:12px 0 0">본사 콘솔.</h1><div style="font-size:15px;font-weight:600;opacity:.85;margin-top:6px">전 지점 근무 · 결재 · 경비 · 공지를 한 화면에서.</div></section>
+  v.innerHTML=`<section class="hero photo" style="background-image:url(../assets/loc_hall.jpg);padding:40px var(--pad) 30px"><span class="tag"><i class="new">HQ</i> ${fmtDay(j.today)}</span><h1 style="font-size:44px;margin:12px 0 0">운영 콘솔.</h1><div style="font-size:15px;font-weight:600;opacity:.85;margin-top:6px">전 지점 근무 · 결재 · 경비 · 공지를 한 화면에서.</div></section>
    <div class="sec"><h2>오늘 매장</h2><a href="#/schedule">스케줄 편집</a></div>
    <div class="cgrid">${j.branches.filter(b=>b.branch!=='본사').map(b=>`<div class="cbox"><h3>${esc(b.branch)} ${b.missing.length?chip('반려','미출근 '+b.missing.length):b.scheduled?chip('정상','정상'):chip('미확정','스케줄 없음')}</h3>
      <div style="display:flex;gap:18px;margin-top:12px"><div><div class="n">${b.working}</div><div class="note" style="padding:0">근무 중</div></div><div><div class="n" style="color:var(--mute)">${b.scheduled}</div><div class="note" style="padding:0">오늘 스케줄</div></div><div><div class="n" style="color:var(--mute)">${b.done}</div><div class="note" style="padding:0">퇴근</div></div></div>
