@@ -132,7 +132,8 @@ const BADGES=[
  {k:'kind',n:'Kindness',ko:'카인드니스',d:'지점별 매달 1명, 매달 바뀌어요',c:'#FFC100',dark:1,i:'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z'}
 ];
 function badgeIcon(b,sz){const st=b.s?`<span class="bstars">${'★'.repeat(b.s)}</span>`:'';return `<span class="bdg" style="--bg:${b.c};--sz:${sz}px;${b.dark?'--fg:#0E0E0E':''}"><svg viewBox="0 0 24 24" width="${Math.round(sz*.52)}" height="${Math.round(sz*.52)}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${b.i}"/></svg>${st}</span>`}
-function badgeStrip(){return `<a class="bstrip" href="#/badges" aria-label="배지 준비 중">${BADGES.map(b=>badgeIcon(b,26)).join('')}<span class="soon">COMING SOON</span></a>`}
+const STRIP_KEYS=['hybrid','som1','tap','kind'];
+function badgeStrip(){return `<a class="bstrip" href="#/badges" aria-label="배지 준비 중, 눌러서 보기">${BADGES.filter(b=>STRIP_KEYS.includes(b.k)).map(b=>badgeIcon(b,26)).join('')}<span class="soon">COMING SOON</span></a>`}
 ROUTES.badges=function(v){
   v.innerHTML=`${back()}<section class="hero nhero bhero"><span class="tag"><i class="new">BADGE</i> COMING SOON</span><h1 style="margin:12px 0 8px">할 줄 아는 것이<br>배지가 돼요.</h1><p class="bsub">유니폼 왼쪽 가슴에 다는 진짜 배지. 지금 함께 만들고 있어요.</p></section>
   <div class="bgrid">${BADGES.map(b=>`<div class="bcard">${badgeIcon(b,64)}<b>${esc(b.n)}</b><span class="ko">${esc(b.ko)}</span><span class="bd">${esc(b.d)}</span><i class="lock">준비 중</i></div>`).join('')}
