@@ -98,3 +98,21 @@
 .bcard .lock{position:absolute;top:10px;right:10px;font-style:normal;font-size:10px;font-weight:800;color:#8C8C88;background:#F4F1EE;border-radius:999px;padding:2px 7px}
 .bcard.more{background:transparent;border-style:dashed}
 .bnote{padding:6px 22px 30px;color:#8C8C88;font-size:12.5px}
+
+/* 11/10 헤더 정렬 · 이름 · 간격 · 결재 배너 */
+.hdr .brand{align-items:flex-end}
+.hdr .brand .logo{display:block}
+.hdr .brand small{line-height:1;padding-bottom:1px}
+.hero.nhero h1 .nim{font-size:.7em;margin-left:2px;letter-spacing:-.02em}
+.hero.nhero{padding-top:38px;padding-bottom:40px}
+.hero.nhero .hi{margin-bottom:8px;line-height:1.4}
+.hero.nhero h1{line-height:1.12;margin:0 0 16px}
+.idrow{margin:0 0 14px;gap:8px}
+.hero.nhero .nmeta{line-height:1.5;margin-bottom:20px}
+.hcards{gap:12px;padding:18px var(--pad) 10px}
+.hcard span{line-height:1.45;margin-top:6px}
+.bn{padding:18px var(--pad);line-height:1.45}
+.bn span{margin-top:3px}
+.bn.r{background:#D7262E;color:#fff;border-color:#D7262E}
+.bn.r .go{border-color:#FFC100;color:#FFC100}
+.bcard .bd,.bcard b,.hcard span,.bn span,.bhero .bsub{word-break:keep-all}

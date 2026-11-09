@@ -147,8 +147,8 @@ ROUTES.kudos=async function(v){
    <label class="f">메시지</label><textarea class="in" id="mg" placeholder="예) 바쁜 금요일 마감 끝까지 같이 해줘서 고마워요!"></textarea>
    <label class="check"><input type="checkbox" id="pb" checked> <span>피드에 공개 (모두가 볼 수 있어요)</span></label></div>
    <div class="btnrow"><button class="pill wine" id="sd">칭찬카드 보내기</button></div>
-   ${j.top.length?`<div class="sec"><h2>이번 달 칭찬왕</h2></div><div class="list">${j.top.map((t,i)=>`<div class="li" style="cursor:default"><b style="font-size:20px;width:28px">${i+1}</b><div class="m"><div class="t1">${esc(t.name)} <span style="color:var(--mute);font-weight:600;font-size:12.5px">${esc(t.branch)}</span></div></div><b>${t.n}장</b></div>`).join('')}</div>`:''}
-   <div class="sec"><h2>칭찬 피드</h2></div><div class="list">${j.feed.map(k=>`<div class="li" style="cursor:default;align-items:flex-start;${k.mine?'background:#FFF6D6':''}"><div class="m"><div class="t1">${esc(k.from)} → ${esc(k.to)} <i class="new" style="margin-left:4px">${esc(k.value)}</i></div><div class="t2 w" style="color:var(--ink);font-size:14.5px;margin-top:6px">${esc(k.msg)}</div><div class="t2">${esc(String(k.at).slice(5,16))} · ${esc(k.branch)}${k.pub?'':' · 비공개'}</div></div></div>`).join('')||'<div class="empty">첫 칭찬카드를 보내 보세요</div>'}</div>`;
+   ${j.top.length?`<div class="sec"><h2>이번 달 칭찬왕</h2></div><div class="list">${j.top.map((t,i)=>`<div class="li" style="cursor:default"><b style="font-size:20px;width:28px">${i+1}</b><div class="m"><div class="t1">${esc(t.name)} <span style="color:var(--mute);font-weight:600;font-size:12.5px">${esc(typeof brLabel==='function'?brLabel(t.branch):t.branch)}</span></div></div><b>${t.n}장</b></div>`).join('')}</div>`:''}
+   <div class="sec"><h2>칭찬 피드</h2></div><div class="list">${j.feed.map(k=>`<div class="li" style="cursor:default;align-items:flex-start;${k.mine?'background:#FFF6D6':''}"><div class="m"><div class="t1">${esc(k.from)} → ${esc(k.to)} <i class="new" style="margin-left:4px">${esc(k.value)}</i></div><div class="t2 w" style="color:var(--ink);font-size:14.5px;margin-top:6px">${esc(k.msg)}</div><div class="t2">${esc(String(k.at).slice(5,16))} · ${esc(typeof brLabel==='function'?brLabel(k.branch):k.branch)}${k.pub?'':' · 비공개'}</div></div></div>`).join('')||'<div class="empty">첫 칭찬카드를 보내 보세요</div>'}</div>`;
   v.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{v.querySelectorAll('[data-v]').forEach(x=>x.classList.remove('on'));b.classList.add('on');val=b.dataset.v});
   $('#sd').onclick=async e=>{busy(e.currentTarget,true);try{await api('kudos.send',{email:$('#to').value,value:val,message:$('#mg').value,public:$('#pb').checked});toast('칭찬카드를 보냈어요');ROUTES.kudos(v)}catch(er){toast(er.message);busy(e.currentTarget,false)}};
 };
@@ -160,7 +160,7 @@ ROUTES.log=async function(v,arg){
   const j=await api('log.list',{date,branch});
   date=j.date; let cat=j.cats[0], photo='';
   const today=(()=>{const d=new Date(Date.now()-6*3600e3);return ymd(d)})();
-  v.innerHTML=`${back()}<div class="title"><h1>업무일지</h1><p>누구나 한 줄씩. 매일 저녁 본사(장분도 · 박한울)로 모아서 메일이 가요.</p></div>
+  v.innerHTML=`${back()}<div class="title"><h1>업무일지</h1><p>누구나 한 줄씩. 매일 저녁 서포트센터(장분도 · 박한울)로 모아서 메일이 가요.</p></div>
    ${date===today?`<div class="form"><textarea class="in" id="tx" style="min-height:90px" placeholder="예) 19시 단체 예약 12명, 와인 3병 추가 판매 · 냉장고 2번 온도 높음"></textarea>
    <div class="presets">${j.cats.map((c,i)=>`<button data-c="${esc(c)}" class="${i===0?'on':''}">${esc(c)}</button>`).join('')}<label class="u" style="margin-left:auto;align-self:center;font-size:13px">사진<input type="file" accept="image/*" capture="environment" hidden id="pf"></label></div><div id="pv"></div></div>
    <div class="btnrow"><button class="pill wine" id="sb">남기기</button></div>`:''}

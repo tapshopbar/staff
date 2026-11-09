@@ -173,7 +173,7 @@ function shell(keep){
   const h=routeKey();
   const html = `${d.testMode?'<div class="test">테스트 모드 · 알림 메일은 hello@ 로만 가요</div>':''}
    <header class="hdr ${h===''?'dark':''}" id="hdr"><button class="hback" id="hback" type="button" onclick="goBack()" style="${h===''?'display:none':''}">${I('back',18)}<span>뒤로</span></button><a class="brand" href="#/" style="${h===''?'':'display:none'}"><img class="logo" src="${LOGO}" alt="TAP SHOP BAR"><small>People</small></a>
-   <div class="r">${d.x&&d.x.isHQ?`<a class="ic" href="#/console" title="본사 콘솔">${I('grid',20)}</a>`:''}<a class="ic" href="#/notis">${I('bell',21)}${unread?`<span class="dot">${unread}</span>`:''}</a></div></header>
+   <div class="r">${d.x&&d.x.isHQ?`<a class="ic" href="#/console" title="운영 콘솔">${I('grid',20)}</a>`:''}<a class="ic" href="#/notis">${I('bell',21)}${unread?`<span class="dot">${unread}</span>`:''}</a></div></header>
    <main id="view"></main>
    <nav class="nav">
     <a href="#/" data-r="">${I('home')}홈</a>
@@ -210,9 +210,9 @@ ROUTES['']=function vHome(v){
   v.innerHTML = `
   <section class="hero nhero">
     <div class="hi">반갑습니다,</div>
-    <h1>${esc(me.name)}님</h1>
+    <h1>${esc(me.name)}<span class="nim">님</span></h1>
     ${typeof idChips==='function'?idChips(me):''}
-    <div class="nmeta">${esc(me.branch)} · ${todayK()}</div>
+    <div class="nmeta">${esc(typeof brLabel==='function'?brLabel(me.branch):me.branch)} · ${todayK()}</div>
     ${typeof badgeStrip==='function'?badgeStrip():''}
   </section>
   <section class="blk navy" id="punchBlk">
@@ -227,7 +227,7 @@ ROUTES['']=function vHome(v){
   <a class="hcard sc" href="#/schedule"><div><b>내 근무표</b><span>${ns?`다음 근무: ${shiftK(ns.date)} ${esc(ns.start)}~${esc(ns.end)}${(ns.branch||me.branch)?' · '+esc(ns.branch||me.branch):''}`:'확정된 다음 근무가 없어요'}</span></div><i class="arr">${I('back',22)}</i></a>
   </div>
   ${x.unreadRequired?`<a class="bn y" href="#/notice"><div><b>필독 공지 ${x.unreadRequired}건</b><span>읽고 확인 버튼을 눌러 주세요</span></div><span class="go">읽기</span></a>`:''}
-  ${d.inboxCount?`<a class="bn n" href="#/inbox"><div><b>결재할 문서 ${d.inboxCount}건</b><span>기다리고 있어요</span></div><span class="go">결재하기</span></a>`:''}
+  ${d.inboxCount?`<a class="bn r" href="#/inbox"><div><b>결재할 문서 ${d.inboxCount}건</b><span>기다리고 있어요</span></div><span class="go">결재하기</span></a>`:''}
   ${d.pendingUsers?`<a class="bn w" href="#/admin"><div><b>가입 요청 ${d.pendingUsers}명</b><span>확인 후 승인해 주세요</span></div><span class="go">확인</span></a>`:''}
   ${!x.availDone&&(me.role==='직원'||me.role==='점장')?`<a class="bn" href="#/avail/${x.nextMon}"><div><b>다음 주 근무 가능 시간</b><span>${fmtDay(x.nextMon)} 주 · 아직 안 냈어요</span></div><span class="go">제출</span></a>`:''}
   ${x.kudosNew?`<a class="bn y" href="#/kudos"><div><b>칭찬카드 ${x.kudosNew}장 도착!</b><span>동료가 고마운 마음을 보냈어요</span></div><span class="go">열기</span></a>`:''}
@@ -245,7 +245,7 @@ ROUTES['']=function vHome(v){
     <a class="tile y" href="#/payslip"><b>급여<br>명세서</b><small>바로 열람</small></a>
     <a class="tile" href="#/cert"><b>증명서</b><small>재직 · 경력</small></a>
     <a class="tile soon" href="#/edu"><b>교육</b><small><i class="new">준비중</i></small></a>
-    <a class="tile n" href="#/ask"><b>질문 ·<br>피드백</b><small>본사에 바로</small></a>
+    <a class="tile n" href="#/ask"><b>질문 ·<br>피드백</b><small>서포트센터에 바로</small></a>
     <a class="tile" href="#/policy"><b>회사<br>정책</b><small>꼭 알아둘 것</small></a>
     <a class="tile slk" href="#/slack"><b>슬랙<br>열기</b><small>소통은 슬랙에서</small></a>
   </div>
@@ -264,7 +264,7 @@ ROUTES['']=function vHome(v){
   ${(x.notices||[]).length?`<div class="sec"><h2>공지 · 매뉴얼</h2><a href="#/notice">전체</a></div><div class="list">${x.notices.slice(0,3).map(n=>`<a class="li" href="#/notice/${n.id}"><div class="m"><div class="t1">${n.pinned?'<i class="new" style="margin-right:6px">PIN</i>':''}${esc(n.title)}</div><div class="t2">${esc(n.by)} · ${esc(String(n.at).slice(5,10))}</div></div>${n.required?chip(n.read?'읽음':'안읽음',n.read?'확인함':'필독'):''}</a>`).join('')}</div>`:''}
   <div class="sec"><h2>내 신청</h2><a href="#/apply">전체</a></div>
   <div class="list">${reqRows(d.requests.slice(0,3))||'<div class="empty">아직 신청 내역이 없어요</div>'}</div>
-  ${d.canAdmin?`<div class="sec"><h2>오늘 우리 매장</h2>${x.isHQ?'<a href="#/console">본사 콘솔</a>':'<a href="#/schedule">스케줄</a>'}</div><div id="board" class="list"><div class="sk" style="height:60px"></div></div>`:''}
+  ${d.canAdmin?`<div class="sec"><h2>오늘 우리 매장</h2>${x.isHQ?'<a href="#/console">운영 콘솔</a>':'<a href="#/schedule">스케줄</a>'}</div><div id="board" class="list"><div class="sk" style="height:60px"></div></div>`:''}
   <div style="text-align:center;padding:30px 0 0"><button class="lolink" type="button" onclick="askLogout()">로그아웃</button></div>
   <div class="note" style="text-align:center;padding:14px 0 10px;letter-spacing:.06em">wine is second americano</div>`;
   const tick=()=>{const n=new Date();const c=$('#clk');if(!c)return;c.textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}`;$('#clkd').textContent=`${n.getMonth()+1}월 ${n.getDate()}일 ${WD[n.getDay()]}요일`;
@@ -282,7 +282,7 @@ function stepLabel(r){const s=r.steps[r.stepIdx];return s?`${s.name} 결재중`:
 /* ── punch ── */
 function doPunch(kind,extra={}){
   if(kind==='퇴근'&&extra.line===undefined){
-    return openSheet(`<h2>오늘 한 줄</h2><p class="note" style="padding:2px 0 0">오늘 매장에서 있었던 일, 내일 알아야 할 것을 한 줄만. 매일 저녁 본사로 모아서 보내요.</p>
+    return openSheet(`<h2>오늘 한 줄</h2><p class="note" style="padding:2px 0 0">오늘 매장에서 있었던 일, 내일 알아야 할 것을 한 줄만. 매일 저녁 서포트센터로 모아서 보내요.</p>
       <textarea class="in" id="ol" style="margin-top:12px" placeholder="예) 단체 12명 예약 손님 만족, 3번 탭 노즐 물 샘"></textarea>
       <div class="presets">${['특이사항 없음','바빴어요, 무사 마감','재고 확인 필요','손님 칭찬 받음'].map(t=>`<button data-q="${t}">${t}</button>`).join('')}</div>
       <div class="btnrow" style="padding:20px 0 0"><button class="pill line" id="sk">건너뛰기</button><button class="pill wine" id="ok">남기고 퇴근</button></div>`,m=>{
@@ -482,7 +482,7 @@ ROUTES.more=function(v){
     <a class="li" href="${esc(d.policyUrl)}" target="_blank" rel="noopener"><div class="m"><div class="t1">휴가 및 휴직 가이드</div><div class="t2">Notion 규정 전문</div></div><span class="ar">${I('next',18)}</span></a>
    </div>
    ${d.canAdmin?`<div class="sec"><h2>관리</h2></div><div class="list">
-    ${x.isHQ?item('#/console','본사 콘솔','전 지점 한눈에 · PC 추천',`<i class="new">HQ</i>`):''}
+    ${x.isHQ?item('#/console','운영 콘솔','전 지점 한눈에 · PC 추천',`<i class="new">HQ</i>`):''}
     ${item('#/schedule','스케줄 짜기','주간 시프트 편집 · 확정 알림')}
     ${item('#/close','월말 근태 마감','이슈 확인 → 점장 확정 → 최종 마감')}
     ${x.isHQ?item('#/pay','경비 지급','이체 메모 자동 · 지급 처리'):''}
