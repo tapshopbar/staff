@@ -115,3 +115,4 @@
 .bn span{margin-top:3px}
 .bn.r{background:#D7262E;color:#fff;border-color:#D7262E}
 .bn.r .go{border-color:#FFC100;color:#FFC100}
+.bcard .bd,.bcard b,.hcard span,.bn span,.bhero .bsub{word-break:keep-all}
