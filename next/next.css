@@ -118,11 +118,11 @@
 .bcard .bd,.bcard b,.hcard span,.bn span,.bhero .bsub{word-break:keep-all}
 
 /* BETA + TSB music (2026-11-10) */
-.hdr .beta{appearance:none;border:1px solid rgba(255,255,255,.55);background:transparent;color:#fff;font:800 9.5px/1 Pretendard Variable,Pretendard,sans-serif;letter-spacing:.14em;padding:4px 7px 3px;border-radius:99px;margin-left:8px;align-self:flex-end;cursor:pointer}
+.hdr .beta{appearance:none;border:1px solid rgba(255,255,255,.55);background:transparent;color:#fff;font:800 9.5px/1 Pretendard Variable,Pretendard,sans-serif;letter-spacing:.14em;padding:4px 7px 3px;border-radius:99px;margin-left:8px;align-self:center;margin-top:5px;cursor:pointer;white-space:nowrap}
 .hdr:not(.dark) .beta{border-color:rgba(14,14,14,.35);color:#0E0E0E}
 .hdr{gap:0}.hdr .brand+.beta{margin-right:auto}
 .verline{text-align:center;font-size:12px;font-weight:600;color:#8C8C88;padding:26px 0 0;letter-spacing:.02em}.verline b{font-weight:800;letter-spacing:.1em}
 .hcard.mu{background:linear-gradient(135deg,#1A1A1A 0%,#0E0E0E 60%,#2A0A12 100%);color:#fff}.hcard.mu .arr{background:#FFC100;color:#0E0E0E}
 .mublk h3{display:flex;align-items:center;gap:8px;font-size:19px;font-weight:800;letter-spacing:-.03em;margin:0 0 6px}
-.mublk .note{word-break:keep-all;line-height:1.6}
+.mublk .note{word-break:keep-all;line-height:1.6;padding:0;margin:0}
 .mugrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.mugrid .pill{text-align:center;justify-content:center}
