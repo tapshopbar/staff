@@ -148,7 +148,7 @@ function sortGroups(ks){return ks.sort((a,b)=>{const ia=GROUP_ORDER.indexOf(a),i
 function brLabel(b){return b==='본사'?'전 지점':b}
 
 /* ── BETA 표시 + TSB music (2026-11-10) ── */
-const APP_V='v25';
+const APP_V='v26';
 function betaInfo(){openSheet(`<h2>지금은 베타 버전이에요</h2><div style="font-size:15px;line-height:1.75;font-weight:500;margin-top:10px;word-break:keep-all">12월까지 매장에서 쓰면서 불편한 점을 고치고 있어요.<br><b>2027년 1월, 정식 버전 1.0</b>으로 시작해요.<br><br>쓰다가 이상하거나 필요한 기능이 있으면 바로 알려 주세요. 보내 준 의견은 서포트센터가 모두 읽어요.</div><a class="pill ink full" href="#/ask" data-close style="margin-top:18px">의견 보내기</a><p class="note" style="margin-top:12px;text-align:center">TSB People BETA · ${APP_V}</p>`)}
 const RADIO='https://tsb.wine/radio/';
 const MU_STORES=[['청계','cg'],['상암','sa'],['마곡','mg'],['동대문','dd']];
@@ -187,11 +187,13 @@ ROUTES.sup=function(v,type){
     catch(e){toast(e.message);sb.disabled=false;sb.textContent='다시 보내기'}};
 };
 
-/* ── 러닝 (LMS) ── */
+/* ── 러닝 (LMS) v2: 탭이 만화 · 영상 · 도장 (2026-11-10) ── */
 let LEARN=null;
+const LIMG='https://tapshopbar.github.io/staff/assets/learn/';
 async function learnData(){if(LEARN)return LEARN;const r=await fetch((location.pathname.includes('/next/')?'learn.json':'https://tapshopbar.github.io/staff/learn.json')+'?t='+Math.floor(Date.now()/36e5),{cache:'no-cache'});LEARN=await r.json();return LEARN}
 function lkey(){return 'tsbp_learn_'+((S.data&&S.data.me&&S.data.me.email)||'me')}
 function ldone(){try{return JSON.parse(localStorage.getItem(lkey())||'{}')}catch(e){return {}}}
+function confetti(){const c=['#FFC100','#6E1426','#141B33','#B5707E','#1F8A70'];for(let i=0;i<46;i++){const s=document.createElement('i');s.className='cf';s.style.cssText=`left:${Math.random()*100}vw;background:${c[i%5]};animation-delay:${Math.random()*.4}s;transform:rotate(${Math.random()*360}deg)`;document.body.appendChild(s);setTimeout(()=>s.remove(),2600)}}
 ROUTES.edu=function(){location.hash='#/learn'};
 ROUTES.learn=async function(v,id){
   v.innerHTML=loading();
@@ -199,23 +201,30 @@ ROUTES.learn=async function(v,id){
   const done=ldone();
   if(id){const all=L.tracks.flatMap(t=>t.lessons.map(l=>({...l,tr:t})));const i=all.findIndex(l=>l.id===id);const l=all[i];if(!l){location.hash='#/learn';return}
     const nx=all[i+1];let right=0;
-    v.innerHTML=`${back('#/learn','러닝')}<div class="title"><span class="new" style="background:${l.tr.c};color:#fff">${esc(l.tr.en)}</span><h1 style="margin-top:10px">${esc(l.t)}</h1><p>${l.min}분 · 카드 ${l.cards.length}장 · 확인 문제 ${l.q.length}개</p></div>
+    v.innerHTML=`${back('#/learn','러닝')}<div class="title"><span class="new" style="background:${l.tr.c};color:#fff">${esc(l.tr.en)}</span><h1 style="margin-top:10px">${esc(l.t)}</h1><p>${l.min}분 · 만화 · 카드 ${l.cards.length}장${l.vid?' · 영상':''} · 문제 ${l.q.length}개</p></div>
+     ${l.img?`<div class="lrn-comic"><img src="${LIMG}${esc(l.img)}" alt="${esc(l.t)} 만화" loading="lazy"><ol>${(l.panels||[]).map(p=>`<li>${esc(p)}</li>`).join('')}</ol></div>`:''}
+     <div class="lrn-say"><img src="${LIMG}mascot.jpg" alt=""><span>탭이가 정리해 줄게요!</span></div>
      ${l.cards.map(c=>`<div class="lrn-card">${c}</div>`).join('')}
+     ${l.vid?`<div class="sec"><h2>영상으로 한 번 더</h2></div><div class="lrn-vid"><iframe src="https://www.youtube-nocookie.com/embed/${esc(l.vid)}?rel=0" title="영상" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><p class="note" style="padding:6px var(--pad) 0">외부 유튜브 영상이에요. 안 나오면 <a class="u" href="https://youtu.be/${esc(l.vid)}" target="_blank" rel="noopener">유튜브에서 보기</a></p>`:''}
      <div class="sec"><h2>확인 문제</h2></div>
      ${l.q.map((q,qi)=>`<div class="lrn-q" data-q="${qi}"><div class="qq">${qi+1}. ${esc(q.q)}</div>${q.o.map((o,oi)=>`<button data-o="${oi}">${esc(o)}</button>`).join('')}</div>`).join('')}
-     <div class="btnrow" id="lend" style="display:none">${nx?`<a class="pill wine" href="#/learn/${nx.id}">다음: ${esc(nx.t)}</a>`:`<a class="pill wine" href="#/quiz">와인 퀴즈로 실력 확인</a>`}</div>
+     <div id="lend" style="display:none"><div class="lrn-done"><img src="${LIMG}mascot.jpg" alt=""><div><b id="ldt">완료!</b><span>도장 하나 찍었어요</span></div><i class="stamp">✓</i></div>
+      <div class="btnrow">${nx?`<a class="pill wine" href="#/learn/${nx.id}">다음: ${esc(nx.t)}</a>`:`<a class="pill wine" href="#/quiz">와인 퀴즈로 실력 확인</a>`}</div></div>
      <div class="note" style="text-align:center;padding:24px 0">wine is second americano</div>`;
     const ans={};
     v.querySelectorAll('.lrn-q').forEach(box=>{const qi=+box.dataset.q,q=l.q[qi];box.querySelectorAll('button').forEach(b=>b.onclick=()=>{if(ans[qi]!==undefined)return;const oi=+b.dataset.o;ans[qi]=oi;
       box.querySelectorAll('button')[q.a].classList.add('ok');if(oi!==q.a)b.classList.add('no');else right++;
-      if(Object.keys(ans).length===l.q.length){const d=ldone();d[l.id]={at:Date.now(),score:right+'/'+l.q.length};localStorage.setItem(lkey(),JSON.stringify(d));$('#lend').style.display='';toast(right===l.q.length?'다 맞혔어요! 완료로 기록했어요':'완료로 기록했어요. 틀린 건 한 번 더 읽어 봐요')}})});
+      if(Object.keys(ans).length===l.q.length){const d=ldone();d[l.id]={at:Date.now(),score:right+'/'+l.q.length};localStorage.setItem(lkey(),JSON.stringify(d));
+        $('#ldt').textContent=right===l.q.length?'다 맞혔어요!':right+' / '+l.q.length+' 맞혔어요';$('#lend').style.display='';if(right===l.q.length)confetti();setTimeout(()=>$('#lend').scrollIntoView({behavior:'smooth',block:'center'}),200)}})});
     return}
   const tot=L.tracks.reduce((a,t)=>a+t.lessons.length,0), dn=L.tracks.reduce((a,t)=>a+t.lessons.filter(l=>done[l.id]).length,0);
-  v.innerHTML=`${back('#/')}<div class="title"><span class="new">LEARNING</span><h1 style="margin-top:10px">러닝</h1><p>와인과 탭샵바 업무를 짧게 배워요. 한 과는 2~4분이에요. 새 과는 계속 올라와요.</p><p style="margin-top:6px"><b style="color:var(--ink)">${dn} / ${tot}과 완료</b> · 업데이트 ${esc(L.updated)}</p></div>
-   ${L.tracks.map(t=>{const n=t.lessons.filter(l=>done[l.id]).length;return `<div class="lrn-tr" style="background:${t.c}"><div class="en">${esc(t.en)}</div><h3>${esc(t.n)}</h3><div style="font-size:13.5px;opacity:.8">${n} / ${t.lessons.length}과</div><div class="lrn-bar"><i style="width:${t.lessons.length?n/t.lessons.length*100:0}%"></i></div></div>
-     <div class="list" style="margin-top:6px">${t.lessons.map(l=>`<a class="li" href="#/learn/${l.id}"><div class="m"><div class="t1">${esc(l.t)}</div><div class="t2">${l.min}분${done[l.id]?' · 완료 '+esc(done[l.id].score):''}</div></div>${done[l.id]?'<i class="new" style="background:#1F8A70;color:#fff">완료</i>':''}<span class="ar">${I('next',18)}</span></a>`).join('')}</div>`}).join('')}
+  const lvl=dn>=tot?'마스터':dn>=8?'시니어':dn>=4?'주니어':'루키';
+  v.innerHTML=`${back('#/')}<div class="lrn-hero"><img src="${LIMG}mascot.jpg" alt="탭이"><div><span class="new">LEARNING</span><h1>러닝</h1><p>안녕, 나는 탭이! 와인이랑 탭샵바 일을 만화로 쉽게 알려 줄게. 한 과에 2~4분이야.</p></div></div>
+   <div class="lrn-stat"><div><b>${dn}<small> / ${tot}</small></b><span>완료한 과</span></div><div><b>${lvl}</b><span>내 레벨</span></div><div class="stamps">${L.tracks.flatMap(t=>t.lessons).map(l=>`<i class="${done[l.id]?'on':''}">${done[l.id]?'✓':''}</i>`).join('')}</div></div>
+   ${L.tracks.map(t=>{const n=t.lessons.filter(l=>done[l.id]).length;return `<div class="lrn-tr" style="background:${t.c}"><div class="en">${esc(t.en)}</div><h3>${esc(t.n)}</h3><div style="font-size:13.5px;opacity:.8">${n} / ${t.lessons.length}과${t.k==='wine'&&n===t.lessons.length?' · Sommelier I 배지 후보!':''}</div><div class="lrn-bar"><i style="width:${t.lessons.length?n/t.lessons.length*100:0}%"></i></div></div>
+     <div class="lrn-grid">${t.lessons.map(l=>`<a class="lrn-tile${done[l.id]?' dn':''}" href="#/learn/${l.id}"><span class="th" style="background-image:url(${LIMG}${esc(l.img||'mascot.jpg')})"></span><b>${esc(l.t)}</b><small>${l.min}분${l.vid?' · 영상':''}${done[l.id]?' · ✓ '+esc(done[l.id].score):''}</small></a>`).join('')}</div>`}).join('')}
    <a class="qzlearn" href="#/quiz" style="margin-top:18px"><div><b>와인 퀴즈</b><br><span>배운 걸 퀴즈로 확인하고 랭킹에 올라가요</span></div><i class="arr">›</i></a>
-   <div class="note" style="text-align:center;padding:24px 0">wine is second americano</div>`;
+   <div class="note" style="text-align:center;padding:24px 0">새 과는 계속 올라와요 · 업데이트 ${esc(L.updated)}</div>`;
 };
 /* 와인 퀴즈 화면 위에 러닝 바로가기 */
 (function(){const _q=ROUTES.quiz;if(!_q)return;ROUTES.quiz=async function(v){const ob=new MutationObserver(()=>{if(!location.hash.startsWith('#/quiz')){ob.disconnect();return}const h=v.querySelector('.hero');if(h&&!v.querySelector('.qzlearn'))h.insertAdjacentHTML('afterend','<a class="qzlearn" href="#/learn"><div><b>러닝 · 와인 공부</b><br><span>퀴즈 전에 2분 공부하고 오기</span></div><i class="arr">›</i></a>')});ob.observe(v,{childList:true});setTimeout(()=>ob.disconnect(),600000);return _q(v)}})();
