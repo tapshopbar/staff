@@ -148,7 +148,7 @@ function sortGroups(ks){return ks.sort((a,b)=>{const ia=GROUP_ORDER.indexOf(a),i
 function brLabel(b){return b==='본사'?'전 지점':b}
 
 /* ── BETA 표시 + TSB music (2026-11-10) ── */
-const APP_V='v24';
+const APP_V='v25';
 function betaInfo(){openSheet(`<h2>지금은 베타 버전이에요</h2><div style="font-size:15px;line-height:1.75;font-weight:500;margin-top:10px;word-break:keep-all">12월까지 매장에서 쓰면서 불편한 점을 고치고 있어요.<br><b>2027년 1월, 정식 버전 1.0</b>으로 시작해요.<br><br>쓰다가 이상하거나 필요한 기능이 있으면 바로 알려 주세요. 보내 준 의견은 서포트센터가 모두 읽어요.</div><a class="pill ink full" href="#/ask" data-close style="margin-top:18px">의견 보내기</a><p class="note" style="margin-top:12px;text-align:center">TSB People BETA · ${APP_V}</p>`)}
 const RADIO='https://tsb.wine/radio/';
 const MU_STORES=[['청계','cg'],['상암','sa'],['마곡','mg'],['동대문','dd']];
@@ -162,3 +162,60 @@ ROUTES.music=function(v){const me=(S.data&&S.data.me)||{};
    <a class="pill line full" href="https://www.youtube.com/@tsbradiokorea" target="_blank" rel="noopener" style="margin-top:12px">유튜브에서 듣기</a></section>
   <div class="note" style="text-align:center;padding:24px 0;letter-spacing:.06em">wine is second americano</div>`;
   fetch(RADIO+'tracks.json',{cache:'no-store'}).then(r=>r.json()).then(j=>{const n=(j.tracks||j||[]).length;const el=$('#muN');if(el&&n)el.textContent=` 지금 ${n}곡.`}).catch(()=>{})};
+
+/* ── 지원 신청: 명함 · 근무복 · 건강검진 완료 (2026-11-10) ── */
+const SUP_NOTE='회사 비용이 나가는 신청이라 승인 후 발주까지 2~3주 걸릴 수 있어요.';
+const SUP={
+ '명함':{d:'영업·대관 미팅이 잦은 분께 먼저 만들어 드려요.',f:[['en','영문 이름','예) Minji Kim'],['ti','명함에 넣을 직함','예) 청계점 점장 / Store Manager'],['ph','명함에 넣을 연락처','회사 메일만 넣으려면 비워 두세요'],['qt','수량','기본 1통(100장)']]},
+ '근무복':{d:'신규 입사, 교체(낡음·사이즈 변경), 분실 때 신청해요.',f:[['it','품목','예) 앞치마, 셔츠, 조리복'],['sz','사이즈','예) M / 95'],['qt','수량','예) 1'],['why','사유','신규 / 교체 / 분실']]},
+ '건강검진':{d:'국가건강검진을 받았다면 완료 날짜만 알려 주세요. 회사는 검진 결과를 받지 않아요. 결과지는 올리지 마세요.',f:[['dt','검진 받은 날','예) 2026-11-08',1],['org','검진 기관 (선택)','예) OO병원'],['kind','종류','일반 / 특수 / 기타']]}
+};
+ROUTES.sup=function(v,type){
+  const t=SUP[type]?type:'명함', c=SUP[t];
+  v.innerHTML=`${back('#/apply','신청')}<div class="title"><span class="new">${t==='건강검진'?'기록':'NEW'}</span><h1 style="margin-top:10px">${t==='건강검진'?'건강검진 완료 등록':t+' 신청'}</h1><p>${esc(c.d)}</p>${t!=='건강검진'?`<div class="supnote">${SUP_NOTE}<br>점장님 → 박한울 매니저 순서로 승인돼요.</div>`:''}</div>
+   <div class="form">${c.f.map(([k,l,ph,dt])=>`<label class="f">${esc(l)}</label><input class="in" id="sf_${k}" ${dt?'type="date"':''} placeholder="${esc(ph)}">`).join('')}
+   <label class="f">메모 <em>(선택)</em></label><textarea class="in" id="sf_memo" placeholder="더 알려 줄 것이 있으면 적어 주세요"></textarea></div>
+   <div class="btnrow"><button class="pill wine" id="sb">${t==='건강검진'?'완료 등록하기':'신청하기'}</button></div>`;
+  $('#sb').onclick=async()=>{
+    const vals=c.f.map(([k,l])=>[l,($('#sf_'+k).value||'').trim()]);
+    if(t==='건강검진'&&!vals[0][1])return toast('검진 받은 날을 골라 주세요');
+    if(t==='근무복'&&!vals[0][1])return toast('품목을 적어 주세요');
+    const memo=($('#sf_memo').value||'').trim();
+    const detail=vals.filter(x=>x[1]).map(x=>x[0]+': '+x[1]).join(' / ')+(memo?' / 메모: '+memo:'');
+    const sb=$('#sb');sb.disabled=true;sb.textContent='보내는 중…';
+    try{const j=await api('supply.create',{type:t,detail});toast(t==='건강검진'?'등록했어요. 고마워요!':'신청했어요! 점장님께 먼저 가요');await refresh();location.hash='#/req/'+j.id}
+    catch(e){toast(e.message);sb.disabled=false;sb.textContent='다시 보내기'}};
+};
+
+/* ── 러닝 (LMS) ── */
+let LEARN=null;
+async function learnData(){if(LEARN)return LEARN;const r=await fetch((location.pathname.includes('/next/')?'learn.json':'https://tapshopbar.github.io/staff/learn.json')+'?t='+Math.floor(Date.now()/36e5),{cache:'no-cache'});LEARN=await r.json();return LEARN}
+function lkey(){return 'tsbp_learn_'+((S.data&&S.data.me&&S.data.me.email)||'me')}
+function ldone(){try{return JSON.parse(localStorage.getItem(lkey())||'{}')}catch(e){return {}}}
+ROUTES.edu=function(){location.hash='#/learn'};
+ROUTES.learn=async function(v,id){
+  v.innerHTML=loading();
+  let L;try{L=await learnData()}catch(e){v.innerHTML=`<div class="empty">불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</div>`;return}
+  const done=ldone();
+  if(id){const all=L.tracks.flatMap(t=>t.lessons.map(l=>({...l,tr:t})));const i=all.findIndex(l=>l.id===id);const l=all[i];if(!l){location.hash='#/learn';return}
+    const nx=all[i+1];let right=0;
+    v.innerHTML=`${back('#/learn','러닝')}<div class="title"><span class="new" style="background:${l.tr.c};color:#fff">${esc(l.tr.en)}</span><h1 style="margin-top:10px">${esc(l.t)}</h1><p>${l.min}분 · 카드 ${l.cards.length}장 · 확인 문제 ${l.q.length}개</p></div>
+     ${l.cards.map(c=>`<div class="lrn-card">${c}</div>`).join('')}
+     <div class="sec"><h2>확인 문제</h2></div>
+     ${l.q.map((q,qi)=>`<div class="lrn-q" data-q="${qi}"><div class="qq">${qi+1}. ${esc(q.q)}</div>${q.o.map((o,oi)=>`<button data-o="${oi}">${esc(o)}</button>`).join('')}</div>`).join('')}
+     <div class="btnrow" id="lend" style="display:none">${nx?`<a class="pill wine" href="#/learn/${nx.id}">다음: ${esc(nx.t)}</a>`:`<a class="pill wine" href="#/quiz">와인 퀴즈로 실력 확인</a>`}</div>
+     <div class="note" style="text-align:center;padding:24px 0">wine is second americano</div>`;
+    const ans={};
+    v.querySelectorAll('.lrn-q').forEach(box=>{const qi=+box.dataset.q,q=l.q[qi];box.querySelectorAll('button').forEach(b=>b.onclick=()=>{if(ans[qi]!==undefined)return;const oi=+b.dataset.o;ans[qi]=oi;
+      box.querySelectorAll('button')[q.a].classList.add('ok');if(oi!==q.a)b.classList.add('no');else right++;
+      if(Object.keys(ans).length===l.q.length){const d=ldone();d[l.id]={at:Date.now(),score:right+'/'+l.q.length};localStorage.setItem(lkey(),JSON.stringify(d));$('#lend').style.display='';toast(right===l.q.length?'다 맞혔어요! 완료로 기록했어요':'완료로 기록했어요. 틀린 건 한 번 더 읽어 봐요')}})});
+    return}
+  const tot=L.tracks.reduce((a,t)=>a+t.lessons.length,0), dn=L.tracks.reduce((a,t)=>a+t.lessons.filter(l=>done[l.id]).length,0);
+  v.innerHTML=`${back('#/')}<div class="title"><span class="new">LEARNING</span><h1 style="margin-top:10px">러닝</h1><p>와인과 탭샵바 업무를 짧게 배워요. 한 과는 2~4분이에요. 새 과는 계속 올라와요.</p><p style="margin-top:6px"><b style="color:var(--ink)">${dn} / ${tot}과 완료</b> · 업데이트 ${esc(L.updated)}</p></div>
+   ${L.tracks.map(t=>{const n=t.lessons.filter(l=>done[l.id]).length;return `<div class="lrn-tr" style="background:${t.c}"><div class="en">${esc(t.en)}</div><h3>${esc(t.n)}</h3><div style="font-size:13.5px;opacity:.8">${n} / ${t.lessons.length}과</div><div class="lrn-bar"><i style="width:${t.lessons.length?n/t.lessons.length*100:0}%"></i></div></div>
+     <div class="list" style="margin-top:6px">${t.lessons.map(l=>`<a class="li" href="#/learn/${l.id}"><div class="m"><div class="t1">${esc(l.t)}</div><div class="t2">${l.min}분${done[l.id]?' · 완료 '+esc(done[l.id].score):''}</div></div>${done[l.id]?'<i class="new" style="background:#1F8A70;color:#fff">완료</i>':''}<span class="ar">${I('next',18)}</span></a>`).join('')}</div>`}).join('')}
+   <a class="qzlearn" href="#/quiz" style="margin-top:18px"><div><b>와인 퀴즈</b><br><span>배운 걸 퀴즈로 확인하고 랭킹에 올라가요</span></div><i class="arr">›</i></a>
+   <div class="note" style="text-align:center;padding:24px 0">wine is second americano</div>`;
+};
+/* 와인 퀴즈 화면 위에 러닝 바로가기 */
+(function(){const _q=ROUTES.quiz;if(!_q)return;ROUTES.quiz=async function(v){const ob=new MutationObserver(()=>{if(!location.hash.startsWith('#/quiz')){ob.disconnect();return}const h=v.querySelector('.hero');if(h&&!v.querySelector('.qzlearn'))h.insertAdjacentHTML('afterend','<a class="qzlearn" href="#/learn"><div><b>러닝 · 와인 공부</b><br><span>퀴즈 전에 2분 공부하고 오기</span></div><i class="arr">›</i></a>')});ob.observe(v,{childList:true});setTimeout(()=>ob.disconnect(),600000);return _q(v)}})();

@@ -128,3 +128,17 @@
 .mugrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.mugrid .pill{text-align:center;justify-content:center}
 .hdr .brand,.hdr .beta,.hdr .r{flex-shrink:0}
 @media(max-width:380px){.hdr .brand{gap:7px}.hdr .brand small{letter-spacing:.08em}.hdr .beta{font-size:8.5px;letter-spacing:.08em;padding:3px 5px 2px;margin-left:6px}.hdr .r{gap:0}}
+
+/* 이름 자간 · 님 간격 (2026-11-10) */
+.hero.nhero h1{letter-spacing:-.025em}
+.hero.nhero h1 .nim{margin-left:.19em}
+/* 러닝 · 지원 신청 */
+.lrn-tr{border-radius:20px;padding:20px 22px;color:#fff;margin:12px var(--pad) 0}
+.lrn-tr .en{font-size:11px;font-weight:800;letter-spacing:.14em;opacity:.7}.lrn-tr h3{font-size:22px;font-weight:800;letter-spacing:-.03em;margin:6px 0 4px}
+.lrn-bar{height:6px;border-radius:9px;background:rgba(255,255,255,.22);margin-top:12px;overflow:hidden}.lrn-bar i{display:block;height:100%;background:#FFC100}
+.lrn-card{background:#F2F2F0;border-radius:16px;padding:18px 20px;font-size:16px;line-height:1.7;font-weight:500;word-break:keep-all;margin:10px var(--pad) 0}
+.lrn-q{margin:14px var(--pad) 0}.lrn-q .qq{font-weight:800;font-size:16px;margin-bottom:8px;word-break:keep-all}
+.lrn-q button{display:block;width:100%;text-align:left;border:1.5px solid #E2E0DC;background:#fff;border-radius:12px;padding:12px 14px;font:600 15px/1.4 inherit;margin-top:6px;cursor:pointer}
+.lrn-q button.ok{border-color:#1F8A70;background:#EAF6F1}.lrn-q button.no{border-color:#D7262E;background:#FCEDEE}
+.supnote{background:#FFF6D6;border-radius:12px;padding:12px 14px;font-size:13.5px;font-weight:600;line-height:1.6;word-break:keep-all;margin-top:10px}
+.qzlearn{display:flex;justify-content:space-between;align-items:center;background:#141B33;color:#fff;border-radius:16px;padding:14px 18px;margin:12px var(--pad) 0;text-decoration:none}.qzlearn b{font-size:16px}.qzlearn span{font-size:12.5px;opacity:.75}
