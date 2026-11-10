@@ -186,7 +186,7 @@ function shell(keep){
   markNav();
 }
 function routeKey(){const seg=location.hash.replace(/^#\/?/,'').split('/')[0].split('?')[0];return (!seg||seg==='home'||typeof ROUTES==='undefined'||!ROUTES[seg])?'':seg}
-function markNav(){const r=routeKey();const map={log:'',avail:'schedule',check:'',incident:'apply',quiz:'',kudos:'',req:'apply',new:'apply',exp:'apply',swap:'schedule',close:'more',music:'',notice:'more',payslip:'more',cert:'more',onb:'more',pay:'more',cal:'schedule',att:'more',admin:'more',console:'more'};
+function markNav(){const r=routeKey();const map={sup:'apply',learn:'',log:'',avail:'schedule',check:'',incident:'apply',quiz:'',kudos:'',req:'apply',new:'apply',exp:'apply',swap:'schedule',close:'more',music:'',notice:'more',payslip:'more',cert:'more',onb:'more',pay:'more',cal:'schedule',att:'more',admin:'more',console:'more'};
   document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===(map[r]||r)));const hd=$('#hdr');if(hd)hd.classList.toggle('dark',r==='');const hb=$('#hback'),br=$('#hdr .brand');if(hb)hb.style.display=r===''?'none':'';if(br)br.style.display=r===''?'':'none';const bt=$('#hdr .beta');if(bt)bt.style.display=r===''?'':'none'}
 const ROUTES = {};
 function route(keep){
@@ -245,7 +245,7 @@ ROUTES['']=function vHome(v){
     <a class="tile w" href="#/new/연차"><b>휴가</b><small>점장 → 매니저</small></a>
     <a class="tile y" href="#/payslip"><b>급여<br>명세서</b><small>바로 열람</small></a>
     <a class="tile" href="#/cert"><b>증명서</b><small>재직 · 경력</small></a>
-    <a class="tile soon" href="#/edu"><b>교육</b><small><i class="new">준비중</i></small></a>
+    <a class="tile w" href="#/learn"><b>러닝</b><small>와인 · 업무 공부</small></a>
     <a class="tile n" href="#/ask"><b>질문 ·<br>피드백</b><small>서포트센터에 바로</small></a>
     <a class="tile" href="#/policy"><b>회사<br>정책</b><small>꼭 알아둘 것</small></a>
     <a class="tile slk" href="#/slack"><b>슬랙<br>열기</b><small>소통은 슬랙에서</small></a>
@@ -278,7 +278,7 @@ ROUTES['']=function vHome(v){
 };
 window.sendCheer=(email,name,kind)=>openSheet(`<h2>${esc(name)}님께</h2><p class="note" style="padding:4px 0">축하 카드는 앱 홈과 알림으로 전달돼요</p><textarea class="in" id="cm" placeholder="예) 생일 축하해요! 오늘 마감은 제가 할게요"></textarea><button class="pill wine full" style="margin-top:14px" id="sd">보내기</button>`,m=>{
   m.querySelector('#sd').onclick=async()=>{try{await api('cheer.send',{email,kind,message:m.querySelector('#cm').value});m.remove();toast('축하 카드를 보냈어요')}catch(e){toast(e.message)}}});
-function reqRows(list){return list.map(r=>`<a class="li" href="#/req/${r.id}"><div class="m"><div class="t1">${esc(r.type)} <span style="color:var(--mute);font-weight:600;font-size:13px">${r.days}일</span></div><div class="t2">${period(r)}${r.name&&r.email!==S.data.me.email?' · '+esc(r.name):''}</div></div>${chip(r.status,r.status==='진행중'?stepLabel(r):r.status)}</a>`).join('')}
+function reqRows(list){return list.map(r=>`<a class="li" href="#/req/${r.id}"><div class="m"><div class="t1">${esc(r.type)} <span style="color:var(--mute);font-weight:600;font-size:13px">${r.group==='지원'?'':r.days+'일'}</span></div><div class="t2">${r.group==='지원'?esc(String(r.reason||'').slice(0,40)):period(r)}${r.name&&r.email!==S.data.me.email?' · '+esc(r.name):''}</div></div>${chip(r.status,r.status==='진행중'?stepLabel(r):r.status)}</a>`).join('')}
 function stepLabel(r){const s=r.steps[r.stepIdx];return s?`${s.name} 결재중`:'진행중'}
 /* ── punch ── */
 function doPunch(kind,extra={}){
@@ -352,10 +352,10 @@ ROUTES.apply=function(v){
   const d=S.data;
   v.innerHTML=`<div class="title"><h1>신청</h1><p>필요한 걸 고르면, 결재선은 알아서 잡혀요.</p></div>
   <div class="list" style="margin-top:14px">
-   ${[['#/new/연차','연차 · 반차','점장 승인 → 박한울 매니저 승인 · 장분도·나기정 보고'],['#/new/휴가','휴가 (경조·병가·공가 등)','점장 → 매니저 → 이사 승인 · 대표 보고'],['#/exp/new','경비 · 소모품 청구','영수증 사진만 찍으면 이체 메모까지 자동'],['#/swap','대타 요청','내 근무를 동료에게 넘기기 · 점장 승인'],['#/incident/new','사고 · 클레임 보고','유형·긴급도는 AI가 자동 분류'],['#/avail','근무 가능 시간','다음 주 가능한 시간 제출'],['#/cert','재직 · 경력증명서','PDF로 바로 발급'],['#/payslip','급여명세서','본인만 열람']].map(([h,t,s])=>`<a class="li" href="${h}"><div class="m"><div class="t1">${t}</div><div class="t2">${s}</div></div><span class="ar">${I('next',18)}</span></a>`).join('')}
+   ${[['#/new/연차','연차 · 반차','점장 승인 → 박한울 매니저 승인 · 장분도·나기정 보고'],['#/new/휴가','휴가 (경조·병가·공가 등)','점장 → 매니저 → 이사 승인 · 대표 보고'],['#/sup/명함','명함 신청','점장 → 매니저 승인 · 비용이 나가 2~3주 걸릴 수 있어요'],['#/sup/근무복','근무복 신청','점장 → 매니저 승인 · 비용이 나가 2~3주 걸릴 수 있어요'],['#/sup/건강검진','건강검진 완료 등록','완료 날짜만 기록 · 결과는 받지 않아요'],['#/exp/new','경비 · 소모품 청구','영수증 사진만 찍으면 이체 메모까지 자동'],['#/swap','대타 요청','내 근무를 동료에게 넘기기 · 점장 승인'],['#/incident/new','사고 · 클레임 보고','유형·긴급도는 AI가 자동 분류'],['#/avail','근무 가능 시간','다음 주 가능한 시간 제출'],['#/cert','재직 · 경력증명서','PDF로 바로 발급'],['#/payslip','급여명세서','본인만 열람']].map(([h,t,s])=>`<a class="li" href="${h}"><div class="m"><div class="t1">${t}</div><div class="t2">${s}</div></div><span class="ar">${I('next',18)}</span></a>`).join('')}
   </div>
   <a class="blk" href="${esc(d.policyUrl)}" target="_blank" rel="noopener" style="display:block;margin-top:18px;background:var(--grey)"><span class="tag"><i class="new">규정</i></span><div style="font-size:20px;font-weight:800;letter-spacing:-.03em;margin-top:8px">휴가 및 휴직 가이드</div><span class="u" style="margin-top:10px;font-size:13px">Notion에서 전문 읽기</span></a>
-  <div class="sec"><h2>내 휴가 신청</h2></div><div class="list">${reqRows(d.requests)||'<div class="empty">아직 없어요</div>'}</div>
+  <div class="sec"><h2>내 신청</h2></div><div class="list">${reqRows(d.requests)||'<div class="empty">아직 없어요</div>'}</div>
   <div class="sec"><h2>내 경비 청구</h2><a href="#/exp">전체</a></div><div class="list" id="myexp"><div class="sk" style="height:50px"></div></div>`;
   api('exp.list').then(j=>{const el=$('#myexp');if(el)el.innerHTML=expRows(j.items.slice(0,5))||'<div class="empty">아직 없어요</div>'}).catch(()=>{});
 };
@@ -410,7 +410,7 @@ ROUTES.req=async function(v,id){
   v.innerHTML=loading();
   let r; try{r=(await api('leave.get',{id})).request}catch(e){v.innerHTML=`<div class="empty">${esc(e.message)}</div>`;return}
   v.innerHTML=`${back()}<div class="title"><div style="display:flex;justify-content:space-between;align-items:center">${chip(r.status,r.status==='진행중'?stepLabel(r):r.status)}<span class="note" style="padding:0">${esc(r.id)}</span></div>
-   <h1 style="margin-top:12px">${esc(r.type)} <span style="color:var(--mute)">${r.days}일</span></h1><p>${period(r)}</p></div>
+   <h1 style="margin-top:12px">${esc(r.type)} ${r.group==='지원'?'':`<span style="color:var(--mute)">${r.days}일</span>`}</h1><p>${r.group==='지원'?(typeof SUP_NOTE!=='undefined'&&r.type!=='건강검진'?SUP_NOTE:''):period(r)}</p></div>
    <div class="form"><label class="f">결재선</label>${lineHTML({name:r.name,role:r.email===S.data.me.email?S.data.me.role:'직원'},r.steps,r.report,r.status==='진행중'?r.stepIdx:-1)}
    ${r.notify.length?`<p class="note" style="padding:4px 0">알림: ${r.notify.map(n=>esc(n.name)+' '+esc(n.role)).join(', ')}</p>`:''}
    <dl class="kv" style="margin-top:18px"><dt>신청자</dt><dd>${esc(r.name)} · ${esc(r.branch)}</dd><dt>신청일</dt><dd>${esc(String(r.at).slice(0,16))}</dd><dt>사유</dt><dd>${esc(r.reason||'-')}</dd>
@@ -431,7 +431,7 @@ ROUTES.inbox=async function(v){
   let j; try{j=await api('inbox')}catch(e){v.innerHTML=`<div class="empty">${esc(e.message)}</div>`;return}
   const total=j.pending.length+j.exps.length+j.swaps.length+j.certs.length;
   v.innerHTML=`<div class="title"><h1>결재 <span style="color:var(--wine)">${total}</span></h1><p>${total?'기다리는 문서가 있어요.':'모두 처리했어요. 깔끔해요!'}</p></div>
-   ${j.pending.length?`<div class="sec"><h2>휴가 · 연차</h2></div><div class="list">${j.pending.map(r=>`<div class="li" style="align-items:flex-start;cursor:default">${ava(r.name,'직원')}<div class="m"><a href="#/req/${r.id}"><div class="t1">${esc(r.name)} <span style="color:var(--mute);font-weight:600;font-size:13px">${esc(r.branch)}</span></div><div class="t2 w">${esc(r.type)} · ${r.days}일 · ${period(r)}${r.reason?' · '+esc(r.reason):''}</div>${r.balance&&r.balance.known?`<div class="t2">잔여 연차 ${r.balance.remain}일</div>`:''}${r.history.filter(h=>h.action==='주의').map(h=>`<div class="warn" style="margin-top:6px">${esc(h.comment)}</div>`).join('')}</a>
+   ${j.pending.length?`<div class="sec"><h2>휴가 · 신청</h2></div><div class="list">${j.pending.map(r=>`<div class="li" style="align-items:flex-start;cursor:default">${ava(r.name,'직원')}<div class="m"><a href="#/req/${r.id}"><div class="t1">${esc(r.name)} <span style="color:var(--mute);font-weight:600;font-size:13px">${esc(r.branch)}</span></div><div class="t2 w">${esc(r.type)}${r.group==='지원'?'':' · '+r.days+'일 · '+period(r)}${r.reason?' · '+esc(r.reason):''}</div>${r.balance&&r.balance.known?`<div class="t2">잔여 연차 ${r.balance.remain}일</div>`:''}${r.history.filter(h=>h.action==='주의').map(h=>`<div class="warn" style="margin-top:6px">${esc(h.comment)}</div>`).join('')}</a>
      <div style="display:flex;gap:6px;margin-top:10px"><a class="pill sm line" href="#/req/${r.id}">자세히</a><button class="pill sm wine" onclick="quickApprove('approve','${r.id}',this)">바로 승인</button></div></div></div>`).join('')}</div>`:''}
    ${j.exps.length?`<div class="sec"><h2>경비 · 소모품</h2></div><div class="list">${j.exps.map(e=>`<div class="li" style="align-items:flex-start;cursor:default">${ava(e.name,'직원')}<div class="m"><a href="#/exp/${e.id}"><div class="t1">${esc(e.name)} · ${won(e.amount)}</div><div class="t2 w">${esc(e.kind)} · ${esc(e.item)} · ${esc(e.place||'')} · ${fmtDay(e.date)}</div></a>
      <div style="display:flex;gap:6px;margin-top:10px"><a class="pill sm line" href="#/exp/${e.id}">영수증 보기</a><button class="pill sm wine" onclick="quickApprove('exp.approve','${e.id}',this)">바로 승인</button></div></div></div>`).join('')}</div>`:''}
