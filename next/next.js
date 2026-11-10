@@ -189,7 +189,7 @@ ROUTES.sup=function(v,type){
 
 /* ── 러닝 (LMS) ── */
 let LEARN=null;
-async function learnData(){if(LEARN)return LEARN;const r=await fetch('learn.json?t='+Math.floor(Date.now()/36e5),{cache:'no-cache'});LEARN=await r.json();return LEARN}
+async function learnData(){if(LEARN)return LEARN;const r=await fetch((location.pathname.includes('/next/')?'learn.json':'https://tapshopbar.github.io/staff/learn.json')+'?t='+Math.floor(Date.now()/36e5),{cache:'no-cache'});LEARN=await r.json();return LEARN}
 function lkey(){return 'tsbp_learn_'+((S.data&&S.data.me&&S.data.me.email)||'me')}
 function ldone(){try{return JSON.parse(localStorage.getItem(lkey())||'{}')}catch(e){return {}}}
 ROUTES.edu=function(){location.hash='#/learn'};
