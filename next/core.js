@@ -172,7 +172,7 @@ function shell(keep){
   const d=S.data, unread=d.notis.filter(n=>!n.read).length;
   const h=routeKey();
   const html = `${d.testMode?'<div class="test">테스트 모드 · 알림 메일은 hello@ 로만 가요</div>':''}
-   <header class="hdr ${h===''?'dark':''}" id="hdr"><button class="hback" id="hback" type="button" onclick="goBack()" style="${h===''?'display:none':''}">${I('back',18)}<span>뒤로</span></button><a class="brand" href="#/" style="${h===''?'':'display:none'}"><img class="logo" src="${LOGO}" alt="TAP SHOP BAR"><small>People</small></a>
+   <header class="hdr ${h===''?'dark':''}" id="hdr"><button class="hback" id="hback" type="button" onclick="goBack()" style="${h===''?'display:none':''}">${I('back',18)}<span>뒤로</span></button><a class="brand" href="#/" style="${h===''?'':'display:none'}"><img class="logo" src="${LOGO}" alt="TAP SHOP BAR"><small>People</small></a><button class="beta" type="button" onclick="betaInfo()" style="${h===''?'':'display:none'}">BETA</button>
    <div class="r">${d.x&&d.x.isHQ?`<a class="ic" href="#/console" title="운영 콘솔">${I('grid',20)}</a>`:''}<a class="ic" href="#/notis">${I('bell',21)}${unread?`<span class="dot">${unread}</span>`:''}</a></div></header>
    <main id="view"></main>
    <nav class="nav">
@@ -186,8 +186,8 @@ function shell(keep){
   markNav();
 }
 function routeKey(){const seg=location.hash.replace(/^#\/?/,'').split('/')[0].split('?')[0];return (!seg||seg==='home'||typeof ROUTES==='undefined'||!ROUTES[seg])?'':seg}
-function markNav(){const r=routeKey();const map={log:'',avail:'schedule',check:'',incident:'apply',quiz:'',kudos:'',req:'apply',new:'apply',exp:'apply',swap:'schedule',close:'more',notice:'more',payslip:'more',cert:'more',onb:'more',pay:'more',cal:'schedule',att:'more',admin:'more',console:'more'};
-  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===(map[r]||r)));const hd=$('#hdr');if(hd)hd.classList.toggle('dark',r==='');const hb=$('#hback'),br=$('#hdr .brand');if(hb)hb.style.display=r===''?'none':'';if(br)br.style.display=r===''?'':'none'}
+function markNav(){const r=routeKey();const map={log:'',avail:'schedule',check:'',incident:'apply',quiz:'',kudos:'',req:'apply',new:'apply',exp:'apply',swap:'schedule',close:'more',music:'',notice:'more',payslip:'more',cert:'more',onb:'more',pay:'more',cal:'schedule',att:'more',admin:'more',console:'more'};
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===(map[r]||r)));const hd=$('#hdr');if(hd)hd.classList.toggle('dark',r==='');const hb=$('#hback'),br=$('#hdr .brand');if(hb)hb.style.display=r===''?'none':'';if(br)br.style.display=r===''?'':'none';const bt=$('#hdr .beta');if(bt)bt.style.display=r===''?'':'none'}
 const ROUTES = {};
 function route(keep){
   if(!S.data) return;
@@ -225,6 +225,7 @@ ROUTES['']=function vHome(v){
   <a class="hcard nt" href="#/notice"><div><b>공지사항${x.unreadRequired?`<i class="new hbadge">필독 ${x.unreadRequired}</i>`:''}</b><span>${(x.notices||[]).length?esc(x.notices[0].title):'새 공지가 없어요'}</span></div><i class="arr">${I('back',22)}</i></a>
   <a class="hcard ex" href="${EXP_URL}"><div><b>개인경비 청구</b><span>영수증 찍고 1분이면 끝</span></div><i class="arr">${I('back',22)}</i></a>
   <a class="hcard sc" href="#/schedule"><div><b>내 근무표</b><span>${ns?`다음 근무: ${shiftK(ns.date)} ${esc(ns.start)}~${esc(ns.end)}${(ns.branch||me.branch)?' · '+esc(ns.branch||me.branch):''}`:'확정된 다음 근무가 없어요'}</span></div><i class="arr">${I('back',22)}</i></a>
+  <a class="hcard mu" href="#/music"><div><b>TSB music<i class="new hbadge">NEW</i></b><span>매장 음악 · 선곡 플레이어 업데이트</span></div><i class="arr">${I('back',22)}</i></a>
   </div>
   ${x.unreadRequired?`<a class="bn y" href="#/notice"><div><b>필독 공지 ${x.unreadRequired}건</b><span>읽고 확인 버튼을 눌러 주세요</span></div><span class="go">읽기</span></a>`:''}
   ${d.inboxCount?`<a class="bn r" href="#/inbox"><div><b>결재할 문서 ${d.inboxCount}건</b><span>기다리고 있어요</span></div><span class="go">결재하기</span></a>`:''}
@@ -496,6 +497,7 @@ ROUTES.more=function(v){
     ${localStorage.getItem('tsbp_admin_token')&&S.token!==localStorage.getItem('tsbp_admin_token')?`<div class="li" id="unimp"><div class="m"><div class="t1">내 계정으로 돌아가기</div><div class="t2">테스트 보기 종료</div></div></div>`:''}
     <div class="li" onclick="logout()"><div class="m"><div class="t1">로그아웃</div></div></div>
    </div>
+   <div class="verline" onclick="betaInfo()">TSB People <b>BETA</b> · ${typeof APP_V!=='undefined'?APP_V:''} · 정식 1.0은 2027년 1월</div>
    <div class="note" style="text-align:center;padding:30px 0;letter-spacing:.06em">wine is second americano</div>`;
   $('#a2h').onclick=()=>openSheet(`<h2>홈 화면에 추가</h2><div style="font-size:15px;line-height:1.8;font-weight:500;margin-top:8px"><b>iPhone (Safari)</b><br>아래 공유 버튼 → 홈 화면에 추가<br><br><b>Android (Chrome)</b><br>오른쪽 위 ⋮ → 홈 화면에 추가 또는 앱 설치</div>`);
   if($('#unimp'))$('#unimp').onclick=()=>{S.token=localStorage.getItem('tsbp_admin_token');localStorage.setItem('tsbp_token',S.token);localStorage.removeItem('tsbp_admin_token');location.hash='#/';boot()};

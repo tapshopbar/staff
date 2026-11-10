@@ -146,3 +146,19 @@ function peopleGroup(p){if(p.role==='대표')return '대표';if(p.role==='이사
 function sortGroups(ks){return ks.sort((a,b)=>{const ia=GROUP_ORDER.indexOf(a),ib=GROUP_ORDER.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)})}
 
 function brLabel(b){return b==='본사'?'전 지점':b}
+
+/* ── BETA 표시 + TSB music (2026-11-10) ── */
+const APP_V='v24';
+function betaInfo(){openSheet(`<h2>지금은 베타 버전이에요</h2><div style="font-size:15px;line-height:1.75;font-weight:500;margin-top:10px;word-break:keep-all">12월까지 매장에서 쓰면서 불편한 점을 고치고 있어요.<br><b>2027년 1월, 정식 버전 1.0</b>으로 시작해요.<br><br>쓰다가 이상하거나 필요한 기능이 있으면 바로 알려 주세요. 보내 준 의견은 서포트센터가 모두 읽어요.</div><a class="pill ink full" href="#/ask" data-close style="margin-top:18px">의견 보내기</a><p class="note" style="margin-top:12px;text-align:center">TSB People BETA · ${APP_V}</p>`)}
+const RADIO='https://tsb.wine/radio/';
+const MU_STORES=[['청계','cg'],['상암','sa'],['마곡','mg'],['동대문','dd']];
+ROUTES.music=function(v){const me=(S.data&&S.data.me)||{};
+  v.innerHTML=`${back('#/')}<div class="title"><span class="new">NEW</span><h1 style="margin-top:10px">TSB music</h1><p>매장에서 트는 우리 음악이에요. 곡은 계속 늘어나요.<span id="muN"></span></p></div>
+  <section class="blk mublk"><h3>매장 음악 틀기</h3><p class="note">매장 기기(아이패드·PC)에서 우리 지점을 눌러 주세요. 처음 한 번만 고르면 그다음부터는 시간대에 맞는 곡이 자동으로 나와요.</p>
+   <div class="mugrid">${MU_STORES.map(([n,c])=>`<a class="pill ${me.branch===n?'ink':'line'}" href="${RADIO}?store=${c}" target="_blank" rel="noopener">${n}</a>`).join('')}</div></section>
+  <section class="blk mublk"><h3>선곡 플레이어 <i class="new">BETA</i></h3><p class="note">채널 고르기, 곡 검색, 다음 곡 예약, 즐겨찾기가 돼요. 회사 계정으로 로그인하면 즐겨찾기가 저장돼요.</p>
+   <a class="pill ink full" href="${RADIO}v2/" target="_blank" rel="noopener" style="margin-top:12px">선곡 플레이어 열기</a></section>
+  <section class="blk mublk"><h3>유튜브 tsb radio</h3><p class="note">매장 음악을 유튜브에서도 들을 수 있어요. 구독하고 친구에게도 알려 주세요.</p>
+   <a class="pill line full" href="https://www.youtube.com/@tsbradiokorea" target="_blank" rel="noopener" style="margin-top:12px">유튜브에서 듣기</a></section>
+  <div class="note" style="text-align:center;padding:24px 0;letter-spacing:.06em">wine is second americano</div>`;
+  fetch(RADIO+'tracks.json',{cache:'no-store'}).then(r=>r.json()).then(j=>{const n=(j.tracks||j||[]).length;const el=$('#muN');if(el&&n)el.textContent=` 지금 ${n}곡.`}).catch(()=>{})};
