@@ -126,3 +126,5 @@
 .mublk h3{display:flex;align-items:center;gap:8px;font-size:19px;font-weight:800;letter-spacing:-.03em;margin:0 0 6px}
 .mublk .note{word-break:keep-all;line-height:1.6;padding:0;margin:0}
 .mugrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.mugrid .pill{text-align:center;justify-content:center}
+.hdr .brand,.hdr .beta,.hdr .r{flex-shrink:0}
+@media(max-width:380px){.hdr .brand{gap:7px}.hdr .brand small{letter-spacing:.08em}.hdr .beta{font-size:8.5px;letter-spacing:.08em;padding:3px 5px 2px;margin-left:6px}.hdr .r{gap:0}}
