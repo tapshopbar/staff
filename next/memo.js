@@ -18,11 +18,11 @@ ROUTES.memo=async function(v,arg){
   const el=$('#mm');if(!el)return;
   const items=j.items||[];let n=1;
   el.innerHTML=`${j.test?'<div class="mtest"><b>테스트 중</b> · 실제 지점 시트가 아닌 테스트 사본에 기록돼요</div>':''}
-   ${j.branches&&j.branches.length>1?`<div class="presets" style="padding:0 var(--pad)">${j.branches.map(b=>`<a href="#/memo/${encodeURIComponent(b)}"><button class="${b===j.branch?'on':''}">${esc(b)}</button></a>`).join('')}</div>`:''}
-   <div class="blk form">
+   ${j.branches&&j.branches.length>1?`<div class="presets mbr" style="padding:0 var(--pad)">${j.branches.map(b=>`<a href="#/memo/${encodeURIComponent(b)}"><button class="${b===j.branch?'on':''}">${esc(b)}</button></a>`).join('')}</div>`:''}
+   <div class="blk mform">
     <div class="mtop"><div><label class="f">일자</label><input class="in" type="date" id="md" value="${esc(j.today||bizDay())}" max="${ymd(new Date())}"></div>
      <div class="mwho"><label class="f">지점 · 작성자</label><div>${esc(j.branch)} · ${esc(j.name)}</div></div></div>
-    <p class="note" style="margin-top:6px">새벽 6시 전에는 어제 날짜로 잡혀요. 한 번에 여러 줄 적을 수 있어요.</p>
+    <p class="note" style="margin-top:8px;padding:0">새벽 6시 전에는 어제 날짜로 잡혀요. 한 번에 여러 줄 적을 수 있어요.</p>
     <div id="ml">${lineHTML(items,0)}</div>
     <button class="pill line full" id="madd" type="button" style="margin-top:10px">+ 줄 추가</button>
     <button class="pill wine full" id="msave" type="button" style="margin-top:10px">시트에 저장</button>
@@ -56,5 +56,5 @@ function mineHTML(list){
     return `${h}<div class="qa mrow"><div class="m">${esc(m.g||'')}${m.qty!==''&&m.qty!=null?' · '+esc(m.qty)+'개':''}</div><div class="q"><b>${esc(m.item)}</b>${m.amt!==''&&m.amt!=null?' · '+won(m.amt):''}</div><div class="mt">${esc(m.text)}</div></div>`}).join('')}
 /* 홈 '매장 · 성장' 메뉴에 타일 추가 (업무일지 옆) */
 const _home=ROUTES[''];
-ROUTES['']=function(v,a){const r=_home(v,a);try{const lg=v.querySelector('a.tile[href="#/log"]');if(lg&&!v.querySelector('a.tile[href="#/memo"]'))lg.insertAdjacentHTML('afterend','<a class="tile y" href="#/memo"><b>정산<br>메모</b><small>할인 · 서비스 기록</small></a>')}catch(e){}return r};
+ROUTES['']=function(v,a){const r=_home(v,a);try{const lg=v.querySelector('a.tile[href="#/log"]');if(lg&&!v.querySelector('a.tile[href="#/memo"]'))lg.insertAdjacentHTML('afterend','<a class="tile" href="#/memo"><b>정산<br>메모</b><small>할인 · 서비스 기록</small></a>')}catch(e){}return r};
 })();
