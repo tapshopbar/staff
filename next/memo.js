@@ -14,7 +14,7 @@ function lineHTML(items,i){
 ROUTES.memo=async function(v,arg){
   const want=arg?decodeURIComponent(arg):'';
   v.innerHTML=`${back('#/')}<div class="title"><h1>정산 메모</h1><p>할인 · 서비스 · 기타매출을 일정산 시트 '일별메모'에 바로 적어요.</p></div><div id="mm">${loading()}</div>`;
-  let j;try{j=await api('memo.get',want?{branch:want}:{})}catch(e){$('#mm').innerHTML=`<div class="empty">${esc(e.message)}</div>`;return}
+  let j;try{j=await apiRaw('memo.get',want?{branch:want}:{})} /* apiRaw: 저장 직후 옛 캐시가 보이지 않게 항상 새로 읽음 */catch(e){$('#mm').innerHTML=`<div class="empty">${esc(e.message)}</div>`;return}
   const el=$('#mm');if(!el)return;
   const items=j.items||[];let n=1;
   el.innerHTML=`${j.test?'<div class="mtest"><b>테스트 중</b> · 실제 지점 시트가 아닌 테스트 사본에 기록돼요</div>':''}
@@ -46,7 +46,7 @@ ROUTES.memo=async function(v,arg){
       if(!l.amt&&!/재고조정/.test(l.item))return toast(k+'금액을 적어 주세요');
       if(l.text.length<2)return toast(k+'내용(누구에게 · 왜)을 적어 주세요')}
     busy(e.currentTarget,true,'저장 중…');
-    try{const r=await api('memo.add',{branch:j.branch,lines});toast(`${r.n}줄 저장했어요${r.test?' (테스트 사본)':''}`);ROUTES.memo(v,arg)}
+    try{const r=await apiRaw('memo.add',{branch:j.branch,lines});toast(`${r.n}줄 저장했어요${r.test?' (테스트 사본)':''}`);ROUTES.memo(v,arg)}
     catch(x){toast(x.message,4000);busy(e.currentTarget,false)}
   };
 };
