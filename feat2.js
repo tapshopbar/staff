@@ -553,8 +553,8 @@ addEventListener('resize',()=>{if(onSched())apply()});
 new MutationObserver(()=>{if(onSched())btn()}).observe(document.body,{childList:true,subtree:true});
 })();
 
-/* ── 정산 메모 (2026-11-12 라이브 v31, next/memo.js 합침) ── */
-/* 정산 메모 (2026-11-12 미리보기): 일정산 시트 '일별메모'에 앱에서 바로 기록. API memo.get / memo.add */
+/* ── 정산 메모 (2026-11-12 라이브 v32, memo.js 합침) ── */
+/* 정산 메모 (2026-11-12, v32: 모든 재직 직원 지점 선택 · 기본 = 내 매장): 일정산 시트 '일별메모'에 앱에서 바로 기록. API memo.get / memo.add */
 (function(){
 const bizDay=()=>ymd(new Date(Date.now()-6*3600e3)); /* 06시 전이면 어제 */
 const numOk=s=>s===''||/^-?\d+(\.\d+)?$/.test(s);
@@ -572,16 +572,17 @@ ROUTES.memo=async function(v,arg){
   v.innerHTML=`${back('#/')}<div class="title"><h1>정산 메모</h1><p>할인 · 서비스 · 기타매출을 일정산 시트 '일별메모'에 바로 적어요.</p></div><div id="mm">${loading()}</div>`;
   let j;try{j=await apiRaw('memo.get',want?{branch:want}:{})} /* apiRaw: 저장 직후 옛 캐시가 보이지 않게 항상 새로 읽음 */catch(e){$('#mm').innerHTML=`<div class="empty">${esc(e.message)}</div>`;return}
   const el=$('#mm');if(!el)return;
-  const items=j.items||[];let n=1;
+  const items=j.items||[],pick=!j.branch;
   el.innerHTML=`${j.test?'<div class="mtest"><b>테스트 중</b> · 실제 지점 시트가 아닌 테스트 사본에 기록돼요</div>':''}
-   ${j.branches&&j.branches.length>1?`<div class="presets mbr" style="padding:0 var(--pad)">${j.branches.map(b=>`<a href="#/memo/${encodeURIComponent(b)}"><button class="${b===j.branch?'on':''}">${esc(b)}</button></a>`).join('')}</div>`:''}
+   ${(j.branches||[]).length?`<div class="presets mbr" style="padding:0 var(--pad)">${j.branches.map(b=>`<a href="#/memo/${encodeURIComponent(b)}"><button class="${b===j.branch?'on':''}">${esc(b)}${b===j.own?' <small>내 매장</small>':''}</button></a>`).join('')}</div>`:''}
+   ${pick?'<div class="mpick">기록할 <b>지점을 먼저 골라 주세요</b>. 위 버튼 중 하나를 누르면 항목이 열려요.</div>':''}
    <div class="blk mform">
     <div class="mtop"><div><label class="f">일자</label><input class="in" type="date" id="md" value="${esc(j.today||bizDay())}" max="${ymd(new Date())}"></div>
-     <div class="mwho"><label class="f">지점 · 작성자</label><div>${esc(j.branch)} · ${esc(j.name)}</div></div></div>
+     <div class="mwho"><label class="f">지점 · 작성자</label><div>${pick?'지점 선택 필요':esc(j.branch)} · ${esc(j.name)}</div></div></div>
     <p class="note" style="margin-top:8px;padding:0">새벽 6시 전에는 어제 날짜로 잡혀요. 한 번에 여러 줄 적을 수 있어요.</p>
-    <div id="ml">${lineHTML(items,0)}</div>
-    <button class="pill line full" id="madd" type="button" style="margin-top:10px">+ 줄 추가</button>
-    <button class="pill wine full" id="msave" type="button" style="margin-top:10px">시트에 저장</button>
+    <div id="ml"${pick?' class="moff"':''}>${lineHTML(items,0)}</div>
+    <button class="pill line full" id="madd" type="button" style="margin-top:10px"${pick?' disabled':''}>+ 줄 추가</button>
+    <button class="pill wine full" id="msave" type="button" style="margin-top:10px"${pick?' disabled':''}>${pick?'지점을 골라 주세요':'시트에 저장'}</button>
    </div>
    <div class="sec"><h2>내 최근 메모 <small style="font-size:13px;color:var(--mute);font-weight:600">3일</small></h2></div>
    <div class="blk" id="mmine" style="padding-top:0">${mineHTML(j.mine||[])}</div>`;
@@ -590,7 +591,7 @@ ROUTES.memo=async function(v,arg){
     ml.querySelectorAll('select[data-k=item]').forEach(s=>s.onchange=()=>{const a=s.closest('.mline').querySelector('[data-k=amt]');a.placeholder=/재고조정/.test(s.value)?'금액 (비워도 돼요)':'금액'})};
   wire();
   $('#madd').onclick=()=>{const d=document.createElement('div');d.innerHTML=lineHTML(items,ml.children.length);ml.appendChild(d.firstElementChild);wire();ml.lastElementChild.querySelector('select').focus()};
-  $('#msave').onclick=async e=>{
+  $('#msave').onclick=async e=>{if(!j.branch)return toast('지점을 먼저 골라 주세요');
     const date=$('#md').value;if(!date)return toast('일자를 골라 주세요');
     const lines=[...ml.querySelectorAll('.mline')].map(m=>({item:m.querySelector('[data-k=item]').value,qty:clean(m.querySelector('[data-k=qty]').value),amt:clean(m.querySelector('[data-k=amt]').value),text:m.querySelector('[data-k=text]').value.trim(),date}))
       .filter(l=>l.item||l.qty||l.amt||l.text);
@@ -610,7 +611,5 @@ function mineHTML(list){
   if(!list.length)return '<div class="empty">최근 3일 동안 쓴 메모가 없어요</div>';
   let last='';return list.map(m=>{const h=m.date!==last?`<div class="mday">${fmtDay(m.date)}</div>`:'';last=m.date;
     return `${h}<div class="qa mrow"><div class="m">${esc(m.g||'')}${m.qty!==''&&m.qty!=null?' · '+esc(m.qty)+'개':''}</div><div class="q"><b>${esc(m.item)}</b>${m.amt!==''&&m.amt!=null?' · '+won(m.amt):''}</div><div class="mt">${esc(m.text)}</div></div>`}).join('')}
-/* 홈 '매장 · 성장' 메뉴에 타일 추가 (업무일지 옆) */
-const _home=ROUTES[''];
-ROUTES['']=function(v,a){const r=_home(v,a);try{const lg=v.querySelector('a.tile[href="#/log"]');if(lg&&!v.querySelector('a.tile[href="#/memo"]'))lg.insertAdjacentHTML('afterend','<a class="tile" href="#/memo"><b>정산<br>메모</b><small>할인 · 서비스 기록</small></a>')}catch(e){}return r};
+/* 홈 타일은 core.js '매장 · 성장' 그리드에 직접 (2026-11-12 v32) */
 })();

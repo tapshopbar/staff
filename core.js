@@ -253,14 +253,15 @@ ROUTES['']=function vHome(v){
   <div class="subl">매장 · 성장</div>
   <div class="grid g3">
     <a class="tile w" href="#/log"><b>업무<br>일지</b><small>한 줄 남기기</small></a>
-    <a class="tile ${x.check&&x.check['오픈']?'':'y'}" href="#/check/오픈"><b>오픈<br>체크</b><small>${x.check&&x.check['오픈']?'✓ '+esc(x.check['오픈'].by)+' '+esc(x.check['오픈'].at):'아직 안 했어요'}</small></a>
-    <a class="tile ${x.check&&x.check['마감']?'':'n'}" href="#/check/마감"><b>마감<br>체크</b><small>${x.check&&x.check['마감']?'✓ '+esc(x.check['마감'].by)+' '+esc(x.check['마감'].at):'아직 안 했어요'}</small></a>
-    <a class="tile n" href="#/incident/new"><b>사고 ·<br>클레임</b><small>바로 보고</small></a>
-    <a class="tile p" href="#/quiz" style="background-image:url(assets/americano.jpg)"><b>와인<br>퀴즈</b><small>이번 달 랭킹</small></a>
-    <a class="tile" href="#/kudos"><b>칭찬<br>카드</b><small>고마운 동료에게</small></a>
-    <a class="tile" href="#/swap"><b>대타<br>게시판</b><small>${x.swapOpen?x.swapOpen+'건 모집중':'근무 바꾸기'}</small></a>
     <a class="tile" href="#/avail/${x.nextMon||''}"><b>근무<br>신청</b><small>${x.availDone||localStorage.getItem('tsbp_req_'+x.nextMon)?'제출 완료':'휴무·희망 근무'}</small></a>
     <a class="tile" href="#/apply"><b>내 신청</b><small>진행 상황</small></a>
+    <a class="tile ${x.check&&x.check['오픈']?'':'y'}" href="#/check/오픈"><b>오픈<br>체크</b><small>${x.check&&x.check['오픈']?'✓ '+esc(x.check['오픈'].by)+' '+esc(x.check['오픈'].at):'아직 안 했어요'}</small></a>
+    <a class="tile" href="#/memo"><b>정산<br>메모</b><small>할인 · 서비스 기록</small></a>
+    <a class="tile ${x.check&&x.check['마감']?'':'n'}" href="#/check/마감"><b>마감<br>체크</b><small>${x.check&&x.check['마감']?'✓ '+esc(x.check['마감'].by)+' '+esc(x.check['마감'].at):'아직 안 했어요'}</small></a>
+    <a class="tile n" href="#/incident/new"><b>사고 ·<br>클레임</b><small>바로 보고</small></a>
+    <a class="tile" href="#/swap"><b>대타<br>게시판</b><small>${x.swapOpen?x.swapOpen+'건 모집중':'근무 바꾸기'}</small></a>
+    <a class="tile" href="#/kudos"><b>칭찬<br>카드</b><small>고마운 동료에게</small></a>
+    <a class="tile p" href="#/quiz" style="background-image:url(https://tapshopbar.github.io/staff/assets/quiz_glasses.jpg)"><b>와인<br>퀴즈</b><small>이번 달 랭킹</small></a>
   </div>
   ${(x.notices||[]).length?`<div class="sec"><h2>공지 · 매뉴얼</h2><a href="#/notice">전체</a></div><div class="list">${x.notices.slice(0,3).map(n=>`<a class="li" href="#/notice/${n.id}"><div class="m"><div class="t1">${n.pinned?'<i class="new" style="margin-right:6px">PIN</i>':''}${esc(n.title)}</div><div class="t2">${esc(n.by)} · ${esc(String(n.at).slice(5,10))}</div></div>${n.required?chip(n.read?'읽음':'안읽음',n.read?'확인함':'필독'):''}</a>`).join('')}</div>`:''}
   <div class="sec"><h2>내 신청</h2><a href="#/apply">전체</a></div>
