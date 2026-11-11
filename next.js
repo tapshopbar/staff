@@ -139,7 +139,7 @@ function myBadges(){return (S.data&&S.data.badges)||[]}
 function badgeStrip(){const got=myBadges();
   if(!got.length)return `<a class="bstrip" href="#/badges" aria-label="배지 준비 중, 눌러서 보기">${BADGES.filter(b=>STRIP_KEYS.includes(b.k)).map(b=>badgeIcon(b,26)).join('')}<span class="soon">COMING SOON</span></a>`;
   const gb=BADGES.filter(b=>got.includes(b.k)), rest=BADGES.filter(b=>STRIP_KEYS.includes(b.k)&&!got.includes(b.k));
-  return `<a class="bstrip got" href="#/badges" aria-label="내 배지 보기">${gb.map(b=>`<span class="gotb">${badgeIcon(b,30)}<b>${esc(b.n)}</b></span>`).join('')}<span class="dim">${rest.map(b=>badgeIcon(b,22)).join('')}</span><span class="soon">MY BADGE</span></a>`}
+  return `<a class="bstrip got" href="#/badges" aria-label="내 배지 보기">${gb.map(b=>`<span class="gotb">${badgeIcon(b,30)}${gb.length===1?`<b>${esc(b.n)}</b>`:''}</span>`).join('')}<span class="dim">${rest.map(b=>badgeIcon(b,22)).join('')}</span><span class="soon">MY BADGE</span></a>`}
 ROUTES.badges=function(v){
   const got=myBadges(), H=(S.data&&S.data.badgeHolders)||{};
   const live=k=>(H[k]||[]).length>0;
