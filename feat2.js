@@ -243,7 +243,7 @@ ROUTES.schedule=async function(v,arg){
     ${my.length&&branch===me.branch?`<section class="blk navy" style="margin-top:12px"><span class="tag"><i class="new">MY</i> 다가오는 내 근무</span><div class="list" style="padding:0;margin-top:10px">${my.slice(0,3).map(s=>`<div class="li" style="cursor:default"><div class="m"><div class="t1">${fmtDay(s.date)} ${tt(s.start,s.end)}</div><div class="t2">${esc(s.branch)}${s.pos?' · '+esc(s.pos):''} · ${s.hours.toFixed(1)}h</div></div><a class="u" style="font-size:12.5px" href="#/swap">대타</a></div>`).join('')}</div></section>`:''}
     <div class="wk" style="margin-top:8px"><button id="pw">${I('back',18)}</button><div style="text-align:center">${j.branches.length>1?`<select class="in" id="bsel" style="font-size:15px;padding:4px 22px 4px 2px;width:auto;font-weight:800">${j.branches.map(b=>`<option value="${esc(b)}" ${b===branch?'selected':''}>${esc(brL(b))}${j.myBranch&&b===j.myBranch?' (우리)':''}</option>`).join('')}</select>`:`<b>${esc(brL(branch))}</b>`}</div><button id="nw">${I('next',18)}</button></div>
     ${j.canEdit&&j.horizon?`<div class="hz"><span class="hl">3주 앞 목표</span>${j.horizon.map((h,i)=>`<a href="#/schedule/${encodeURIComponent(branch)}@${h.start}" class="hd ${h.state==='확정'?'ok':h.state==='임시'?'dr':''} ${h.start===start?'cur':''}"><b>${i===0?'이번 주':i===1?'다음 주':'+'+i+'주'}</b><small>${h.state}</small></a>`).join('')}<button class="hfill" id="h3">3주 채우기</button></div>`:''}
-    <div class="stool"><div class="sseg">${['전체','홀','주방'].map(f=>`<button data-f="${f}" class="${st.filter===f?'on':''}">${f}</button>`).join('')}</div><div class="sseg c">${['파트','시간대'].map(c=>`<button data-c="${c}" class="${st.color===c?'on':''}">${c==='파트'?'색: 파트':'색: 시간대'}</button>`).join('')}</div>${j.canEdit?`<div class="sseg m">${[['one','하나씩'],['paint','연속 넣기']].map(([k,l])=>`<button data-m="${k}" class="${st.mode===k?'on':''}">${l}</button>`).join('')}</div>`:''}</div>
+    <div class="stool"><div class="sseg">${['전체','홀','주방'].map(f=>`<button data-f="${f}" class="${st.filter===f?'on':''}">${f}</button>`).join('')}</div><div class="sseg c">${['파트','시간대'].map(c=>`<button data-c="${c}" class="${st.color===c?'on':''}">${c==='파트'?'색: 파트':'색: 시간대'}</button>`).join('')}</div>${j.canEdit?`<div class="sseg m">${[['one','하나씩'],['paint','연속 넣기']].map(([k,l])=>`<button data-m="${k}" class="${st.mode===k?'on':''}">${l}</button>`).join('')}</div><button class="pmb" id="pm2">프리셋</button>`:''}</div>
     ${paintBar}
     <div class="sgrid sg2 ${st.color==='시간대'?'tm':''}"><table><thead><tr><th style="text-align:left">직원</th>${days.map(ds=>{const dt=pd(ds);return `<th class="${ds===today?'today':''}">${WD[dt.getDay()]} ${dt.getMonth()+1}.${dt.getDate()}<span class="h">홀 ${cnt(ds,'홀')} · 주방 ${cnt(ds,'주방')}</span></th>`}).join('')}</tr></thead><tbody>
     ${groups.map(G=>`<tr class="grp"><td colspan="8"><span class="gdot ${G.g==='주방'?'k':''}"></span>${G.g} <small>${G.list.length}명${G.g==='주방'&&!can('주방')&&!j.canEdit?'':''}</small></td></tr>`+G.list.map(p=>`<tr><td class="nm ${j.canEditStaff?'ed':''}" data-sp="${esc(p.email)}">${esc(p.name)}${p.hybrid?hybI(13):''}<small>${p.helper?'Hybrid · '+esc(p.part)+' 소속':total(p).toFixed(1)+'h · 휴무 '+po(p)}</small>${!p.helper&&p.other?`<small class="oth">타지점 ${p.other}h 포함</small>`:''}${!p.helper&&over(p)?`<small class="ov ${over(p)}">${over(p)==='x'?'52h 초과':'52h 임박'}</small>`:''}${p.role==='점장'?'<small class="rl">점장</small>':p.sous?'<small class="rl">수쉐프</small>':''}</td>${days.map(ds=>`<td data-e="${esc(p.email)}" data-d="${ds}" class="${st.mode==='paint'&&canCell(p)?'pt':''}">${cellHtml(p,ds)}</td>`).join('')}</tr>`).join('')).join('')}
@@ -273,7 +273,7 @@ ROUTES.schedule=async function(v,arg){
     $('#cp').onclick=async e=>{busy(e.currentTarget,true,'<div class="spin d"></div>');try{const r=await api('schedule.copy',{branch,start,v2:1,force:(st.shifts.length+st.offs.length)>0&&confirm('이번 주 기존 근무 위에 지난주 근무를 더할까요?')});toast(`근무 ${r.copied}개${r.offs?', 휴무 '+r.offs+'개':''}를 복사했어요`);ROUTES.schedule(v,arg)}catch(er){toast(er.message);draw()}};
     if($('#sv'))$('#sv').onclick=e=>save(e.currentTarget,false);
     $('#pub').onclick=e=>save(e.currentTarget,true);
-    $('#pm').onclick=presetSheet;
+    $('#pm').onclick=presetSheet;if($('#pm2'))$('#pm2').onclick=presetSheet;
   };
 
   /* 칸 비우기 · 근무 넣기 (로컬) */
@@ -358,11 +358,39 @@ ROUTES.schedule=async function(v,arg){
     });
   };
 
-  /* 프리셋 관리 */
+  /* 프리셋 관리 (11/11: 수정·추가·삭제 한 곳에서) */
   const presetSheet=()=>{
-    const m=openSheet(`<h2>프리셋 관리</h2><div class="note" style="padding:0">${esc(branch)} 전용 · 근무 넣는 창에서 시간을 고르고 ‘프리셋 저장’을 누르면 추가돼요.</div><div id="pml"></div>`,m=>{
-      const paint=()=>{m.querySelector('#pml').innerHTML=['홀','주방'].map(g=>{const ls=j.presets.filter(x=>x.part===g);return ls.length?`<label class="f">${g}</label>${ls.map(x=>`<div class="pmi"><i class="cd" style="background:${esc(x.color||'#ccc')}"></i><b>${esc(x.name)}</b><span>${esc(x.start)}–${esc(x.end)} · 휴게 ${x.brk}분</span>${can(g)?`<button data-del="${j.presets.indexOf(x)}">삭제</button>`:''}</div>`).join('')}`:''}).join('');
-        m.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{const x=j.presets[+b.dataset.del];if(!confirm(`'${x.name}' 프리셋을 지울까요? (이미 넣은 근무는 그대로예요)`))return;busy(b,true);try{const r=await api('preset.delete',{branch,name:x.name,part:x.part});j.presets=r.presets;paint();draw()}catch(e){toast(e.message);busy(b,false)}})};
+    const HH=['06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','00','01','02'],MM=['00','15','30','45'];
+    const m=openSheet(`<h2>프리셋 관리</h2><div class="note" style="padding:0">${esc(brL(branch))} 전용 · 고치거나 지워도 이미 넣은 근무는 그대로예요.</div><div id="pml"></div>`,m=>{
+      let ed=null,brkM=false;
+      const q=s=>m.querySelector(s);
+      const tsel=(id,v)=>{const [h,mi]=String(v||'').split(':');return `<span class="pmt"><select class="in sm" id="${id}h">${HH.map(x=>`<option ${x===h?'selected':''}>${x}</option>`).join('')}</select><b>:</b><select class="in sm" id="${id}m">${MM.map(x=>`<option ${x===mi?'selected':''}>${x}</option>`).join('')}</select></span>`};
+      const grab=()=>{if(!ed||!q('#fn'))return;ed.name=q('#fn').value.trim();ed.start=q('#fsh').value+':'+q('#fsm').value;ed.end=q('#feh').value+':'+q('#fem').value};
+      const form=()=>`<div class="pmf"><div class="pmf-h"><b>${ed.i<0?'새 프리셋':'프리셋 고치기'}</b>${ed.i<0&&can('홀')&&can('주방')?`<div class="sseg sm">${['홀','주방'].map(g=>`<button data-fp="${g}" class="${ed.part===g?'on':''}">${g}</button>`).join('')}</div>`:`<small>${esc(ed.part)}</small>`}</div>
+        <input class="in" id="fn" maxlength="12" placeholder="이름 (예: 오픈, 마감, 롱)" value="${esc(ed.name)}">
+        <div class="pmr"><span>시작</span>${tsel('fs',ed.start)}</div><div class="pmr"><span>종료</span>${tsel('fe',ed.end)}</div>
+        <div class="pmr"><span>휴게</span><div class="sseg sm">${[0,30,60,90].map(b=>`<button data-fb="${b}" class="${+ed.brk===b?'on':''}">${b}분</button>`).join('')}</div></div>
+        <div class="pmr" style="justify-content:flex-end"><button class="pill line sm" id="fc">취소</button><button class="pill wine sm" id="fo">저장</button></div></div>`;
+      const paint=()=>{
+        q('#pml').innerHTML=['홀','주방'].map(g=>{const ls=j.presets.filter(x=>x.part===g);return ls.length||can(g)?`<label class="f">${g}</label>${ls.map(x=>{const i=j.presets.indexOf(x);return ed&&ed.i===i?form():`<div class="pmi"><i class="cd" style="background:${esc(x.color||'#ccc')}"></i><b>${esc(x.name)}</b><span>${esc(x.start)}–${esc(x.end)} · 휴게 ${x.brk}분</span>${can(g)?`<button class="pme" data-ed="${i}">수정</button><button data-del="${i}">삭제</button>`:''}</div>`}).join('')}`:''}).join('')
+          +(ed&&ed.i<0?form():(parts.some(p=>p==='홀'||p==='주방')?`<button class="pill line full" id="fa" style="margin-top:14px">+ 새 프리셋</button>`:''));
+        m.querySelectorAll('[data-ed]').forEach(b=>b.onclick=()=>{const x=j.presets[+b.dataset.ed];ed={i:+b.dataset.ed,old:x.name,part:x.part,name:x.name,start:x.start,end:x.end,brk:+x.brk||0,color:x.color};brkM=true;paint()});
+        const fa=q('#fa');if(fa)fa.onclick=()=>{ed={i:-1,part:can('홀')?'홀':'주방',name:'',start:'10:00',end:'19:00',brk:60,color:''};brkM=false;paint()};
+        if(ed){
+          m.querySelectorAll('[data-fp]').forEach(b=>b.onclick=()=>{grab();ed.part=b.dataset.fp;paint()});
+          m.querySelectorAll('[data-fb]').forEach(b=>b.onclick=()=>{grab();ed.brk=+b.dataset.fb;brkM=true;paint()});
+          m.querySelectorAll('.pmt select').forEach(s=>s.onchange=()=>{grab();if(!brkM){ed.brk=autoBrk(ed.start,ed.end);paint()}});
+          q('#fc').onclick=()=>{ed=null;paint()};
+          q('#fo').onclick=async e=>{grab();
+            if(!ed.name)return toast('이름을 입력해 주세요');
+            if(ed.start===ed.end)return toast('시작과 종료가 같아요');
+            if(j.presets.some(x=>x.part===ed.part&&x.name===ed.name&&x.name!==ed.old))return toast(`${ed.part}에 '${ed.name}' 프리셋이 이미 있어요`);
+            const used=j.presets.filter(x=>x.part===ed.part).map(x=>x.color),color=ed.color||(PAL[ed.part]||PAL.홀).find(c=>!used.includes(c))||PAL[ed.part][0];
+            busy(e.currentTarget,true);
+            try{const r=await api('preset.save',{branch,name:ed.name,part:ed.part,start:ed.start,end:ed.end,brk:ed.brk,color,old:ed.i>=0?ed.old:''});j.presets=r.presets;toast(`프리셋 '${ed.name}' 저장했어요`);ed=null;paint();draw()}
+            catch(er){toast(er.message);busy(e.currentTarget,false)}};
+        }
+        m.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{const x=j.presets[+b.dataset.del];if(!confirm(`'${x.name}' 프리셋을 지울까요? (이미 넣은 근무는 그대로예요)`))return;busy(b,true);try{await api('preset.save',{branch,name:x.name,part:x.part,start:x.start,end:x.end,brk:x.brk,color:x.color,old:x.name});/* 공용(전체) 프리셋을 쓰는 지점은 먼저 지점 것으로 복사해야 지워짐 */const r=await api('preset.delete',{branch,name:x.name,part:x.part});j.presets=r.presets;paint();draw()}catch(e){toast(e.message);busy(b,false)}})};
       paint();});
   };
 
@@ -416,4 +444,111 @@ ROUTES.avail=async function(v,start){
   };
   draw();
 };
+})();
+
+/* ── 근무 신청: 달력 (차현 님 제안 11/11) ──
+   날짜를 누르면(여러 날 가능) 휴무 / 오픈 / 미들 / 마감 / 시간 상관없이 중에서 고른다.
+   서버는 기존 주 단위 API(shiftreq.get / shiftreq.save) 그대로. 바뀐 주만 저장한다. */
+(function(){
+const SLOTS=[['휴무','휴무','off'],['오픈','오픈','op'],['미들','미들','md'],['마감','마감','cl'],['any','시간 상관없이','any']];
+const DRAFT={}; // 다시 그려져도 고른 것 유지: {ds:{kind,slot,preset,start,end,memo}}
+const slotOf=(kind,preset)=>{if(kind==='휴무')return '휴무';if(kind!=='근무')return '';if(!preset)return 'any';for(const s of ['오픈','미들','마감'])if(String(preset).startsWith(s))return String(preset).includes('/')?(s==='미들'?'미들':s):s;return preset};
+const cls=s=>({휴무:'off',오픈:'op',미들:'md',마감:'cl',any:'any'}[s]||'etc');
+const lbl=s=>s==='any'?'근무':s;
+
+ROUTES.avail=async function(v,arg){
+  const x=S.data.x||{},today=ymd(new Date());
+  let ym=/^\d{4}-\d{2}/.test(arg||'')?arg.slice(0,7):(x.nextMon||addD(monday(new Date()),7)).slice(0,7);
+  const first=ym+'-01',fd=pd(first),last=ymd(new Date(fd.getFullYear(),fd.getMonth()+1,0));
+  const g0=monday(fd),weeks=[];for(let w=g0;w<=last;w=addD(w,7))weeks.push(w);
+  const prevYm=ymd(new Date(fd.getFullYear(),fd.getMonth()-1,1)).slice(0,7),nextYm=ymd(new Date(fd.getFullYear(),fd.getMonth()+1,1)).slice(0,7);
+  const head=`${back()}<div class="title"><h1>근무 신청.</h1></div>`;
+  v.innerHTML=head+loading();
+  const live=weeks.filter(w=>addD(w,6)>=today);
+  let res;try{res=await Promise.all(live.map(w=>api('shiftreq.get',{start:w})))}catch(e){v.innerHTML=head+`<p class="note" style="padding:0 var(--pad)">${esc(e.message)}</p>`;return}
+  const W={};live.forEach((w,i)=>W[w]=res[i]);
+  const j0=res[0]||{presets:[],part:'홀'},presets=j0.presets||[],myPart=j0.part||'홀';
+  const srv={};live.forEach(w=>(W[w].mine||[]).forEach(q=>srv[q.date]=q));
+  const days=[];weeks.forEach(w=>{for(let i=0;i<7;i++)days.push(addD(w,i))});
+  const wkOf=ds=>monday(pd(ds));
+  const cur=ds=>DRAFT[ds]||srv[ds]||null;
+  const locked=ds=>{const q=srv[ds];return q&&q.status&&q.status!=='신청'};
+  const editable=ds=>ds>=today&&W[wkOf(ds)]&&!locked(ds);
+  const dirtyWeeks=()=>[...new Set(Object.keys(DRAFT).filter(ds=>W[wkOf(ds)]).map(wkOf))];
+  const pick=slot=>{if(slot==='any')return {preset:'',start:'',end:''};
+    const c=presets.filter(p=>p.part===myPart).concat(presets.filter(p=>p.part!==myPart));
+    const p=c.find(p=>p.name===slot)||c.find(p=>p.name.startsWith(slot)&&!p.name.includes('/'))||c.find(p=>p.name.startsWith(slot));
+    return p?{preset:p.name,start:p.start,end:p.end}:{preset:slot,start:'',end:''}};
+  let sel=new Set(),teamW=live.find(w=>w>=(x.nextMon||''))||live[0];
+  const draw=()=>{
+    const inM=ds=>ds.slice(0,7)===ym;
+    let off=0,work=0;days.filter(inM).forEach(ds=>{const q=cur(ds);if(!q||!q.kind)return;q.kind==='휴무'?off++:work++});
+    const dw=dirtyWeeks();
+    const cells=days.map(ds=>{const q=cur(ds),dt=pd(ds),s=q?slotOf(q.kind,q.preset):'',lk=locked(ds),ed=editable(ds);
+      const st=lk?`<i class="acs ${srv[ds].status==='반영'?'ok':'no'}">${srv[ds].status==='반영'?'반영':'불가'}</i>`:'';
+      return `<button class="acd ${inM(ds)?'':'oth'} ${ed?'':'dis'} ${sel.has(ds)?'sel':''} ${ds===today?'tdy':''} ${DRAFT[ds]?'drf':''}" data-ds="${ds}" ${ed?'':'disabled'}><span class="n">${dt.getDate()}</span>${s?`<span class="pl ${cls(s)}">${esc(lbl(s))}</span>`:''}${q&&q.memo?'<span class="mm"></span>':''}${st}</button>`}).join('');
+    const selArr=[...sel].sort();
+    v.innerHTML=head.replace('</h1></div>',`</h1><p>쉬고 싶은 날, 일하고 싶은 시간대를 달력에서 골라 주세요. 여러 날을 한 번에 눌러도 돼요. 3주 뒤까지 미리 내 주시면 근무표 짜기가 쉬워져요.</p></div>`)+`
+     <div class="wk"><a href="#/avail/${prevYm}">${I('back',18)}</a><b>${fd.getFullYear()}년 ${fd.getMonth()+1}월</b><a href="#/avail/${nextYm}">${I('next',18)}</a></div>
+     <div class="acal">
+       <div class="acw">${['월','화','수','목','금','토','일'].map((d,i)=>`<button data-wd="${i}" title="이달 ${d}요일 전부 고르기">${d}</button>`).join('')}</div>
+       <div class="acg">${cells}</div>
+       <div class="acl"><span class="pl off">휴무</span><span class="pl op">오픈</span><span class="pl md">미들</span><span class="pl cl">마감</span><span class="pl any">근무(시간 무관)</span><span class="lg">요일을 누르면 그 요일 전부</span></div>
+     </div>
+     <div class="acp ${selArr.length?'on':''}">
+       ${selArr.length?`<div class="acp-h"><b>${selArr.length}일 선택</b><span>${esc(selArr.slice(0,4).map(d=>{const t=pd(d);return (t.getMonth()+1)+'.'+t.getDate()}).join(', '))}${selArr.length>4?' 외':''}</span><button class="lnk" id="acx">선택 풀기</button></div>
+       <div class="acp-b">${SLOTS.map(([k,l,c])=>`<button class="ab ${c}" data-slot="${k}">${l}</button>`).join('')}</div>
+       <div class="acp-f"><input class="in sm" id="acm" placeholder="메모 (선택) 예) 병원, 학교, 오후만 가능"><button class="lnk" data-slot="">지우기</button></div>`
+       :`<p class="note">날짜를 눌러 고르세요. 연차·반차는 여기 말고 ‘신청 → 연차’로 내 주세요.</p>`}
+     </div>
+     <p class="note acsum">${fd.getMonth()+1}월 휴무 희망 <b>${off}</b>일 · 근무 희망 <b>${work}</b>일${dw.length?` · <span class="drfn">아직 제출 안 한 변경 ${Object.keys(DRAFT).filter(ds=>W[wkOf(ds)]).length}일</span>`:''}</p>
+     <div class="btnrow"><button class="pill wine full" id="sb" ${dw.length?'':'disabled'}>${dw.length?`제출하기 (${dw.length}주)`:'바꾼 내용이 없어요'}</button></div>
+     ${j0.team?teamHtml():''}`;
+    v.querySelectorAll('.acd[data-ds]').forEach(b=>b.onclick=()=>{const d=b.dataset.ds;sel.has(d)?sel.delete(d):sel.add(d);draw()});
+    v.querySelectorAll('[data-wd]').forEach(b=>b.onclick=()=>{const k=+b.dataset.wd;const ds=days.filter(d=>inM(d)&&editable(d)&&(pd(d).getDay()+6)%7===k);const all=ds.every(d=>sel.has(d));ds.forEach(d=>all?sel.delete(d):sel.add(d));draw()});
+    const x1=$('#acx');if(x1)x1.onclick=()=>{sel.clear();draw()};
+    v.querySelectorAll('[data-slot]').forEach(b=>b.onclick=()=>{const k=b.dataset.slot,memo=($('#acm')||{}).value||'';
+      sel.forEach(ds=>{const q=cur(ds)||{};
+        if(!k)DRAFT[ds]={kind:'',preset:'',start:'',end:'',memo:''};
+        else if(k==='휴무')DRAFT[ds]={kind:'휴무',preset:'',start:'',end:'',memo:memo||q.memo||''};
+        else DRAFT[ds]=Object.assign({kind:'근무',memo:memo||q.memo||''},pick(k));});
+      toast(`${sel.size}일 ${k?(k==='any'?'시간 상관없이 근무':k==='휴무'?'휴무 희망':k+' 희망'):'지움'} · 아래 제출하기를 눌러 주세요`,1800);sel.clear();draw()});
+    if(j0.team)v.querySelectorAll('[data-tw]').forEach(b=>b.onclick=()=>{teamW=b.dataset.tw;draw()});
+    $('#sb').onclick=async e=>{const ws=dirtyWeeks();if(!ws.length)return;busy(e.currentTarget,true);
+      try{for(const w of ws){const items=[...Array(7)].map((_,i)=>addD(w,i)).filter(ds=>!locked(ds)).map(ds=>({ds,q:cur(ds)})).filter(o=>o.q&&o.q.kind).map(({ds,q})=>({date:ds,kind:q.kind,preset:q.preset||'',start:q.start||'',end:q.end||'',memo:q.memo||''}));
+          await api('shiftreq.save',{start:w,items});try{localStorage.setItem('tsbp_req_'+w,'1')}catch(_){}
+          Object.keys(DRAFT).filter(ds=>wkOf(ds)===w).forEach(ds=>delete DRAFT[ds]);}
+        toast('제출했어요. 점장님께 알렸어요');ROUTES.avail(v,ym)}
+      catch(er){toast(er.message);busy(e.currentTarget,false)}};
+  };
+  const teamHtml=()=>{const t=(W[teamW]||{}).team||[];const fw=w=>{const d=pd(w);return (d.getMonth()+1)+'.'+d.getDate()};
+    return `<div class="sec"><h2>팀 신청 현황</h2><a href="#/schedule/${encodeURIComponent(S.data.me.branch)}@${teamW}">근무표 짜기</a></div>
+    <div class="actw">${live.map(w=>`<button data-tw="${w}" class="${w===teamW?'on':''}">${fw(w)} 주</button>`).join('')}</div>
+    <div class="list">${t.map(p=>`<div class="li" style="cursor:default"><div class="m"><div class="t1">${esc(p.name)} <small class="pchip ${p.part==='주방'?'k':''}">${esc(p.part)}</small></div><div class="t2">${p.submitted?`휴무 희망 ${p.off}일 · 근무 희망 ${p.work}일`:'아직 안 냈어요'}</div></div>${p.submitted?chip('승인완료','제출'):chip('대기','미제출')}</div>`).join('')||'<p class="note" style="padding:12px 0">이 주 팀원이 없어요</p>'}</div>`};
+  draw();
+};
+})();
+
+/* ── 근무표 한눈에 보기 (윤홍민 수쉐프 요청 11/11) ──
+   1) 태블릿·PC(가로 760px 이상)에서는 근무표 화면을 자동으로 넓게 (가로 스크롤 없음)
+   2) 폰: '한눈에 보기'를 켜면 표가 화면 폭에 맞게 줄어들고 위 안내·아래 메뉴를 숨김. 켠 상태는 기억. */
+(function(){
+const K='tsbp_swide',big=()=>matchMedia('(min-width:760px)').matches,onSched=()=>routeKey()==='schedule';
+const isOn=()=>{try{return localStorage.getItem(K)==='1'}catch(_){return false}};
+function apply(){const s=onSched();if(s&&big())document.body.classList.add('wide');document.body.classList.toggle('sfit',s&&isOn());btn()}
+function btn(){if(!onSched())return;const t=document.querySelector('#view .stool');if(!t||t.querySelector('#sfx'))return;
+  const b=document.createElement('button');b.id='sfx';b.className='sfx'+(isOn()?' on':'');
+  b.innerHTML=isOn()?'기본 보기':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg> 한눈에 보기';
+  b.onclick=()=>{const on=!isOn();try{localStorage.setItem(K,on?'1':'0')}catch(_){}
+    const de=document.documentElement;
+    if(on&&!big()&&de.requestFullscreen&&!document.fullscreenElement)de.requestFullscreen().catch(()=>{});
+    if(!on&&document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});
+    t.querySelector('#sfx').remove();apply();window.scrollTo(0,0);
+    if(on&&!big()&&innerHeight>innerWidth)toast('폰을 가로로 돌리면 더 넓게 보여요',2200)};
+  t.appendChild(b)}
+const orig=ROUTES.schedule;
+ROUTES.schedule=async function(v,a){apply();const r=await orig(v,a);apply();return r};
+addEventListener('hashchange',()=>setTimeout(apply,0));
+addEventListener('resize',()=>{if(onSched())apply()});
+new MutationObserver(()=>{if(onSched())btn()}).observe(document.body,{childList:true,subtree:true});
 })();

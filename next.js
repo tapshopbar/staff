@@ -155,8 +155,8 @@ function sortGroups(ks){return ks.sort((a,b)=>{const ia=GROUP_ORDER.indexOf(a),i
 function brLabel(b){return b==='본사'?'전 지점':b}
 
 /* ── BETA 표시 + TSB music (2026-11-10) ── */
-const APP_V='BETA 0.11';
-function betaInfo(){openSheet(`<h2>지금은 베타 버전이에요</h2><div style="font-size:15px;line-height:1.75;font-weight:500;margin-top:10px;word-break:keep-all">매장에서 쓰면서 매주 고치고 있어요. 지금이 <b>11번째 업데이트(BETA 0.11)</b>예요.<br><b>12월 25일까지</b> 의견을 받고 베타를 마쳐요. 그리고 <b>2027년 1월, 정식 버전 1.0</b>으로 시작해요.<br><br>아주 작은 것도 좋아요. 고칠 것, 있으면 좋겠는 것, 좋았던 것까지 알려 주세요. 서포트센터가 전부 읽어요.</div><a class="pill wine full" href="#/feedback" data-close style="margin-top:18px">의견 보내기</a><p class="note" style="margin-top:12px;text-align:center">TSB People ${APP_V}</p>`)}
+const APP_V='BETA 0.12';
+function betaInfo(){openSheet(`<h2>지금은 베타 버전이에요</h2><div style="font-size:15px;line-height:1.75;font-weight:500;margin-top:10px;word-break:keep-all">매장에서 쓰면서 매주 고치고 있어요. 지금이 <b>12번째 업데이트(BETA 0.12)</b>예요.<br><b>12월 25일까지</b> 의견을 받고 베타를 마쳐요. 그리고 <b>2027년 1월, 정식 버전 1.0</b>으로 시작해요.<br><br>아주 작은 것도 좋아요. 고칠 것, 있으면 좋겠는 것, 좋았던 것까지 알려 주세요. 서포트센터가 전부 읽어요.</div><a class="pill wine full" href="#/feedback" data-close style="margin-top:18px">의견 보내기</a><p class="note" style="margin-top:12px;text-align:center">TSB People ${APP_V}</p>`)}
 const RADIO='https://tsb.wine/radio/';
 const MU_STORES=[['청계','cg'],['상암','sa'],['마곡','mg'],['동대문','dd']];
 ROUTES.music=function(v){const me=(S.data&&S.data.me)||{};
