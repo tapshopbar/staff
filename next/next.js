@@ -134,10 +134,16 @@ const BADGES=[
 ];
 function badgeIcon(b,sz){const st=b.s?`<span class="bstars">${'★'.repeat(b.s)}</span>`:'';return `<span class="bdg" style="--bg:${b.c};--sz:${sz}px;${b.dark?'--fg:#0E0E0E':''}"><svg viewBox="0 0 24 24" width="${Math.round(sz*.52)}" height="${Math.round(sz*.52)}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${b.i}"/></svg>${st}</span>`}
 const STRIP_KEYS=['hybrid','som1','pass','kind'];
-function badgeStrip(){return `<a class="bstrip" href="#/badges" aria-label="배지 준비 중, 눌러서 보기">${BADGES.filter(b=>STRIP_KEYS.includes(b.k)).map(b=>badgeIcon(b,26)).join('')}<span class="soon">COMING SOON</span></a>`}
+function myBadges(){return (S.data&&S.data.badges)||[]}
+function badgeStrip(){const got=myBadges();
+  if(!got.length)return `<a class="bstrip" href="#/badges" aria-label="배지 준비 중, 눌러서 보기">${BADGES.filter(b=>STRIP_KEYS.includes(b.k)).map(b=>badgeIcon(b,26)).join('')}<span class="soon">COMING SOON</span></a>`;
+  const gb=BADGES.filter(b=>got.includes(b.k)), rest=BADGES.filter(b=>STRIP_KEYS.includes(b.k)&&!got.includes(b.k));
+  return `<a class="bstrip got" href="#/badges" aria-label="내 배지 보기">${gb.map(b=>`<span class="gotb">${badgeIcon(b,30)}<b>${esc(b.n)}</b></span>`).join('')}<span class="dim">${rest.map(b=>badgeIcon(b,22)).join('')}</span><span class="soon">MY BADGE</span></a>`}
 ROUTES.badges=function(v){
-  v.innerHTML=`${back()}<section class="hero nhero bhero"><span class="tag"><i class="new">BADGE</i> COMING SOON</span><h1 style="margin:12px 0 8px">할 줄 아는 것이<br>배지가 돼요.</h1><p class="bsub">유니폼 왼쪽 가슴에 다는 진짜 배지. 지금 함께 만들고 있어요.</p></section>
-  <div class="bgrid">${BADGES.map(b=>`<div class="bcard">${badgeIcon(b,64)}<b>${esc(b.n)}</b><span class="ko">${esc(b.ko)}</span><span class="bd">${esc(b.d)}</span><i class="lock">준비 중</i></div>`).join('')}
+  const got=myBadges(), H=(S.data&&S.data.badgeHolders)||{};
+  const live=k=>(H[k]||[]).length>0;
+  v.innerHTML=`${back()}<section class="hero nhero bhero"><span class="tag"><i class="new">BADGE</i> ${got.length?'MY BADGE '+got.length:'COMING SOON'}</span>${got.length?`<div class="bmine">${BADGES.filter(b=>got.includes(b.k)).map(b=>`<div>${badgeIcon(b,84)}<b>${esc(b.n)}</b><span>${esc(b.d)}</span></div>`).join('')}</div>`:''}<h1 style="margin:12px 0 8px">할 줄 아는 것이<br>배지가 돼요.</h1><p class="bsub">유니폼 왼쪽 가슴에 다는 진짜 배지. ${got.length?'받은 배지는 근무표 이름 옆에도 보여요.':'지금 함께 만들고 있어요.'}</p></section>
+  <div class="bgrid">${BADGES.map(b=>`<div class="bcard ${got.includes(b.k)?'got':''}">${badgeIcon(b,64)}<b>${esc(b.n)}</b><span class="ko">${esc(b.ko)}</span><span class="bd">${esc(b.d)}</span>${live(b.k)?`<span class="bwho">${H[b.k].length}명 · ${H[b.k].map(x=>esc(x.name)).join(', ')}</span>`:''}${got.includes(b.k)?'<i class="lock gotl">획득</i>':live(b.k)?'<i class="lock on">시작</i>':'<i class="lock">준비 중</i>'}</div>`).join('')}
   <div class="bcard more"><span class="bdg" style="--bg:transparent;--sz:64px;border:1.5px dashed #C9C4BE;color:#9A948D"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span><b>New</b><span class="ko">새 배지</span><span class="bd">함께 정해서 더 만들 수 있어요</span></div></div>
   <p class="bnote">배지 기준과 시작 시기는 정해지면 공지로 알려 드릴게요.</p>`;
 };

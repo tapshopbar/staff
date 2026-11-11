@@ -67,3 +67,20 @@
 .rqo .presets{margin-top:8px}.rqo .presets button{padding:7px 9px;font-size:12.5px}
 .in.sm{font-size:14px;padding:8px 2px;margin-top:6px}
 .pchip{display:inline-block;font-size:10px;font-weight:800;padding:1px 5px;background:var(--wine);color:#fff;vertical-align:2px}.pchip.k{background:var(--navy)}
+
+/* 배지 획득 */
+.bstrip.got{opacity:1;filter:none;gap:0}
+.bstrip.got .gotb{display:inline-flex;align-items:center;gap:7px;margin-right:12px}
+.bstrip.got .gotb .bdg{margin-right:0;box-shadow:0 0 0 2px #10162A,0 0 0 3.5px #C9A45C}
+.bstrip.got .gotb b{color:#FFFDFC;font-size:13px;font-weight:800;letter-spacing:.2px}
+.bstrip.got .dim{display:inline-flex;opacity:.4;filter:saturate(.5)}
+.bstrip.got .soon{border-color:#C9A45C;color:#E9C46A}
+.bmine{display:flex;gap:18px;margin:16px 0 4px}
+.bmine>div{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.bmine .bdg{box-shadow:inset 0 0 0 2px #C9A45C,inset 0 0 0 4px rgba(255,255,255,.18),0 0 0 3px #10162A,0 0 0 5px #C9A45C;margin-bottom:6px}
+.bmine b{font-size:18px;font-weight:800}.bmine span{font-size:12.5px;opacity:.75}
+.bcard.got{border:1.5px solid #C9A45C;background:#FFFBEF}
+.bcard.got .bdg{filter:none}
+.bcard .bwho{font-size:11px;color:#8A6A2E;font-weight:700;margin-top:6px;line-height:1.4;word-break:keep-all}
+.bcard .lock.gotl{background:#C9A45C;color:#fff}
+.bcard .lock.on{background:#141B33;color:#fff}
