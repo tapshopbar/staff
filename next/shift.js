@@ -8,6 +8,11 @@ const tt=(a,b)=>`${esc(a)}–${esc(b)}${toM(b)!=null&&toM(a)!=null&&toM(b)<=toM(
 const pad=n=>String(n).padStart(2,'0');
 const HOURS=[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2];
 const PAL={홀:['#FFC100','#C99A9E','#8A5A62','#4A0B18','#E0875F','#B33A4E'],주방:['#FFC100','#7C8BB5','#3A4A7A','#141B33','#5E8C7A','#2F6B5A']};
+const TCLS=s=>{const n=String(s.pos||'');if(/미들\s*\/?\s*마감|롱/.test(n))return '미들마감';if(/오픈/.test(n))return '오픈';if(/마감/.test(n))return '마감';if(/미들/.test(n))return '미들';
+  const a=toM(s.start);let b=toM(s.end);if(a==null||b==null)return '미들';if(b<=a)b+=1440;
+  if(a<11*60)return b>=22*60?'풀':'오픈';if(b>=22*60+30)return a>=13*60?'마감':'미들마감';return '미들'};
+const TCOL={오픈:['#FFC100','#0E0E0E'],미들:['#C99A9E','#0E0E0E'],미들마감:['#8A5A62','#fff'],마감:['#4A0B18','#fff'],풀:['#2B2F3A','#fff']};
+const brL=b=>b==='본사'?'서포트센터':b;
 const hybI=(sz=14)=>`<i class="hybi" style="width:${sz}px;height:${sz}px" title="Hybrid"></i>`;
 window.hybI=hybI;
 
@@ -20,7 +25,10 @@ ROUTES.schedule=async function(v,arg){
   j.staff.forEach(s=>{s.part=s.part||'홀'});j.shifts.forEach(s=>{s.part=s.part||'홀'});
   const days=[...Array(7)].map((_,i)=>addD(start,i)), today=ymd(new Date());
   const parts=j.editParts, can=p=>parts.includes(p), sous=parts.length===1&&parts[0]==='주방';
-  const st={shifts:j.shifts.slice(),offs:j.offs.slice(),dirty:false,deletes:[],offDeletes:[],mode:'one',paint:null,filter:sous?'주방':'전체'};
+  const st={shifts:j.shifts.slice(),offs:j.offs.slice(),dirty:false,deletes:[],offDeletes:[],mode:'one',paint:null,filter:sous?'주방':'전체',color:(j.canEdit&&!j.foreign)?'파트':'시간대'};
+  const shStyle=(s,pr)=>{if(st.color==='시간대'){const c=TCOL[TCLS(s)];return `background:${c[0]};color:${c[1]}`}return `background:${shBg(s.part)};${pr&&pr.color?`box-shadow:inset 4px 0 0 ${pr.color}`:''}`};
+  const total=p=>st.shifts.filter(s=>s.email===p.email).reduce((a,s)=>a+hrs(s),0)+(+p.other||0);
+  const over=p=>{if(j.foreign)return '';const t=total(p);return t>52?'x':t>=48?'w':''};
   const my=(d.x&&d.x.shifts)||[];
   const people=()=>{const ps=j.staff.slice();st.shifts.forEach(s=>{if(!ps.some(p=>p.email===s.email))ps.push({email:s.email,name:s.name,part:s.part,role:'직원'})});return ps};
   const P=e=>people().find(p=>p.email===e)||{email:e,name:e,part:'홀'};
@@ -38,7 +46,7 @@ ROUTES.schedule=async function(v,arg){
     const rq=j.reqs.find(q=>q.email===p.email&&q.date===ds);
     let h='';
     if(lv)h+=`<span class="sh lv">${esc(lv.type)}<small>${lv.status==='진행중'?'결재중':'확정'}</small></span>`;
-    h+=cell.map(s=>{const pr=presetOf(s);return `<button class="sh ${s.status!=='확정'?'draft':''} ${can(s.part)?'':'ro'}" data-id="${esc(s.id||s.tmp)}" style="background:${shBg(s.part)};${pr&&pr.color?`box-shadow:inset 4px 0 0 ${pr.color}`:''}">${tt(s.start,s.end)}<small>${s.part!==p.part?`<b class="pt">${s.part==='하이브리드'?'단독':s.part}</b> `:''}${esc(s.pos||'')}${s.memo&&String(s.memo).startsWith('대타')?' · 대타':''}</small></button>`}).join('');
+    h+=cell.map(s=>{const pr=presetOf(s);return `<button class="sh ${s.status!=='확정'?'draft':''} ${can(s.part)?'':'ro'}" data-id="${esc(s.id||s.tmp)}" style="${shStyle(s,pr)}">${tt(s.start,s.end)}<small>${s.part!==p.part||(st.color==='시간대'&&s.part==='하이브리드')?`<b class="pt">${s.part==='하이브리드'?'단독':s.part}</b> `:''}${esc(s.pos||'')}${s.memo&&String(s.memo).startsWith('대타')?' · 대타':''}</small></button>`}).join('');
     if(off)h+=`<button class="sh off ${off.status!=='확정'?'draft':''} ${canOff(p)?'':'ro'}" data-off="${esc(off.id||off.tmp)}">휴무${off.n?` <b>${off.n}</b>`:''}<small>${off.n?'이달 '+off.n+'번째':'저장 후 번호'}</small></button>`;
     if(!cell.length&&!off&&rq&&rq.status==='신청')h+=`<span class="rqc ${rq.kind==='휴무'?'o':'w'}">${rq.kind==='휴무'?'휴무 희망':'희망 '+esc(rq.preset||(rq.start?rq.start+'–'+rq.end:''))}</span>`;
     else if(!cell.length&&!off&&!rq){const av=(j.avail||[]).find(a=>a.email===p.email&&a.date===ds);if(av)h+=`<span class="avl" style="color:${av.ok?'var(--ok)':'var(--bad)'}">${av.ok?'가능 '+esc(av.start)+'–'+esc(av.end):'불가'}</span>`}
@@ -55,15 +63,16 @@ ROUTES.schedule=async function(v,arg){
     const po=p=>st.offs.filter(o=>o.email===p.email).length;
     const draft=isDraft();
     const paintBar=st.mode==='paint'?`<div class="pbar">${j.presets.filter(x=>can(x.part)).map((x,i)=>`<button data-pi="${j.presets.indexOf(x)}" class="${st.paint&&st.paint.t==='p'&&st.paint.i===j.presets.indexOf(x)?'on':''}"><i style="background:${x.part==='주방'?'var(--navy)':'var(--wine)'};box-shadow:inset 3px 0 0 ${esc(x.color||'transparent')}"></i>${esc(x.part==='주방'&&!sous?'주방 ':'')}${esc(x.name)}<small>${esc(x.start)}–${esc(x.end)}</small></button>`).join('')}<button data-pt="off" class="${st.paint&&st.paint.t==='off'?'on':''}"><i style="background:#D9D4D1"></i>휴무<small>쉬는 날</small></button><button data-pt="erase" class="${st.paint&&st.paint.t==='erase'?'on':''}"><i class="er"></i>지우기<small>칸 비우기</small></button></div><p class="note" style="padding-top:0">${st.paint?'칸을 톡톡 누르면 바로 들어가요. 다 넣으면 아래 확정하기.':'위에서 근무를 하나 고르고, 표의 칸을 눌러요.'}</p>`:'';
-    v.innerHTML=`<div class="title"><h1>스케줄</h1><p>${esc(branch)} · ${fmtDay(start)} – ${fmtDay(days[6])}${sous?' · 주방 편집':''}</p></div>
+    v.innerHTML=`<div class="title"><h1>스케줄</h1><p>${esc(brL(branch))} · ${fmtDay(start)} – ${fmtDay(days[6])}${sous?' · 주방 편집':''}</p></div>${j.foreign?`<div class="fban">${esc(brL(branch))} 근무표 · 읽기 전용 · 확정된 근무만 보여요</div>`:''}
     ${my.length&&branch===me.branch?`<section class="blk navy" style="margin-top:12px"><span class="tag"><i class="new">MY</i> 다가오는 내 근무</span><div class="list" style="padding:0;margin-top:10px">${my.slice(0,3).map(s=>`<div class="li" style="cursor:default"><div class="m"><div class="t1">${fmtDay(s.date)} ${tt(s.start,s.end)}</div><div class="t2">${esc(s.branch)}${s.pos?' · '+esc(s.pos):''} · ${s.hours.toFixed(1)}h</div></div><a class="u" style="font-size:12.5px" href="#/swap">대타</a></div>`).join('')}</div></section>`:''}
-    <div class="wk" style="margin-top:8px"><button id="pw">${I('back',18)}</button><div style="text-align:center">${j.branches.length>1?`<select class="in" id="bsel" style="font-size:15px;padding:4px 22px 4px 2px;width:auto;font-weight:800">${j.branches.map(b=>`<option ${b===branch?'selected':''}>${esc(b)}</option>`).join('')}</select>`:`<b>${esc(branch)}</b>`}</div><button id="nw">${I('next',18)}</button></div>
-    <div class="stool"><div class="sseg">${['전체','홀','주방'].map(f=>`<button data-f="${f}" class="${st.filter===f?'on':''}">${f}</button>`).join('')}</div>${j.canEdit?`<div class="sseg m">${[['one','하나씩'],['paint','연속 넣기']].map(([k,l])=>`<button data-m="${k}" class="${st.mode===k?'on':''}">${l}</button>`).join('')}</div>`:''}</div>
+    <div class="wk" style="margin-top:8px"><button id="pw">${I('back',18)}</button><div style="text-align:center">${j.branches.length>1?`<select class="in" id="bsel" style="font-size:15px;padding:4px 22px 4px 2px;width:auto;font-weight:800">${j.branches.map(b=>`<option value="${esc(b)}" ${b===branch?'selected':''}>${esc(brL(b))}${j.myBranch&&b===j.myBranch?' (우리)':''}</option>`).join('')}</select>`:`<b>${esc(brL(branch))}</b>`}</div><button id="nw">${I('next',18)}</button></div>
+    ${j.canEdit&&j.horizon?`<div class="hz"><span class="hl">3주 앞 목표</span>${j.horizon.map((h,i)=>`<a href="#/schedule/${encodeURIComponent(branch)}@${h.start}" class="hd ${h.state==='확정'?'ok':h.state==='임시'?'dr':''} ${h.start===start?'cur':''}"><b>${i===0?'이번 주':i===1?'다음 주':'+'+i+'주'}</b><small>${h.state}</small></a>`).join('')}<button class="hfill" id="h3">3주 채우기</button></div>`:''}
+    <div class="stool"><div class="sseg">${['전체','홀','주방'].map(f=>`<button data-f="${f}" class="${st.filter===f?'on':''}">${f}</button>`).join('')}</div><div class="sseg c">${['파트','시간대'].map(c=>`<button data-c="${c}" class="${st.color===c?'on':''}">${c==='파트'?'색: 파트':'색: 시간대'}</button>`).join('')}</div>${j.canEdit?`<div class="sseg m">${[['one','하나씩'],['paint','연속 넣기']].map(([k,l])=>`<button data-m="${k}" class="${st.mode===k?'on':''}">${l}</button>`).join('')}</div>`:''}</div>
     ${paintBar}
-    <div class="sgrid sg2"><table><thead><tr><th style="text-align:left">직원</th>${days.map(ds=>{const dt=pd(ds);return `<th class="${ds===today?'today':''}">${WD[dt.getDay()]} ${dt.getMonth()+1}.${dt.getDate()}<span class="h">홀 ${cnt(ds,'홀')} · 주방 ${cnt(ds,'주방')}</span></th>`}).join('')}</tr></thead><tbody>
-    ${groups.map(G=>`<tr class="grp"><td colspan="8"><span class="gdot ${G.g==='주방'?'k':''}"></span>${G.g} <small>${G.list.length}명${G.g==='주방'&&!can('주방')&&!j.canEdit?'':''}</small></td></tr>`+G.list.map(p=>`<tr><td class="nm ${j.canEditStaff?'ed':''}" data-sp="${esc(p.email)}">${esc(p.name)}${p.hybrid?hybI(13):''}<small>${p.helper?'Hybrid · '+esc(p.part)+' 소속':pw(p).toFixed(1)+'h · 휴무 '+po(p)}</small>${p.role==='점장'?'<small class="rl">점장</small>':p.sous?'<small class="rl">수쉐프</small>':''}</td>${days.map(ds=>`<td data-e="${esc(p.email)}" data-d="${ds}" class="${st.mode==='paint'&&canCell(p)?'pt':''}">${cellHtml(p,ds)}</td>`).join('')}</tr>`).join('')).join('')}
+    <div class="sgrid sg2 ${st.color==='시간대'?'tm':''}"><table><thead><tr><th style="text-align:left">직원</th>${days.map(ds=>{const dt=pd(ds);return `<th class="${ds===today?'today':''}">${WD[dt.getDay()]} ${dt.getMonth()+1}.${dt.getDate()}<span class="h">홀 ${cnt(ds,'홀')} · 주방 ${cnt(ds,'주방')}</span></th>`}).join('')}</tr></thead><tbody>
+    ${groups.map(G=>`<tr class="grp"><td colspan="8"><span class="gdot ${G.g==='주방'?'k':''}"></span>${G.g} <small>${G.list.length}명${G.g==='주방'&&!can('주방')&&!j.canEdit?'':''}</small></td></tr>`+G.list.map(p=>`<tr><td class="nm ${j.canEditStaff?'ed':''}" data-sp="${esc(p.email)}">${esc(p.name)}${p.hybrid?hybI(13):''}<small>${p.helper?'Hybrid · '+esc(p.part)+' 소속':total(p).toFixed(1)+'h · 휴무 '+po(p)}</small>${!p.helper&&p.other?`<small class="oth">타지점 ${p.other}h 포함</small>`:''}${!p.helper&&over(p)?`<small class="ov ${over(p)}">${over(p)==='x'?'52h 초과':'52h 임박'}</small>`:''}${p.role==='점장'?'<small class="rl">점장</small>':p.sous?'<small class="rl">수쉐프</small>':''}</td>${days.map(ds=>`<td data-e="${esc(p.email)}" data-d="${ds}" class="${st.mode==='paint'&&canCell(p)?'pt':''}">${cellHtml(p,ds)}</td>`).join('')}</tr>`).join('')).join('')}
     </tbody></table></div>
-    <div class="legend"><span><i style="background:var(--wine)"></i>홀</span><span><i style="background:var(--navy)"></i>주방</span><span><i style="background:linear-gradient(90deg,#6E1426 50%,#141B33 50%)"></i>단독(Hybrid)</span><span><i style="background:#D9D4D1"></i>휴무</span><span><i style="background:var(--yellow)"></i>휴가</span><span><i style="border:1.5px dashed var(--ink);background:transparent"></i>임시 (직원에게 안 보임)</span></div>
+    <div class="legend">${st.color==='시간대'?Object.entries(TCOL).map(([k,c])=>`<span><i style="background:${c[0]}"></i>${k==='미들마감'?'미들~마감':k==='풀'?'풀타임':k}</span>`).join(''):`<span><i style="background:var(--wine)"></i>홀</span><span><i style="background:var(--navy)"></i>주방</span><span><i style="background:linear-gradient(90deg,#6E1426 50%,#141B33 50%)"></i>단독(Hybrid)</span>`}<span><i style="background:#D9D4D1"></i>휴무</span><span><i style="${st.color==='시간대'?'background:#fff;border:2px solid var(--yellow)':'background:var(--yellow)'}"></i>휴가</span><span><i style="border:1.5px dashed var(--ink);background:transparent"></i>임시 (직원에게 안 보임)</span></div>
     ${j.canEdit?`<div class="btnrow" style="flex-wrap:wrap"><button class="pill line sm" id="cp">지난주 복사</button>${st.dirty?'<button class="pill ink sm" id="sv">임시 저장</button>':''}<button class="pill wine sm" id="pub" ${(!draft&&!st.dirty)?'disabled':''}>${sous?'주방 ':''}확정하고 알리기</button></div>
       <p class="note">${sous?'수쉐프님은 주방 근무와 주방 직원 휴무를 편집할 수 있어요. Hybrid 배지가 있는 홀 직원도 주방 근무로 넣을 수 있어요.':'빈 칸 + 를 누르거나 연속 넣기로 근무를 넣고, 확정하면 직원에게 메일·앱 알림이 가요.'}${j.canEditStaff?' 이름을 누르면 홀/주방, Hybrid를 바꿀 수 있어요.':''} <a class="u" href="javascript:void 0" id="pm">프리셋 관리</a></p>`:''}
     <div class="list" style="margin-top:14px"><a class="li" href="#/avail/${start}"><div class="m"><div class="t1">근무 신청 ${j.canEdit?'· 신청 현황':''}</div><div class="t2">${j.canEdit?(j.reqs.length?'이번 주 '+new Set(j.reqs.map(q=>q.email)).size+'명 신청 · 표에 점선 칩으로 보여요':'아직 신청한 사람이 없어요'):'휴무 희망 · 근무 희망 내기'}</div></div><span class="ar">${I('next',18)}</span></a><a class="li" href="#/swap"><div class="m"><div class="t1">대타 게시판</div><div class="t2">근무를 바꿔야 하면 여기서</div></div><span class="ar">${I('next',18)}</span></a><a class="li" href="#/cal"><div class="m"><div class="t1">휴가 캘린더</div><div class="t2">월간 휴가 현황</div></div><span class="ar">${I('next',18)}</span></a>${d.x&&d.x.isHQ?`<a class="li" href="#/console"><div class="m"><div class="t1">전 지점 스케줄 한눈에</div><div class="t2">운영 콘솔</div></div><span class="ar">${I('next',18)}</span></a>`:''}</div>`;
@@ -72,6 +81,8 @@ ROUTES.schedule=async function(v,arg){
     $('#nw').onclick=()=>location.hash=`#/schedule/${encodeURIComponent(branch)}@${addD(start,7)}`;
     if($('#bsel'))$('#bsel').onchange=e=>location.hash=`#/schedule/${encodeURIComponent(e.target.value)}@${start}`;
     v.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{st.filter=b.dataset.f;draw()});
+    v.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{st.color=b.dataset.c;draw()});
+    if($('#h3'))$('#h3').onclick=async e=>{const ws=j.horizon.map(h=>h.start).filter(w=>w>start).slice(0,3);if(!ws.length)return toast('이미 3주 앞이에요');if(!confirm(`지금 보는 주(${fmtDay(start)}) 근무를 기준으로 ${ws.length}주를 임시로 채울까요?\n이미 근무가 있는 주는 건너뛰어요. 확정 전까지 직원에게 안 보여요.`))return;busy(e.currentTarget,true,'<div class="spin d"></div>');let n=0,sk=0;for(const w of ws){try{const r=await api('schedule.copy',{branch,start:w,v2:1});n+=r.copied}catch(er){sk++}}toast(`근무 ${n}개를 채웠어요${sk?' · '+sk+'주는 이미 있어서 건너뜀':''}`);ROUTES.schedule(v,arg)};
     if(j.canEditStaff)v.querySelectorAll('td.nm[data-sp]').forEach(t=>t.onclick=()=>staffSheet(P(t.dataset.sp)));
     if(!j.canEdit)return;
     v.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{st.mode=b.dataset.m;if(st.mode==='paint'&&!st.paint){const f=j.presets.findIndex(x=>can(x.part));st.paint=f>=0?{t:'p',i:f}:{t:'off'}}draw()});
@@ -193,7 +204,9 @@ ROUTES.schedule=async function(v,arg){
       paint();});
   };
 
-  const save=async(btn,publish)=>{busy(btn,true);
+  const save=async(btn,publish)=>{
+    if(publish){const ov=people().filter(p=>total(p)>52);if(ov.length&&!confirm(`주 52시간을 넘는 직원이 있어요:\n${ov.map(p=>p.name+' '+total(p).toFixed(1)+'h').join(', ')}\n\n법 위반이 될 수 있어요. 그래도 확정할까요?`))return}
+    busy(btn,true);
     try{ if(st.dirty) await api('schedule.save',{branch,v2:1,shifts:st.shifts.filter(s=>s.changed).map(s=>({id:s.id,date:s.date,email:s.email,start:s.start,end:s.end,brk:s.brk,pos:s.pos,memo:s.memo,part:s.part})),deletes:st.deletes,offs:st.offs.filter(o=>o.tmp).map(o=>({email:o.email,date:o.date})),offDeletes:st.offDeletes});
       if(publish){const r=await api('schedule.publish',{branch,start,v2:1});toast(`확정! ${r.notified}명에게 알렸어요`)}else toast('임시 저장했어요');
       ROUTES.schedule(v,arg)}catch(e){toast(e.message);busy(btn,false)}};
@@ -210,7 +223,7 @@ ROUTES.avail=async function(v,start){
   const submitted=j.mine.length>0;
   const draw=()=>{
     const off=days.filter(ds=>st[ds].kind==='휴무').length,work=days.filter(ds=>st[ds].kind==='근무').length;
-    v.innerHTML=`${back()}<div class="title"><h1>근무 신청.</h1><p>쉬고 싶은 날과 일하고 싶은 시간을 알려 주세요. 점장님이 보고 근무표를 짜요. ${submitted?'<b>제출했어요.</b> 바꾸면 다시 제출하면 돼요.':''}</p></div>
+    v.innerHTML=`${back()}<div class="title"><h1>근무 신청.</h1><p>쉬고 싶은 날과 일하고 싶은 시간을 알려 주세요. 점장님이 보고 근무표를 짜요. 3주 뒤까지 미리 낼 수 있어요. ${submitted?'<b>제출했어요.</b> 바꾸면 다시 제출하면 돼요.':''}</p></div>
      <div class="wk"><a href="#/avail/${addD(start,-7)}">${I('back',18)}</a><b>${pd(start).getMonth()+1}월 ${pd(start).getDate()}일 주</b><a href="#/avail/${addD(start,7)}">${I('next',18)}</a></div>
      <div class="rqs">${days.map(ds=>{const s=st[ds],dt=pd(ds);return `<div class="rq"><div class="rqd"><b>${WD[dt.getDay()]}</b><span>${dt.getMonth()+1}.${dt.getDate()}</span>${s.status&&s.status!=='신청'?`<i class="rs ${s.status==='반영'?'ok':'no'}">${s.status}</i>`:''}</div><div class="rqo">
        <div class="sseg sm">${[['','상관없음'],['휴무','휴무 희망'],['근무','근무 희망']].map(([k,l])=>`<button data-d="${ds}" data-k="${k}" class="${s.kind===k?'on':''}">${l}</button>`).join('')}</div>

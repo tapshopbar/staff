@@ -84,3 +84,20 @@
 .bcard .bwho{font-size:11px;color:#8A6A2E;font-weight:700;margin-top:6px;line-height:1.4;word-break:keep-all}
 .bcard .lock.gotl{background:#C9A45C;color:#fff}
 .bcard .lock.on{background:#141B33;color:#fff}
+
+/* 시간대 색 · 타지점 · 52h · 3주 */
+.sseg.c button{font-size:12px;padding:8px 9px}
+.stool{row-gap:8px}
+.fban{margin:6px var(--pad) 0;padding:9px 12px;background:#EEF1F8;border-left:3px solid var(--navy);font-size:13px;font-weight:700}
+.sg2 td.nm small.ov{display:inline-block;margin-top:2px;font-size:9.5px;font-weight:800;padding:1px 5px;color:#fff}
+.sg2 td.nm small.ov.x{background:var(--bad)}.sg2 td.nm small.ov.w{background:var(--warn)}
+.sg2 td.nm small.oth{color:var(--navy);font-weight:700;font-size:9.5px}
+.hz{display:flex;align-items:stretch;gap:4px;padding:0 var(--pad) 10px;overflow-x:auto}
+.hz .hl{flex:none;align-self:center;font-size:10.5px;font-weight:800;letter-spacing:.04em;color:var(--mute);margin-right:4px;writing-mode:horizontal-tb}
+.hz .hd{flex:1;min-width:58px;text-decoration:none;color:var(--ink);border:1.5px solid var(--line);padding:5px 6px;text-align:center}
+.hz .hd b{display:block;font-size:11.5px;font-weight:800}.hz .hd small{font-size:10.5px;font-weight:700;color:var(--mute)}
+.hz .hd.ok{background:#E8F3EC;border-color:#BFDCCB}.hz .hd.ok small{color:var(--ok)}
+.hz .hd.dr{background:#FFF7E0;border-color:#F0D98C}.hz .hd.dr small{color:var(--warn)}
+.hz .hd.cur{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.hz .hfill{flex:none;font-size:11.5px;font-weight:800;border:1.5px solid var(--ink);padding:0 8px;white-space:nowrap}
+.sg2.tm .sh.lv{background:#fff;box-shadow:inset 0 0 0 2px var(--yellow)}
