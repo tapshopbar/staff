@@ -230,7 +230,7 @@ ROUTES['']=function vHome(v){
   ${x.unreadRequired?`<a class="bn y" href="#/notice"><div><b>필독 공지 ${x.unreadRequired}건</b><span>읽고 확인 버튼을 눌러 주세요</span></div><span class="go">읽기</span></a>`:''}
   ${d.inboxCount?`<a class="bn r" href="#/inbox"><div><b>결재할 문서 ${d.inboxCount}건</b><span>기다리고 있어요</span></div><span class="go">결재하기</span></a>`:''}
   ${d.pendingUsers?`<a class="bn w" href="#/admin"><div><b>가입 요청 ${d.pendingUsers}명</b><span>확인 후 승인해 주세요</span></div><span class="go">확인</span></a>`:''}
-  ${!x.availDone&&(me.role==='직원'||me.role==='점장')?`<a class="bn" href="#/avail/${x.nextMon}"><div><b>다음 주 근무 가능 시간</b><span>${fmtDay(x.nextMon)} 주 · 아직 안 냈어요</span></div><span class="go">제출</span></a>`:''}
+  ${!x.availDone&&!localStorage.getItem('tsbp_req_'+x.nextMon)&&(me.role==='직원'||me.role==='점장')?`<a class="bn" href="#/avail/${x.nextMon}"><div><b>다음 주 근무 신청</b><span>${fmtDay(x.nextMon)} 주 · 휴무 희망·근무 희망 아직 안 냈어요</span></div><span class="go">신청</span></a>`:''}
   ${x.kudosNew?`<a class="bn y" href="#/kudos"><div><b>칭찬카드 ${x.kudosNew}장 도착!</b><span>동료가 고마운 마음을 보냈어요</span></div><span class="go">열기</span></a>`:''}
   ${x.incOpen?`<a class="bn w" href="#/incident"><div><b>처리 중인 사고·클레임 ${x.incOpen}건</b><span>확인하고 처리 완료해 주세요</span></div><span class="go">보기</span></a>`:''}
   ${x.swapOpen?`<a class="bn" href="#/swap"><div><b>대타 구해요 ${x.swapOpen}건</b><span>우리 지점 동료가 도움을 기다려요</span></div><span class="go">보기</span></a>`:''}
@@ -259,7 +259,7 @@ ROUTES['']=function vHome(v){
     <a class="tile p" href="#/quiz" style="background-image:url(../assets/americano.jpg)"><b>와인<br>퀴즈</b><small>이번 달 랭킹</small></a>
     <a class="tile" href="#/kudos"><b>칭찬<br>카드</b><small>고마운 동료에게</small></a>
     <a class="tile" href="#/swap"><b>대타<br>게시판</b><small>${x.swapOpen?x.swapOpen+'건 모집중':'근무 바꾸기'}</small></a>
-    <a class="tile" href="#/avail/${x.nextMon||''}"><b>근무<br>가능 시간</b><small>${x.availDone?'제출 완료':'다음 주 제출'}</small></a>
+    <a class="tile" href="#/avail/${x.nextMon||''}"><b>근무<br>신청</b><small>${x.availDone||localStorage.getItem('tsbp_req_'+x.nextMon)?'제출 완료':'휴무·희망 근무'}</small></a>
     <a class="tile" href="#/apply"><b>내 신청</b><small>진행 상황</small></a>
   </div>
   ${(x.notices||[]).length?`<div class="sec"><h2>공지 · 매뉴얼</h2><a href="#/notice">전체</a></div><div class="list">${x.notices.slice(0,3).map(n=>`<a class="li" href="#/notice/${n.id}"><div class="m"><div class="t1">${n.pinned?'<i class="new" style="margin-right:6px">PIN</i>':''}${esc(n.title)}</div><div class="t2">${esc(n.by)} · ${esc(String(n.at).slice(5,10))}</div></div>${n.required?chip(n.read?'읽음':'안읽음',n.read?'확인함':'필독'):''}</a>`).join('')}</div>`:''}
@@ -479,7 +479,7 @@ ROUTES.more=function(v){
     ${item('#/incident','사고 · 클레임','보고 · 처리 현황',x.incOpen?chip('신청',x.incOpen+'건'):'')}
     ${item('#/quiz','와인 퀴즈','이번 달 랭킹 · 레벨')}
     ${item('#/kudos','칭찬카드','보내기 · 피드 · 칭찬왕')}
-    ${item('#/avail','근무 가능 시간','다음 주 제출')}
+    ${item('#/avail','근무 신청','휴무 희망 · 근무 희망')}
     <a class="li" href="${esc(d.policyUrl)}" target="_blank" rel="noopener"><div class="m"><div class="t1">휴가 및 휴직 가이드</div><div class="t2">Notion 규정 전문</div></div><span class="ar">${I('next',18)}</span></a>
    </div>
    ${d.canAdmin?`<div class="sec"><h2>관리</h2></div><div class="list">
