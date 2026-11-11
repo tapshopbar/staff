@@ -1,0 +1,25 @@
+/* 근무표 한눈에 보기 (11/11) */
+.stool .sfx{display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--ink);padding:7px 11px;font-weight:800;font-size:13px;white-space:nowrap;background:#fff}
+.stool .sfx.on{background:var(--ink);color:#fff}
+body.wide .sgrid table{min-width:0}
+body.sfit .app{max-width:none;padding-bottom:16px}
+body.sfit .nav{display:none}
+body.sfit #view>.title,body.sfit #view>section.blk{display:none}
+body.sfit #view>.wk{margin-top:0 !important}
+body.sfit .sgrid{padding:0 6px;overflow-x:hidden}
+body.sfit .sgrid table{min-width:0;width:100%;table-layout:fixed}
+body.sfit .sgrid th{white-space:normal;font-size:10.5px;padding:5px 1px;line-height:1.2}
+body.sfit .sgrid th:first-child{width:62px}
+body.sfit .sgrid th .h{font-size:8.5px;letter-spacing:-.03em}
+body.sfit .sgrid td{min-width:0;height:auto;padding:2px 1px}
+body.sfit .sgrid td.nm{min-width:0;white-space:normal;font-size:12px;padding:5px 3px 3px 0;line-height:1.2;word-break:keep-all}
+body.sfit .sgrid td.nm small{font-size:9px}
+body.sfit .sgrid td.nm small.oth{display:none}
+body.sfit .sh{font-size:10.5px;padding:3px 3px;letter-spacing:-.04em;margin-bottom:2px;line-height:1.15;word-break:keep-all}
+body.sfit .sh small{font-size:9px}
+body.sfit .sh sup{font-size:7px}
+body.sfit .rqc,body.sfit .avl{font-size:9px;padding:2px 2px;letter-spacing:-.04em}
+body.sfit .addc{min-height:34px;font-size:15px}
+body.sfit .legend{gap:8px;font-size:11px;padding:8px 10px}
+body.sfit .stool,body.sfit .hz,body.sfit .pbar{padding-left:10px;padding-right:10px}
+@media (min-width:760px){body.sfit .sgrid th:first-child{width:110px}body.sfit .sh{font-size:12px;padding:5px 6px}body.sfit .sgrid td{padding:4px 3px}}
