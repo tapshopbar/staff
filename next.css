@@ -387,3 +387,26 @@ body.sfit .stool,body.sfit .hz,body.sfit .pbar{padding-left:10px;padding-right:1
 .pmt{display:inline-flex;align-items:center;gap:2px}
 .pmt select{width:auto;min-width:62px;padding:6px 22px 6px 8px;font-weight:800;font-size:16px;background-position:right 4px center}
 .stool .pmb{border:1.5px solid var(--ink);padding:7px 11px;font-weight:800;font-size:13px;background:#fff;white-space:nowrap}
+
+/* ── 정산 메모 (2026-11-12 라이브 v31, next/memo.css 합침) ── */
+/* 정산 메모 (2026-11-12 미리보기) */
+.mtest{margin:0 var(--pad) 4px;background:var(--yellow);color:var(--ink);font-size:12.5px;font-weight:700;padding:8px 12px;line-height:1.45}
+.mtop{display:flex;gap:14px;align-items:flex-end}
+.mtop>div{flex:1;min-width:0}
+.mtop label.f{margin-top:0}
+.mwho div{font-size:15px;font-weight:700;padding:11px 2px;border-bottom:1.5px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mline{border:1.5px solid var(--ink);padding:10px 12px 14px;margin-top:12px;background:#fff}
+.mline .mh{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;color:var(--mute)}
+.mline .mh b{display:inline-grid;place-items:center;width:22px;height:22px;background:var(--ink);color:#fff;font-size:12px}
+.mline .mx{font-size:12.5px;font-weight:700;color:var(--wine2);padding:4px 2px;background:none;border:0}
+.mline .in{font-size:16px;min-height:0}
+.mline select.in{margin-top:4px}
+.mline .mr2{display:flex;gap:12px}
+.mline .mr2 .in:first-child{flex:0 0 32%}
+.mline .mr2 .in:last-child{flex:1}
+.mday{font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--wine2);margin:16px 0 0}
+.mrow{padding:10px 0}
+.mrow .q{font-size:15px}
+.mrow .mt{font-size:13.5px;color:var(--ink);margin-top:2px;word-break:keep-all}
+.mbr{margin-bottom:0}
+.mform{padding-top:18px}
