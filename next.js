@@ -155,8 +155,8 @@ function sortGroups(ks){return ks.sort((a,b)=>{const ia=GROUP_ORDER.indexOf(a),i
 function brLabel(b){return b==='본사'?'전 지점':b}
 
 /* ── BETA 표시 + TSB music (2026-11-10) ── */
-const APP_V='v27';
-function betaInfo(){openSheet(`<h2>지금은 베타 버전이에요</h2><div style="font-size:15px;line-height:1.75;font-weight:500;margin-top:10px;word-break:keep-all">12월까지 매장에서 쓰면서 불편한 점을 고치고 있어요.<br><b>2027년 1월, 정식 버전 1.0</b>으로 시작해요.<br><br>쓰다가 이상하거나 필요한 기능이 있으면 바로 알려 주세요. 보내 준 의견은 서포트센터가 모두 읽어요.</div><a class="pill ink full" href="#/ask" data-close style="margin-top:18px">의견 보내기</a><p class="note" style="margin-top:12px;text-align:center">TSB People BETA · ${APP_V}</p>`)}
+const APP_V='BETA 0.11';
+function betaInfo(){openSheet(`<h2>지금은 베타 버전이에요</h2><div style="font-size:15px;line-height:1.75;font-weight:500;margin-top:10px;word-break:keep-all">매장에서 쓰면서 매주 고치고 있어요. 지금이 <b>11번째 업데이트(BETA 0.11)</b>예요.<br><b>12월 25일까지</b> 의견을 받고 베타를 마쳐요. 그리고 <b>2027년 1월, 정식 버전 1.0</b>으로 시작해요.<br><br>아주 작은 것도 좋아요. 고칠 것, 있으면 좋겠는 것, 좋았던 것까지 알려 주세요. 서포트센터가 전부 읽어요.</div><a class="pill wine full" href="#/feedback" data-close style="margin-top:18px">의견 보내기</a><p class="note" style="margin-top:12px;text-align:center">TSB People ${APP_V}</p>`)}
 const RADIO='https://tsb.wine/radio/';
 const MU_STORES=[['청계','cg'],['상암','sa'],['마곡','mg'],['동대문','dd']];
 ROUTES.music=function(v){const me=(S.data&&S.data.me)||{};
@@ -235,3 +235,32 @@ ROUTES.learn=async function(v,id){
 };
 /* 와인 퀴즈 화면 위에 러닝 바로가기 */
 (function(){const _q=ROUTES.quiz;if(!_q)return;ROUTES.quiz=async function(v){const ob=new MutationObserver(()=>{if(!location.hash.startsWith('#/quiz')){ob.disconnect();return}const h=v.querySelector('.hero');if(h&&!v.querySelector('.qzlearn'))h.insertAdjacentHTML('afterend','<a class="qzlearn" href="#/learn"><div><b>러닝 · 와인 공부</b><br><span>퀴즈 전에 2분 공부하고 오기</span></div><i class="arr">›</i></a>')});ob.observe(v,{childList:true});setTimeout(()=>ob.disconnect(),600000);return _q(v)}})();
+
+/* ── 의견 보내기 (타입폼처럼 한 장씩, 2026-11-11) ── */
+const FB_KIND=[['불편','고쳐 주세요','불편하거나 안 되는 것'],['제안','이런 게 있으면 좋겠어요','새 기능, 더 쉬운 방법'],['칭찬','이거 좋아요','잘 쓰고 있는 것'],['질문','궁금해요','어떻게 쓰는지, 왜 그런지']];
+const FB_AREA=['근무표 · 근무 신청','출퇴근','개인경비','공지','신청 · 결재','배지 · 러닝 · music','앱 전체 · 기타'];
+const FB_HINT={불편:'예) 근무표에서 휴무 넣을 때 두 번 눌러야 해요',제안:'예) 대타 구하면 단톡에도 알림이 가면 좋겠어요',칭찬:'예) 연속 넣기 덕분에 근무표 10분 만에 끝냈어요',질문:'예) 다른 지점 지원 가면 출근은 어디로 찍어요?'};
+ROUTES.feedback=function(v){
+  const me=(S.data&&S.data.me)||{};const f={kind:'',area:'',body:'',anon:false};let step=0;
+  const days=Math.max(0,Math.ceil((new Date('2026-12-25T23:59:59+09:00')-new Date())/864e5));
+  const draw=(dir)=>{
+    const prog=`<div class="fbp"><i style="width:${(step/4)*100}%"></i></div>`;
+    let h='';
+    if(step===0)h=`<span class="fbn">1 / 4</span><h1>어떤 이야기예요?</h1><div class="fbk">${FB_KIND.map(([k,t,d])=>`<button data-k="${k}" class="${f.kind===k?'on':''}"><b>${t}</b><span>${d}</span></button>`).join('')}</div>`;
+    if(step===1)h=`<span class="fbn">2 / 4</span><h1>어느 화면 얘기예요?</h1><div class="fba">${FB_AREA.map(a=>`<button data-a="${a}" class="${f.area===a?'on':''}">${a}</button>`).join('')}</div>`;
+    if(step===2)h=`<span class="fbn">3 / 4</span><h1>편하게 적어 주세요.</h1><p class="fbs">한 줄도 좋아요. 맞춤법 신경 안 써도 돼요.</p><textarea id="fbt" class="fbt" rows="5" placeholder="${esc(FB_HINT[f.kind]||'')}">${esc(f.body)}</textarea><button class="pill y fbgo" id="fbn2">다음</button>`;
+    if(step===3)h=`<span class="fbn">4 / 4</span><h1>이름을 남길까요?</h1><div class="fbk two"><button data-n="0" class="${!f.anon?'on':''}"><b>${esc(me.name||'')}님으로</b><span>답이 필요하면 알려 드릴게요</span></button><button data-n="1" class="${f.anon?'on':''}"><b>익명으로</b><span>이름 없이 보내요</span></button></div><button class="pill y fbgo" id="fbs">보내기</button>`;
+    if(step===4)h=`<div class="fbdone"><span class="fbcheck">✓</span><h1>고마워요${f.anon?'':', '+esc(me.name||'')+'님'}!</h1><p class="fbs">서포트센터가 전부 읽어요.<br>12월 25일까지 모아서 1월 정식 버전에 담을게요.</p><div class="fbend"><button class="pill y" id="fbm">하나 더 보내기</button><a class="pill line" href="#/ask">내가 보낸 의견 보기</a><a class="u" href="#/">홈으로</a></div></div>`;
+    v.innerHTML=`<section class="fb ${dir||''}">${step<4?`<div class="fbtop">${step?`<button class="fbb" id="fbb">${I('back',18)} 이전</button>`:back('#/')}<span class="fbd">베타 의견 · D-${days}</span></div>${prog}`:''}<div class="fbc">${h}</div></section>`;
+    const go=n=>{step=n;draw('fwd')};
+    v.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{f.kind=b.dataset.k;setTimeout(()=>go(1),140);b.classList.add('on')});
+    v.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{f.area=b.dataset.a;b.classList.add('on');setTimeout(()=>go(2),140)});
+    v.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{f.anon=b.dataset.n==='1';v.querySelectorAll('[data-n]').forEach(x=>x.classList.toggle('on',x===b))});
+    const t=$('#fbt');if(t){setTimeout(()=>t.focus(),250);t.oninput=()=>{f.body=t.value}}
+    if($('#fbn2'))$('#fbn2').onclick=()=>{f.body=($('#fbt').value||'').trim();if(f.body.length<2)return toast('한 줄만 적어 주세요');go(3)};
+    if($('#fbb'))$('#fbb').onclick=()=>{step=Math.max(0,step-1);draw('back')};
+    if($('#fbs'))$('#fbs').onclick=async e=>{busy(e.currentTarget,true);try{await api('ask.create',{kind:f.kind||'제안',body:`[${f.area||'기타'}] ${f.body}`,anon:f.anon?'1':''});go(4)}catch(x){toast(x.message);busy(e.currentTarget,false)}};
+    if($('#fbm'))$('#fbm').onclick=()=>{f.kind='';f.area='';f.body='';step=0;draw('fwd')};
+  };
+  draw('fwd');
+};

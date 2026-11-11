@@ -173,6 +173,7 @@ ROUTES.log=async function(v,arg){
   $('#sb').onclick=async e=>{const t=$('#tx').value.trim();if(!t)return toast('내용을 적어 주세요');busy(e.currentTarget,true);try{await api('log.add',{text:t,cat,photo});toast('남겼어요');ROUTES.log(v,arg)}catch(er){toast(er.message);busy(e.currentTarget,false)}};
 };
 
+
 /* TAP SHOP BAR People · v22 근무표 (홀/주방 · Hybrid · 수쉐프 주방 편집 · 지점 프리셋 · 연속 넣기 · 24시간 선택기 · 휴무 칸 · 근무 신청) */
 (function(){
 const toM=t=>{const m=String(t||'').match(/(\d{1,2}):(\d{2})/);return m?(+m[1])*60+(+m[2]):null};

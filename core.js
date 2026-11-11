@@ -465,6 +465,7 @@ ROUTES.more=function(v){
   const item=(h,t,s,badge)=>`<a class="li" href="${h}"><div class="m"><div class="t1">${t}</div><div class="t2">${s}</div></div>${badge||''}<span class="ar">${I('next',18)}</span></a>`;
   v.innerHTML=`<section class="hero" style="display:flex;gap:16px;align-items:center">${ava(me.name,me.role,60)}<div><div style="font-size:24px;font-weight:800;letter-spacing:-.03em">${esc(me.name)}</div><div style="font-size:13.5px;font-weight:600;opacity:.8">${esc(brLabel(me.branch))} · ${esc(me.role)} · ${esc(me.email)}</div>${me.hire?`<div style="font-size:12.5px;opacity:.7;margin-top:2px">입사 ${esc(me.hire)}</div>`:''}</div></section>
    <div class="sec"><h2>나</h2></div><div class="list">
+    ${item('#/feedback','의견 보내기 <i class="new">BETA</i>','고칠 것 · 좋은 것 · 12/25까지')}
     ${item('#/notice','공지 · 매뉴얼','읽음 확인',x.unreadNotices?chip('안읽음',x.unreadNotices+'개 안 읽음'):'')}
     ${item('#/schedule','내 스케줄','이번 주 · 다음 주 근무')}
     ${item('#/swap','대타 게시판','근무 바꾸기',x.swapOpen?chip('모집중',x.swapOpen+'건'):'')}

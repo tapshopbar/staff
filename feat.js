@@ -138,14 +138,17 @@ ROUTES.pay=async function(v){
     try{const r=await api('pay.mark',{ids});toast(`${r.count}건 지급 완료 · 직원에게 알렸어요`);ROUTES.pay(v)}catch(er){toast(er.message)}};
 };
 /* ── 공지 · 매뉴얼 ── */
+/* 공지 본문: [[img:https://tapshopbar.github.io/...]] 그림, [[btn:#/feedback|의견 보내기]] 버튼 */
+const LINK_LABEL={feedback:'의견 보내기',schedule:'근무표 열기',avail:'근무 신청하기',badges:'배지 보기',music:'TSB music 열기'};
+function noticeBody(b){return esc(b).replace(/\[\[img:(https:\/\/tapshopbar\.github\.io\/[^\]\s]+)\]\]\n?/g,(m,u)=>`<img class="nimg" src="${u}" alt="" loading="lazy">`).replace(/\[\[btn:(#\/[a-z0-9\/@%-]*)\|([^\]]+)\]\]\n?/gi,(m,h,l)=>`<a class="pill wine full nbtn" href="${h}">${l}</a>`)}
 ROUTES.notice=async function(v,id){
   if(id==='new')return noticeNew(v);
   v.innerHTML=loading();
   const j=await api('notice.list');
   if(id){const n=j.items.find(x=>x.id===id);if(!n){v.innerHTML='<div class="empty">공지를 찾을 수 없어요</div>';return}
     v.innerHTML=`${back('#/notice','공지')}<div class="title">${n.required?'<i class="new">필독</i>':''}<h1 style="margin-top:10px">${esc(n.title)}</h1><p>${esc(n.by)} · ${esc(String(n.at).slice(0,16))} · ${esc(n.target)}</p></div>
-     <div class="form"><div style="font-size:16px;line-height:1.75;font-weight:500;white-space:pre-wrap;padding:16px 0;border-top:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink)">${esc(n.body)}</div>
-     ${n.link?`<a class="u" style="margin-top:16px" href="${esc(n.link)}" target="_blank" rel="noopener">매뉴얼 · 첨부 열기</a>`:''}</div>
+     <div class="form"><div class="nbody" style="font-size:16px;line-height:1.75;font-weight:500;white-space:pre-wrap;padding:16px 0;border-top:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink)">${noticeBody(n.body)}</div>
+     ${n.link?(/^#\//.test(n.link)?`<a class="pill wine full" style="margin-top:16px" href="${esc(n.link)}">${esc(LINK_LABEL[n.link.split('/')[1]]||'바로 가기')}</a>`:`<a class="u" style="margin-top:16px" href="${esc(n.link)}" target="_blank" rel="noopener">매뉴얼 · 첨부 열기</a>`):''}</div>
      <div class="btnrow">${n.read?`<button class="pill line" disabled>확인했어요 ✓</button>`:`<button class="pill wine" id="rd">읽고 확인했어요</button>`}</div>
      ${j.canPost?`<div class="sec"><h2>읽음 현황</h2><button class="lk" id="rm">안 읽은 사람 다시 알림</button></div><div class="list" id="stats"><div class="sk" style="height:60px"></div></div>`:''}`;
     if($('#rd'))$('#rd').onclick=async e=>{busy(e.currentTarget,true);await api('notice.read',{id});toast('확인했어요');await refresh();ROUTES.notice(v,id)};
