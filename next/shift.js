@@ -192,7 +192,7 @@ ROUTES.schedule=async function(v,arg){
       const grab=()=>{if(!ed||!q('#fn'))return;ed.name=q('#fn').value.trim();ed.start=q('#fsh').value+':'+q('#fsm').value;ed.end=q('#feh').value+':'+q('#fem').value};
       const form=()=>`<div class="pmf"><div class="pmf-h"><b>${ed.i<0?'새 프리셋':'프리셋 고치기'}</b>${ed.i<0&&can('홀')&&can('주방')?`<div class="sseg sm">${['홀','주방'].map(g=>`<button data-fp="${g}" class="${ed.part===g?'on':''}">${g}</button>`).join('')}</div>`:`<small>${esc(ed.part)}</small>`}</div>
         <input class="in" id="fn" maxlength="12" placeholder="이름 (예: 오픈, 마감, 롱)" value="${esc(ed.name)}">
-        <div class="pmr"><span>시작</span>${tsel('fs',ed.start)}<span>종료</span>${tsel('fe',ed.end)}</div>
+        <div class="pmr"><span>시작</span>${tsel('fs',ed.start)}</div><div class="pmr"><span>종료</span>${tsel('fe',ed.end)}</div>
         <div class="pmr"><span>휴게</span><div class="sseg sm">${[0,30,60,90].map(b=>`<button data-fb="${b}" class="${+ed.brk===b?'on':''}">${b}분</button>`).join('')}</div></div>
         <div class="pmr" style="justify-content:flex-end"><button class="pill line sm" id="fc">취소</button><button class="pill wine sm" id="fo">저장</button></div></div>`;
       const paint=()=>{
