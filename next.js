@@ -41,7 +41,7 @@ ROUTES.ask=async function(v){
   $('#qs').onclick=async e=>{const body=$('#qb').value.trim();if(body.length<2)return toast('내용을 적어 주세요');busy(e.currentTarget,true);
     try{await api('ask.create',{kind,body,anon:$('#qa').checked?'1':''});toast('보냈어요. 답변이 오면 알려 드릴게요');ROUTES.ask(v)}catch(x){toast(x.message);busy(e.currentTarget,false)}};
   try{const j=await api('ask.list');const el=$('#ql');if(!el)return;
-    el.innerHTML=j.items.length?j.items.map(q=>`<div class="qa"><div class="m">${esc(q.kind)} · ${esc(String(q.at).slice(5,16))}${hq?' · '+esc(q.name)+(q.branch?' ('+esc(q.branch)+')':''):''} · ${esc(q.status)}</div><div class="q">${esc(q.body)}</div>
+    el.innerHTML=j.items.length?j.items.map(q=>`<div class="qa"><div class="m">${esc(q.kind)} · ${esc(String(q.at).slice(5,16))}${hq?' · '+esc(q.name)+(q.branch?' ('+esc(brLabel(q.branch))+')':''):''} · ${esc(q.status)}</div><div class="q">${esc(q.body)}</div>
       ${q.answer?`<div class="a"><b>서포트센터 답변</b><br>${esc(q.answer)}</div>`:''}
       ${hq&&!q.answer?`<textarea class="in" data-ans="${esc(q.id)}" rows="2" placeholder="답변 쓰기" style="margin-top:8px"></textarea><button class="pill sm ink" data-send="${esc(q.id)}" style="margin-top:6px">답변 보내기</button>`:''}
       ${q.mine&&q.status==='접수'?`<button class="pill sm line" data-del="${esc(q.id)}" style="margin-top:6px">취소</button>`:''}</div>`).join(''):'<div class="empty">아직 보낸 질문이 없어요</div>';
@@ -130,14 +130,21 @@ const BADGES=[
  {k:'lang',n:'Language',ko:'랭귀지',d:'영어·일어·중국어 응대',c:'#B5707E',i:'M4 5h16v10H9l-4 4v-4H4zM8 9h8M8 12h5'},
  {k:'key',n:'Keyholder',ko:'키홀더',d:'오픈·마감 책임자 인증',c:'#8A6A2E',i:'M8 14a4 4 0 1 1 3.5-6L20 8v3h-2v2h-2v-2h-4.5A4 4 0 0 1 8 14z'},
  {k:'pass',n:'Passport',ko:'패스포트',d:'다른 지점 지원을 갈 때마다 도장 한 칸. 5칸을 채우면 완성',c:'#2F4858',i:'M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM12 7.5a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM9.2 10.5h5.6M9.5 17h5'},
+ {k:'ssc',n:'Support Center',ko:'서포트센터',d:'전 지점을 돕는 팀. 매장이 잘 돌아가게 뒤에서 챙겨요',c:'#156DFF',i:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6'},
  {k:'kind',n:'Kindness',ko:'카인드니스',d:'지점별 매달 1명, 매달 바뀌어요',c:'#FFC100',dark:1,i:'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z'}
 ];
 function badgeIcon(b,sz){const st=b.s?`<span class="bstars">${'★'.repeat(b.s)}</span>`:'';return `<span class="bdg" style="--bg:${b.c};--sz:${sz}px;${b.dark?'--fg:#0E0E0E':''}"><svg viewBox="0 0 24 24" width="${Math.round(sz*.52)}" height="${Math.round(sz*.52)}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${b.i}"/></svg>${st}</span>`}
 const STRIP_KEYS=['hybrid','som1','pass','kind'];
-function badgeStrip(){return `<a class="bstrip" href="#/badges" aria-label="배지 준비 중, 눌러서 보기">${BADGES.filter(b=>STRIP_KEYS.includes(b.k)).map(b=>badgeIcon(b,26)).join('')}<span class="soon">COMING SOON</span></a>`}
+function myBadges(){return (S.data&&S.data.badges)||[]}
+function badgeStrip(){const got=myBadges();
+  if(!got.length)return `<a class="bstrip" href="#/badges" aria-label="배지 준비 중, 눌러서 보기">${BADGES.filter(b=>STRIP_KEYS.includes(b.k)).map(b=>badgeIcon(b,26)).join('')}<span class="soon">COMING SOON</span></a>`;
+  const gb=BADGES.filter(b=>got.includes(b.k)), rest=BADGES.filter(b=>STRIP_KEYS.includes(b.k)&&!got.includes(b.k));
+  return `<a class="bstrip got" href="#/badges" aria-label="내 배지 보기">${gb.map(b=>`<span class="gotb">${badgeIcon(b,30)}<b>${esc(b.n)}</b></span>`).join('')}<span class="dim">${rest.map(b=>badgeIcon(b,22)).join('')}</span><span class="soon">MY BADGE</span></a>`}
 ROUTES.badges=function(v){
-  v.innerHTML=`${back()}<section class="hero nhero bhero"><span class="tag"><i class="new">BADGE</i> COMING SOON</span><h1 style="margin:12px 0 8px">할 줄 아는 것이<br>배지가 돼요.</h1><p class="bsub">유니폼 왼쪽 가슴에 다는 진짜 배지. 지금 함께 만들고 있어요.</p></section>
-  <div class="bgrid">${BADGES.map(b=>`<div class="bcard">${badgeIcon(b,64)}<b>${esc(b.n)}</b><span class="ko">${esc(b.ko)}</span><span class="bd">${esc(b.d)}</span><i class="lock">준비 중</i></div>`).join('')}
+  const got=myBadges(), H=(S.data&&S.data.badgeHolders)||{};
+  const live=k=>(H[k]||[]).length>0;
+  v.innerHTML=`${back()}<section class="hero nhero bhero"><span class="tag"><i class="new">BADGE</i> ${got.length?'MY BADGE '+got.length:'COMING SOON'}</span>${got.length?`<div class="bmine">${BADGES.filter(b=>got.includes(b.k)).map(b=>`<div>${badgeIcon(b,84)}<b>${esc(b.n)}</b><span>${esc(b.d)}</span></div>`).join('')}</div>`:''}<h1 style="margin:12px 0 8px">할 줄 아는 것이<br>배지가 돼요.</h1><p class="bsub">유니폼 왼쪽 가슴에 다는 진짜 배지. ${got.length?'받은 배지는 근무표 이름 옆에도 보여요.':'지금 함께 만들고 있어요.'}</p></section>
+  <div class="bgrid">${BADGES.map(b=>`<div class="bcard ${got.includes(b.k)?'got':''}">${badgeIcon(b,64)}<b>${esc(b.n)}</b><span class="ko">${esc(b.ko)}</span><span class="bd">${esc(b.d)}</span>${live(b.k)?`<span class="bwho">${H[b.k].length}명 · ${H[b.k].map(x=>esc(x.name)).join(', ')}</span>`:''}${got.includes(b.k)?'<i class="lock gotl">획득</i>':live(b.k)?'<i class="lock on">시작</i>':'<i class="lock">준비 중</i>'}</div>`).join('')}
   <div class="bcard more"><span class="bdg" style="--bg:transparent;--sz:64px;border:1.5px dashed #C9C4BE;color:#9A948D"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span><b>New</b><span class="ko">새 배지</span><span class="bd">함께 정해서 더 만들 수 있어요</span></div></div>
   <p class="bnote">배지 기준과 시작 시기는 정해지면 공지로 알려 드릴게요.</p>`;
 };
@@ -148,7 +155,7 @@ function sortGroups(ks){return ks.sort((a,b)=>{const ia=GROUP_ORDER.indexOf(a),i
 function brLabel(b){return b==='본사'?'전 지점':b}
 
 /* ── BETA 표시 + TSB music (2026-11-10) ── */
-const APP_V='v26';
+const APP_V='v27';
 function betaInfo(){openSheet(`<h2>지금은 베타 버전이에요</h2><div style="font-size:15px;line-height:1.75;font-weight:500;margin-top:10px;word-break:keep-all">12월까지 매장에서 쓰면서 불편한 점을 고치고 있어요.<br><b>2027년 1월, 정식 버전 1.0</b>으로 시작해요.<br><br>쓰다가 이상하거나 필요한 기능이 있으면 바로 알려 주세요. 보내 준 의견은 서포트센터가 모두 읽어요.</div><a class="pill ink full" href="#/ask" data-close style="margin-top:18px">의견 보내기</a><p class="note" style="margin-top:12px;text-align:center">TSB People BETA · ${APP_V}</p>`)}
 const RADIO='https://tsb.wine/radio/';
 const MU_STORES=[['청계','cg'],['상암','sa'],['마곡','mg'],['동대문','dd']];
@@ -157,7 +164,7 @@ ROUTES.music=function(v){const me=(S.data&&S.data.me)||{};
   <section class="blk mublk"><h3>매장 음악 틀기</h3><p class="note">매장 기기(아이패드·PC)에서 우리 지점을 눌러 주세요. 처음 한 번만 고르면 그다음부터는 시간대에 맞는 곡이 자동으로 나와요.</p>
    <div class="mugrid">${MU_STORES.map(([n,c])=>`<a class="pill ${me.branch===n?'ink':'line'}" href="${RADIO}?store=${c}" target="_blank" rel="noopener">${n}</a>`).join('')}</div></section>
   <section class="blk mublk"><h3>선곡 플레이어 <i class="new">BETA</i></h3><p class="note">채널 고르기, 곡 검색, 다음 곡 예약, 즐겨찾기가 돼요. 회사 계정으로 로그인하면 즐겨찾기가 저장돼요.</p>
-   <a class="pill ink full" href="${RADIO}v2/" target="_blank" rel="noopener" style="margin-top:12px">선곡 플레이어 열기</a></section>
+   <a class="pill ink full" href="${RADIO}v2/index.html" target="_blank" rel="noopener" style="margin-top:12px">선곡 플레이어 열기</a></section>
   <section class="blk mublk"><h3>유튜브 tsb radio</h3><p class="note">매장 음악을 유튜브에서도 들을 수 있어요. 구독하고 친구에게도 알려 주세요.</p>
    <a class="pill line full" href="https://www.youtube.com/@tsbradiokorea" target="_blank" rel="noopener" style="margin-top:12px">유튜브에서 듣기</a></section>
   <div class="note" style="text-align:center;padding:24px 0;letter-spacing:.06em">wine is second americano</div>`;
