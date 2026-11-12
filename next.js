@@ -676,3 +676,6 @@ ROUTES['']=function(v){const r=_home.apply(this,arguments);try{const x=(S.data&&
     if(h)anchor.insertAdjacentHTML('beforebegin',h)}
 }catch(e){}return r};
 })();
+
+/* 지원 요청: 더보기 목록에도 (대타 게시판 바로 아래) */
+(function(){const _m=ROUTES.more;if(!_m)return;ROUTES.more=function(v,a){const r=_m.apply(this,arguments);const add=()=>{const sw=v.querySelector('a.li[href="#/swap"]');if(sw&&!v.querySelector('a.li[href="#/help"]')){const n=sw.cloneNode(true);n.setAttribute('href','#/help');n.querySelector('.t1').textContent='지원 요청';n.querySelector('.t2').textContent='다른 지점 돕기 · 사람 필요할 때';sw.insertAdjacentElement('afterend',n)}};add();setTimeout(add,300);return r}})();
