@@ -68,3 +68,4 @@
 .sh.aw{background:repeating-linear-gradient(135deg,#ECE8E4 0 6px,#F7F4F1 6px 12px)!important;color:#5A534E!important;border:1.5px dashed #9A948D}
 .sh.cf{outline:2.5px solid var(--bad,#D7262E);outline-offset:-2px}
 .hban{display:block;margin:8px var(--pad) 0;padding:10px 12px;background:var(--yellow);color:var(--ink);font-size:13px;font-weight:800}
+.hstep{display:block;font-size:11.5px;font-weight:800;color:var(--wine);margin-bottom:4px;letter-spacing:.02em}
