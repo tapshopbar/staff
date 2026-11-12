@@ -35,6 +35,7 @@ function crewNew(v){
   const hq=S.data.x&&S.data.x.isHQ;let shots=[];
   v.innerHTML=`${back('#/crew','매장 이야기')}<div class="title"><h1>글 쓰기</h1><p>오늘 있었던 좋은 순간, 손님 한마디, 고마운 동료 이야기 무엇이든요.</p></div><div class="form">
    <label class="f">내용</label><textarea class="in" id="cb" style="min-height:180px" placeholder="예) 오늘 단골 손님이 직접 쓴 메모를 두고 가셨어요">${esc(localStorage.getItem('tsbp_story_draft')||'')}</textarea>
+   <p class="crnote">모든 지점이 같이 봐요. 손님 얼굴이 나온 사진, 이름·연락처는 올리지 말아 주세요. 불만·사고는 '사고·클레임'으로 보고해 주세요.</p>
    <label class="f">사진 <em>(3장까지)</em></label><label class="pill sm crpick"><input type="file" id="cp" accept="image/*" multiple hidden>사진 고르기</label><div class="crph n0" id="cpv"></div>
    ${hq?`<label class="f">어느 매장 이야기?</label><select class="in" id="ct"><option value="">전체</option>${BR.map(b=>`<option>${b}</option>`).join('')}</select>
    <label class="check"><input type="checkbox" id="ca" checked> <span>서포트센터 이름으로 올리기</span></label>`:''}</div>

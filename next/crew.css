@@ -13,3 +13,4 @@
 .crrule{display:flex;gap:12px;align-items:center;margin:0 var(--pad) 4px;padding:12px 14px;border-radius:14px;background:#F6E9EC;color:#4A0B18;text-decoration:none;font-size:13px;line-height:1.5;font-weight:600}.crrule b{display:block;font-size:14.5px;font-weight:800}
 .crp.top{border-color:#B04A63;box-shadow:0 8px 22px rgba(176,74,99,.18)}.crtop{display:inline-block;background:#B04A63;color:#fff;font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px;margin-bottom:10px}
 .crq{margin:14px 0 0;padding:12px 14px;border-left:3px solid #B04A63;background:#FBF4F5;font-weight:600;line-height:1.6}
+.crnote{margin:8px 0 4px;font-size:13px;line-height:1.55;color:#8a7f80;font-weight:600}
