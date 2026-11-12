@@ -18,7 +18,7 @@ const ivx=(d,a,b)=>{const x=toM(a);let y=toM(b);if(x==null||y==null)return null;
 window.hlpCf=(s,away)=>{const m=ivx(s.date,s.start,s.end);if(!m)return false;return (away||[]).some(a=>{if(a.email!==s.email)return false;const o=ivx(a.date,a.start,a.end);return o&&o[0]<m[1]&&m[0]<o[1]})};
 function slots(r){const a=toM(r.start);let b=toM(r.end);if(b<=a)b+=1440;const o=[];for(let t=a;t<=b;t+=30)o.push(t);return o}
 function stamps(p){p=p||{stamps:0,upcoming:0,full:5};const n=p.full||5,out=[];for(let i=0;i<n;i++)out.push(i<p.stamps?'<i class="on">✓</i>':i<p.stamps+p.upcoming?'<i class="up">예정</i>':'<i></i>');return out.join('')}
-function busyHtml(b){if(!b)return '';return (b.hard||[]).map(x=>`<div class="hbz x">✕ ${esc(x)}</div>`).join('')+(b.warn||[]).map(x=>`<div class="hbz w">! ${esc(x)}</div>`).join('')+(!(b.hard||[]).length?`<div class="hbz ok">✓ 겹치는 근무 없어요 · 이 주 ${b.week}시간</div>`:'')}
+function busyHtml(b){if(!b)return '';return (b.hard||[]).map(x=>`<div class="hbz x">✕ ${esc(x)}</div>`).join('')+(b.warn||[]).map(x=>`<div class="hbz w">! ${esc(x)}</div>`).join('')+(!(b.hard||[]).length?`<div class="hbz ok">✓ 겹치는 근무 없어요 · 다녀오면 이 주 ${b.week}시간</div>`:'')}
 
 ROUTES.help=async function(v,arg){
   if(arg==='new')return helpNew(v);
