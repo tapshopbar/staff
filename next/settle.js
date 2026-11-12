@@ -22,7 +22,9 @@ ROUTES.settle=async function(v,arg){
   const bar=()=>{const el=v.querySelector('.stauto');if(!el)return;el.innerHTML=autoHTML()};
   const autoHTML=()=>pvErr?`<span class="sterr">자동 정산을 못 불러왔어요 · 마감표 숫자로 진행할게요</span>`
     :`<i class="${pv?'ok':'run'}"></i><span>${pv?'자동 정산 준비 완료':esc(STAGES[stage])+'…'}</span><em>${pv?'✓':''}</em>${pv?'':'<div class="stline">'}<b style="width:${pv?100:Math.round((stage+1)/STAGES.length*100)}%"></b></div>`;
-  const memoNeed=()=>{const d=pv?Number(pv.discount||0):0,s=pv?Number(pv.service||0):0;return {d,s,total:d+s}};
+  const svcOf=()=>pv&&pv.service!=null?Number(pv.service):(Number(f.svc)||0);
+  const netOf=()=>{const n=Number(pv&&pv.sales&&pv.sales.net)||0;return pv&&pv.netExcludesService?n-(Number(f.svc)||0):n};
+  const memoNeed=()=>{const d=pv?Number(pv.discount||0):0,s=pv?svcOf():0;return {d,s,total:d+s}};
   const memoHave=()=>{const m=g.memo||{};const q=f.memoQ.reduce((a,l)=>a+(Number(l.amt)||0),0);return (Number(m.total)||0)+q};
   const draw=(d)=>{dir=d||dir;
     const prog=`<div class="fbp"><i style="width:${Math.min(step,lastStep-1)/(lastStep-1)*100}%"></i></div>`;
@@ -43,7 +45,7 @@ ROUTES.settle=async function(v,arg){
       ${keypad('k1')}<button class="pill y stgo" id="stn">다음</button>`}
     else if(step===2){const ref=pv?pv.service:null;h=`<span class="fbn">2 / 5 · 서비스</span><h1>오늘 서비스로<br>나간 금액은요?</h1><p class="sts">포스 마감표의 서비스 합계예요.</p>
       <div class="stnum on" data-t="svc"><small>서비스 합계</small><b>${f.svc?W(f.svc):'0'}<i>원</i></b></div>
-      <p class="stref">${ref!=null?`자동 정산 ${W(ref)}원`:'자동 정산 불러오는 중…'}</p>
+      <p class="stref">${ref!=null?`자동 정산 ${W(ref)}원`:pv?'포스 마감표 숫자를 그대로 넣어 주세요':'자동 정산 불러오는 중…'}</p>
       ${keypad('k2')}<div class="strow"><button class="pill line stghost" id="stnone">없었어요</button><button class="pill y" id="stn">다음</button></div>`}
     else if(step===3){const n=memoNeed(),have=memoHave(),ok=pv&&have>=n.total;h=`<span class="fbn">3 / 5 · 정산 메모</span>
       ${!pv?`<h1>할인·서비스 내역을<br>확인하고 있어요</h1><p class="sts">잠깐만요. 자동 정산이 끝나면 바로 보여 드릴게요.</p>`
@@ -69,21 +71,21 @@ ROUTES.settle=async function(v,arg){
     if(s&&c&&c.count){const p=pct(s.count,c.count);if(p!=null&&p!==0)return {h:`지난주 같은 요일보다 결제가 ${Math.abs(p)}% ${p>0?'많았어요':'적었어요'}.`,s:p>0?'뭐가 잘됐나요? 한 줄이면 충분해요.':'왜 그랬을까요? 내일 해 볼 것도 좋아요.'}}
     if(s&&s.count)return {h:`오늘 결제 ${W(s.count)}건이었어요.`,s:'오늘 매장은 어땠나요? 한 줄이면 충분해요.'};
     return {h:'오늘 매장은 어땠나요?',s:'한 줄이면 충분해요.'}};
-  const cardsHTML=()=>{const s=pv.sales||{},p=pv.pay||{},cashIn=Number(f.cash)||0,wd=f.hasWd?(Number(f.wd)||0):0,diff=cashIn+wd-(Number(p.cash)||0);
+  const cardsHTML=()=>{const s=Object.assign({},pv.sales||{},{net:netOf()}),p=pv.pay||{},cashIn=Number(f.cash)||0,wd=f.hasWd?(Number(f.wd)||0):0,diff=cashIn+wd-(Number(p.cash)||0);
     const c=(k,val,sub,auto=1)=>`<div class="stcard"><small>${k}${auto?'<i>자동</i>':''}</small><b>${val}</b>${sub?`<span>${sub}</span>`:''}</div>`;
     return `<div class="stcards">${c('실매출',W(s.net)+'원',pv.compare&&pv.compare.lastWeek&&pv.compare.lastWeek.net?`지난주 같은 요일 ${W(pv.compare.lastWeek.net)}원`:'')}
       ${c('결제 수',W(s.count)+'건',s.guests?`손님 ${W(s.guests)}명`:'')}${c('객단가',W(s.avg)+'원','')}
       <div class="stcard wide"><small>결제수단<i>자동</i></small><div class="stpay"><div><span>카드</span><b>${W(p.card)}</b></div><div><span>현금</span><b>${W(p.cash)}</b></div><div><span>간편</span><b>${W(p.easy)}</b></div>${p.prepaid?`<div><span>선불권</span><b>${W(p.prepaid)}</b></div>`:''}</div></div>
-      ${c('할인 · 서비스',`${W(pv.discount)} · ${W(pv.service)}`,f.svc!==''&&Number(f.svc)!==Number(pv.service)?`마감표 서비스 ${W(f.svc)}원`:'')}
+      ${c('할인 · 서비스',`${W(pv.discount)} · ${W(svcOf())}`,pv.service==null?'서비스는 마감표 입력값':(f.svc!==''&&Number(f.svc)!==Number(pv.service)?`마감표 서비스 ${W(f.svc)}원`:''))}
       ${c('선불권 충전',W(pv.prepaidCharge)+'원','')}
       ${c('금고 현금 (직접 입력)',W(cashIn)+'원',(wd?`출금 ${W(wd)}원 · `:'')+`포스 현금 매출 ${W(p.cash)}원`,0)}</div>
-      ${pv.itemsReady?'':'<p class="sts" style="margin-top:12px">품목별 매출은 새벽에 채워져요.</p>'}`};
-  const finishHTML=()=>{const r=P.done||{},s=(pv&&pv.sales)||{},m=pv&&pv.month,c=pv&&pv.compare&&pv.compare.lastWeek,p=c&&c.net?pct(s.net,c.net):null;
+      ${pv.itemsReady?'':'<p class="sts" style="margin-top:12px">품목별 매출은 새벽에 채워져요.'+(pv.approx?' 지금 실매출은 결제 합계 기준이에요.':'')+'</p>'}${(pv.notes||[]).length?`<p class="sts">${pv.notes.map(esc).join('<br>')}</p>`:''}`};
+  const finishHTML=()=>{const r=P.done||{},s=Object.assign({},(pv&&pv.sales)||{},{net:netOf()}),tm=(pv&&pv.topMenus)||[],cd=r.backend&&r.backend.cash,m=pv&&pv.month,c=pv&&pv.compare&&pv.compare.lastWeek,p=c&&c.net?pct(s.net,c.net):null;
     return `<div class="stfin"><div class="stconf">${Array.from({length:18},(_,i)=>`<i style="--i:${i}"></i>`).join('')}</div><span class="fbcheck">✓</span>
       <h1>오늘 하루도<br>정말 애쓰셨어요.</h1><p class="sts">${esc(g.branch)}의 하루를 지켜 줘서 고마워요${me.name?', '+esc(me.name)+'님':''}.</p>
       <div class="stfacts">${s.guests?`<div><b>${W(s.guests)}</b><small>오늘 손님</small></div>`:''}<div><b>${W(s.count)}</b><small>결제</small></div>${m&&m.net?`<div><b>${W(Math.round(m.net/10000))}<i>만</i></b><small>이번 달 누적</small></div>`:''}${p!=null?`<div><b>${p>0?'+':''}${p}<i>%</i></b><small>지난주 대비</small></div>`:''}</div>
       ${f.line?`<blockquote class="stq">“${esc(f.line)}”<cite>오늘 한 줄 · ${esc(me.name||'')}</cite></blockquote>`:''}
-      ${s.count?`<p class="stpride">오늘 ${esc(g.branch)}에서 ${s.guests?W(s.guests)+'분이 ':''}${W(s.count)}번 결제하며 좋은 시간을 보냈어요.<br>그 하루를 만든 건 여러분이에요.</p>`:''}<p class="sts">${r.mock?'미리보기라 숫자는 예시이고, 시트에는 기록하지 않았어요.':r.test?'정산을 테스트 사본에 기록했어요.':'정산을 일정산 시트에 기록했어요.'}<br>내일도 좋은 하루 만들어요.</p>
+      ${s.count?`<p class="stpride">오늘 ${esc(g.branch)}에서 ${s.guests?W(s.guests)+'분이 ':''}${W(s.count)}번 결제하며 좋은 시간을 보냈어요.<br>그 하루를 만든 건 여러분이에요.</p>`:''}${tm.length?`<p class="stpride">오늘 가장 많이 나간 메뉴는 <b>${esc(tm[0].name)}</b>${tm[0].qty?` (${W(tm[0].qty)}개)`:''}.</p>`:''}${cd&&cd.diff?`<p class="sttest">금고 현금이 장부와 ${W(cd.diff)}원 달라요. 정산 메모 '현금 시재 차이'로 남겨 주세요.</p>`:''}<p class="sts">${r.mock?'미리보기라 숫자는 예시이고, 시트에는 기록하지 않았어요.':r.test?'미리보기라 정산을 테스트 사본에만 기록했어요.':'정산을 일정산 시트에 기록했어요.'}<br>내일도 좋은 하루 만들어요.</p>
       <div class="fbend"><a class="pill y" href="#/">홈으로</a></div></div>`};
   const kp=()=>{const k=v.querySelector('[data-kp]');if(!k)return;const tgt=()=>step===2?'svc':(f.hasWd&&S.kpTarget==='wd'?'wd':'cash');
     k.querySelectorAll('[data-key]').forEach(b=>b.onclick=()=>{const t=tgt(),key=b.dataset.key;let s=String(f[t]||'');if(key==='⌫')s=s.slice(0,-1);else if(s.length<9)s=(s+key).replace(/^0+/,'');f[t]=s;draw('same')});
