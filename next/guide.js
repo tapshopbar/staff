@@ -101,7 +101,7 @@
   };
   function list(el, q, cat) {
     const its = G.items;
-    el.innerHTML = `<div class="title"><h1>HR 가이드</h1><p>휴가, 급여, 복지, 규칙까지. 궁금한 단어를 적어 보세요.</p></div>
+    el.innerHTML = `<div class="title"><h1>HR 가이드 <span class="gd-beta">BETA</span></h1><p>계속 채워 가는 중이에요. 빠진 내용은 질문하기로 물어봐 주세요.</p></div>
       <div class="gd-sbox"><input class="in" id="gq" type="search" placeholder="예) 육아휴직, 야간수당, 퇴사" value="${e(q)}" autocomplete="off"></div>
       <div class="gd-pop" id="gpop">${POP.map(w => `<button data-w="${e(w)}">${e(w)}</button>`).join('')}</div>
       <div id="gres"></div>`;

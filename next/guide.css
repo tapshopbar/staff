@@ -39,3 +39,4 @@
 .gd-foot b{font-size:17px;font-weight:800}
 .gd-foot p{font-size:14px;opacity:.85;margin:6px 0 12px;line-height:1.5}
 .gd-foot .pill.line{border-color:#fff;color:#fff}
+.gd-beta{display:inline-block;vertical-align:middle;font-size:12px;font-weight:800;letter-spacing:.06em;padding:4px 9px;border-radius:99px;background:var(--wine);color:#fff;margin-left:6px;position:relative;top:-6px}
