@@ -5,8 +5,8 @@ const ago=s=>{const t=new Date(String(s).replace(' ','T'));const m=Math.floor((D
 async function photo(img){const id=img.dataset.fid;try{if(!PH.has(id)){const j=await apiRaw('file.get',{id});PH.set(id,`data:${j.mime};base64,${j.b64}`)}img.src=PH.get(id);img.classList.add('on')}catch(e){img.alt='사진을 못 불러왔어요'}}
 function card(p){return `<article class="crp" data-id="${esc(p.id)}">
   <div class="crh"><b>${esc(p.name)}</b><span>${p.tag?esc(p.tag)+' 이야기 · ':''}${ago(p.at)}</span></div>
-  <div class="crb">${esc(p.body)}</div>
   ${p.photos.length?`<div class="crph n${p.photos.length}">${p.photos.map(f=>`<img data-fid="${esc(f)}" alt="" loading="lazy">`).join('')}</div>`:''}
+  <div class="crb">${esc(p.body)}</div>
   <div class="cra"><button type="button" class="crc ${p.cheered?'on':''}" data-cheer>♥ 응원해요 <em>${p.cheers||''}</em></button>${p.canDel?'<button type="button" class="crd" data-del>지우기</button>':''}</div></article>`}
 ROUTES.crew=async function(v,arg){
   if(arg==='new')return crewNew(v);
@@ -19,7 +19,8 @@ ROUTES.crew=async function(v,arg){
   v.querySelectorAll('img[data-fid]').forEach(photo);
   v.querySelectorAll('.crph img').forEach(img=>img.onclick=()=>img.src&&openSheet(`<img src="${img.src}" style="width:100%;border-radius:12px">`));
   v.querySelectorAll('[data-cheer]').forEach(b=>b.onclick=async()=>{const id=b.closest('.crp').dataset.id;b.disabled=true;
-    try{const r=await apiRaw('crew.cheer',{id});b.classList.toggle('on',r.cheered);b.querySelector('em').textContent=r.cheers||'';S.mem={};memSave()}catch(e){toast(e.message)}b.disabled=false});
+    const em=b.querySelector('em'),was=b.classList.contains('on'),n=Number(em.textContent)||0;b.classList.toggle('on',!was);em.textContent=(n+(was?-1:1))||''; // 먼저 화면에 반영, 서버 응답으로 맞춤
+    try{const r=await apiRaw('crew.cheer',{id});b.classList.toggle('on',r.cheered);em.textContent=r.cheers||'';S.mem={};memSave()}catch(e){b.classList.toggle('on',was);em.textContent=n||'';toast(e.message)}b.disabled=false});
   v.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{if(!confirm('이 글을 지울까요?'))return;const id=b.closest('.crp').dataset.id;
     try{await api('crew.delete',{id});toast('지웠어요');ROUTES.crew(v)}catch(e){toast(e.message)}});
 };
@@ -27,7 +28,7 @@ function crewNew(v){
   const hq=S.data.x&&S.data.x.isHQ;let shots=[];
   v.innerHTML=`${back('#/crew','크루 게시판')}<div class="title"><h1>글 쓰기</h1><p>오늘 있었던 좋은 순간, 손님 한마디, 고마운 동료 이야기 무엇이든요.</p></div><div class="form">
    <label class="f">내용</label><textarea class="in" id="cb" style="min-height:180px" placeholder="예) 오늘 단골 손님이 직접 쓴 메모를 두고 가셨어요"></textarea>
-   <label class="f">사진 <em>(3장까지)</em></label><input type="file" id="cp" accept="image/*" multiple class="in"><div class="crph n0" id="cpv"></div>
+   <label class="f">사진 <em>(3장까지)</em></label><label class="pill sm crpick"><input type="file" id="cp" accept="image/*" multiple hidden>사진 고르기</label><div class="crph n0" id="cpv"></div>
    ${hq?`<label class="f">어느 매장 이야기?</label><select class="in" id="ct"><option value="">전체</option>${BR.map(b=>`<option>${b}</option>`).join('')}</select>
    <label class="check"><input type="checkbox" id="ca" checked> <span>서포트센터 이름으로 올리기</span></label>`:''}</div>
    <div class="btnrow"><button class="pill wine" id="cs">올리기</button></div>`;
