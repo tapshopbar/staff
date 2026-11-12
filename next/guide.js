@@ -160,16 +160,16 @@
   function qaDoc(el, it, si) {
     const sibs = G.items.filter(x => x.cat === it.cat);
     el.innerHTML = `<div class="title"><span class="gd-cat">${e(it.cat)}</span><h1>${e(it.title)}</h1><p>손님에게 보낼 답은 <b>복사</b>해서 카톡·문자로 그대로 보내면 돼요. 회색 칸은 직원만 보는 메모예요.</p></div>
-      <div class="gd-cats rq-sib">${sibs.map(x => `<a href="#/guide/${e(x.id)}" class="${x.id === it.id ? 'on' : ''}">${e(x.title)}</a>`).join('')}</div>
-      <article class="gd-doc rq-doc">${it.qa.map((x, k) => `<section class="rq" id="gs${k + 1}">
-        <h3 class="rq-q"><span class="rq-n">Q</span><span>${e(x.q)}</span></h3>
-        <div class="rq-a"><div class="rq-lab">손님에게 보낼 답${x.br ? ` · ${e(x.br)}` : ''}</div><div class="rq-txt">${autolink(x.a)}</div>
-          <div class="rq-act"><button class="pill wine" data-cp="${k}">복사</button>${navigator.share ? `<button class="pill line" data-sh="${k}">보내기</button>` : ''}</div></div>
-        ${x.note ? `<div class="rq-note"><span class="rq-lab2">직원만</span>${autolink(x.note)}</div>` : ''}
+      <div class="gd-cats gdq-sib">${sibs.map(x => `<a href="#/guide/${e(x.id)}" class="${x.id === it.id ? 'on' : ''}">${e(x.title)}</a>`).join('')}</div>
+      <article class="gd-doc gdq-doc">${it.qa.map((x, k) => `<section class="gdq" id="gs${k + 1}">
+        <h3 class="gdq-q"><span class="gdq-n">Q</span><span>${e(x.q)}</span></h3>
+        <div class="gdq-a"><div class="gdq-lab">손님에게 보낼 답${x.br ? ` · ${e(x.br)}` : ''}</div><div class="gdq-txt">${autolink(x.a)}</div>
+          <div class="gdq-act"><button class="pill wine" data-cp="${k}">복사</button>${navigator.share ? `<button class="pill line" data-sh="${k}">보내기</button>` : ''}</div></div>
+        ${x.note ? `<div class="gdq-note"><span class="gdq-lab2">직원만</span>${autolink(x.note)}</div>` : ''}
       </section>`).join('')}</article>
       <p class="note" style="padding:14px var(--pad) 0">담당 ${e(it.owner || '본사')} · 최종수정 ${e(it.updated || G.updated || '')} · 새 질문은 계속 추가해요</p>
       <div class="gd-foot"><b>여기 없는 질문이 오면</b><p>손님께는 "확인하고 바로 알려 드릴게요"라고 하고, 본사에 물어봐 주세요. 받은 질문은 이 목록에 추가해요.</p><a class="pill line" href="#/ask" data-gq="1">본사에 질문하기</a></div>`;
-    el.querySelector('.rq-doc').onclick = ev => {
+    el.querySelector('.gdq-doc').onclick = ev => {
       const c = ev.target.closest('[data-cp]'), s2 = ev.target.closest('[data-sh]');
       if (c) { copyText(it.qa[+c.dataset.cp].a); c.textContent = '복사됨'; setTimeout(() => { c.textContent = '복사'; }, 1600); }
       if (s2 && navigator.share) navigator.share({ text: it.qa[+s2.dataset.sh].a }).catch(() => {});
@@ -178,7 +178,7 @@
     const go = n => { const h = el.querySelector('#gs' + n); if (h) { h.scrollIntoView({ block: 'start' }); window.scrollBy(0, -70); h.classList.add('gd-flash'); setTimeout(() => h.classList.remove('gd-flash'), 1800); } };
     if (si) setTimeout(() => go(si), 60);
     const q = sessionStorage.getItem('gd_q'); sessionStorage.removeItem('gd_q');
-    if (q) { const terms = expand(q).filter(t => t.length > 1); const art = el.querySelector('.rq-doc'); if (art && terms.length) { const walk = document.createTreeWalker(art, NodeFilter.SHOW_TEXT); const hits = []; let n; while ((n = walk.nextNode())) { if (n.parentNode.closest('button')) continue; const s = norm(n.nodeValue); if (terms.some(t => s.includes(t))) hits.push(n); } hits.slice(0, 12).forEach(tn => { const sp = document.createElement('span'); sp.className = 'gd-hl'; tn.parentNode.replaceChild(sp, tn); sp.appendChild(tn); }); } }
+    if (q) { const terms = expand(q).filter(t => t.length > 1); const art = el.querySelector('.gdq-doc'); if (art && terms.length) { const walk = document.createTreeWalker(art, NodeFilter.SHOW_TEXT); const hits = []; let n; while ((n = walk.nextNode())) { if (n.parentNode.closest('button')) continue; const s = norm(n.nodeValue); if (terms.some(t => s.includes(t))) hits.push(n); } hits.slice(0, 12).forEach(tn => { const sp = document.createElement('span'); sp.className = 'gd-hl'; tn.parentNode.replaceChild(sp, tn); sp.appendChild(tn); }); } }
   }
   /* 기존 화면의 Notion 링크를 HR 가이드로 바꾼다 (core.js는 건드리지 않음) */
   function relink(root) {
