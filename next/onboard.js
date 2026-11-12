@@ -161,6 +161,7 @@
   const CANDS = [
     { id: 'C1', name: '김예시', ini: '예시', br: '상암', job: '홀 · 파트타임', days: '목 · 금 · 토 · 일 저녁', start: '11월 24일(월)', pay: '시급 10,320원 · 주 20시간', st: '최종 승인 대기',
       cv: { 경력: ['와인바 홀 1년 2개월 (2024.09~2025.11)', '카페 바리스타 8개월'], 자격: ['보건증 보유 (2026.03 발급)', 'WSET Level 1'], 한마디: '손님에게 와인을 쉽게 설명하는 게 좋아요. 마감까지 오래 일할 수 있어요.' },
+      qa: ['편하게 한 잔 고르는 거요. 어렵게 설명하지 않고 오늘 기분에 맞는 걸 같이 찾아 드리는 것.', '"상큼한 거, 부드러운 거 중에 뭐가 끌리세요?" 둘 중 하나만 고르면 되니까 부담이 없어요.', '제 테이블 급한 것만 끝내고 동료 주문부터 같이 받아요. 점장님께도 바로 알려요.', '바로 가서 사과하고 맞는 와인으로 바꿔 드려요. 그리고 점장님께 말해요.', '동네 카페 사장님이 제 이름을 기억해 주셨을 때. 단골이 된 이유예요.'],
       mgr: { by: '상암 점장', note: '응대 톤이 밝고, 마감 체크리스트를 바로 이해함. 주말 마감 공백을 채울 수 있음.', s: ['응대 4/5', '와인 이해 3/5', '근무 가능 시간 5/5'] }, hw: '근무 시간 · 시급 확인. 상암 주말 마감 인원 1명 부족분.' },
     { id: 'C2', name: '이샘플', ini: '샘플', br: '청계', job: '주방 · 풀타임', days: '월~금 (주 5일)', start: '12월 1일(월)', pay: '월급 (근로계약서 기준)', st: '점장 면접 끝 · 매니저 검토 중',
       cv: { 경력: ['양식 레스토랑 라인쿡 2년'], 자격: ['한식조리기능사'], 한마디: '파스타 · 그릴 파트 경험이 있어요.' },
@@ -180,7 +181,7 @@
         ${flow(-1)}
         <div class="hr-list">${CANDS.map(c => { const d = H2[c.id]; return `<a href="#/hire/${c.id}">${av(c)}<div class="t"><b>${e(c.name)} <span style="font-size:11px;font-weight:700;color:var(--mute)">· 예시</span></b><span>${e(c.br)}점 · ${e(c.job)}</span><span>시작 희망 ${e(c.start)}</span></div><span class="hr-st ${d === '승인' ? 'ok' : d ? 'no' : ''}">${d || (c.id === 'C1' ? '내 차례' : '검토 중')}</span></a>`; }).join('')}</div>
         <div class="hr-warn"><b>회생 기간 (~12/31)</b> 새 채용은 재판부 허가 대상이에요. 여기서 승인해도 바로 입사가 아니라, 법무팀이 허가 신청 → 허가 난 뒤 근로계약 · 첫 근무예요.</div>
-        <p class="fs-note">지원자는 로그인 없이 링크 하나로 이력서 · 사진을 올려요. <a class="u" style="font-size:12.5px" href="join.html?t=DEMO" target="_blank">지원자 화면 미리보기</a></p>`;
+        <p class="fs-note">지원자는 로그인 없이 채용 페이지에서 바로 지원해요. <a class="u" style="font-size:12.5px" href="careers.html" target="_blank">채용 페이지 · 3분 지원 미리보기</a></p>`;
       return;
     }
     const c = CANDS.find(x => x.id === id); if (!c) { location.hash = '#/hire'; return; }
@@ -190,8 +191,9 @@
       ${flow(d === '승인' ? 4 : mine ? 3 : 2)}
       <div class="fs-card"><h3>근무 조건 (안)</h3><dl class="hr-kv"><dt>지점 · 직무</dt><dd>${e(c.br)}점 · ${e(c.job)}</dd><dt>근무 가능</dt><dd>${e(c.days)}</dd><dt>시작 희망</dt><dd>${e(c.start)}</dd><dt>급여</dt><dd>${e(c.pay)}</dd></dl></div>
       <div class="fs-card"><h3>이력서</h3><div class="hr-cv">${Object.entries(c.cv).map(([k, x]) => `<h4>${k}</h4>${Array.isArray(x) ? x.map(y => `<div>· ${e(y)}</div>`).join('') : `<div>${e(x)}</div>`}`).join('')}</div><button class="pill sm line" style="margin-top:10px" id="hrPdf">원본 PDF 보기</button></div>
+      ${c.qa ? `<div class="fs-card"><h3>탭샵바 질문 5개 <span class="k">· 지원서</span></h3>${['wine is second americano의 뜻', '처음 온 손님께 첫마디', '바쁜 금요일, 밀리는 동료', '5분 뒤 알게 된 실수', '기억에 남는 환대'].map((t, i) => `<div style="margin-top:10px"><div class="k">Q${i + 1}. ${t}</div><p style="font-size:14px;line-height:1.55;margin-top:2px">${e(c.qa[i])}</p></div>`).join('')}<p class="k" style="margin-top:10px">점장 채점 기준: 쉬운 말 · 강요 안 함 / 도움 요청 · 자기 일 지킴 / 사과 · 조치 먼저 / 구체적 사례</p></div>` : ''}
       <div class="fs-card"><h3>면접 메모 <span class="k">· ${e(c.mgr.by)}</span></h3><p style="margin-top:6px">${e(c.mgr.note)}</p><div class="hr-score">${c.mgr.s.map(x => `<span>${e(x)}</span>`).join('')}</div>${c.hw ? `<div class="k" style="margin-top:12px">박한울 매니저 검토</div><p>${e(c.hw)}</p>` : ''}</div>
-      ${d === '승인' ? `<div class="hr-done"><h3 style="font-size:16px;font-weight:800">승인했어요. 다음은 자동으로 진행돼요</h3><ul style="margin-top:6px"><li>법무팀: 채용 허가 신청서 초안 (관리위원 사전검토 → 전자소송)</li><li>허가 나면: 인사팀이 근로계약서 준비 · 4대보험 일정</li><li>People에 "입사예정"으로 초대 → 첫걸음 1~4단계 열림</li><li>지원자에게 합격 안내 (발송 전 확인)</li></ul></div>` :
+      ${d === '승인' ? `<div class="hr-done"><h3 style="font-size:16px;font-weight:800">승인했어요. 다음은 자동으로 진행돼요</h3><ul style="margin-top:6px"><li>법무팀: 채용 허가 신청서 초안 (관리위원 사전검토 → 전자소송)</li><li>허가 나면: 인사팀이 근로계약서 준비 · 4대보험 일정</li><li>People에 "입사예정"으로 초대 → 첫걸음 1~4단계 열림</li><li>허가 후 합격 안내 문자 · 메일 → 지원자가 개인 메일 넣고 회사 ID(○○@tsb.wine) 직접 만들기 → ID · 첫 비밀번호 메일 → People 첫걸음</li></ul><a class="pill sm ink" style="margin-top:12px" href="careers.html#/welcome" target="_blank">합격자 화면 미리보기</a></div>` :
         mine ? `<div class="fs-foot" style="position:static;background:none"><div class="hr-act"><button class="pill wine wide" data-hd="승인">최종 승인</button><button class="pill line" data-hd="보류" style="color:var(--ink)">보류 · 질문</button><button class="pill line" data-hd="반려" style="color:var(--bad)">반려</button></div><p class="fs-note" style="padding:0;text-align:center">미리보기라 실제로 기록 · 발송되지 않아요</p></div>` :
           `<div class="hr-warn">아직 매니저 검토 중이에요. 검토가 끝나면 알림이 와요.</div>`}`;
     v.querySelector('#hrPdf').onclick = () => sheet(`<h3>원본 이력서</h3><p style="margin-top:8px">실제로는 지원자가 올린 PDF · 사진이 여기서 바로 열려요. 파일은 회사 비공개 Drive 폴더에만 있고, 링크는 로그인한 승인자에게만 보여요.</p>`);
@@ -216,6 +218,7 @@
         const o = st(), k = nDone(o), dn = k >= 7;
         const card = dn ? `<a class="fs-home done" href="#/first/8"><span class="fs-pv">미리보기</span><b>첫걸음 완료</b><span class="s">"첫걸음" 배지를 받았어요</span></a>`
           : `<a class="fs-home" href="#/first"><img src="${IMG}mascot.jpg" alt=""><span class="fs-pv">미리보기 · 신규 직원 화면</span><b>탭샵바 첫걸음 ${k}/7</b><span class="s">${k ? '이어서 하기 · 다음: ' + STEPS[Math.min(k, 6)].t : '15분이면 끝나요 · 처음이어도 괜찮아요'}</span><div class="bar"><i style="width:${k / 7 * 100}%"></i></div><span class="go">${k ? '이어서' : '시작하기'}</span></a>`;
+        const kt = v.querySelector('.grid .tile[href="#/kudos"]'); if (kt && !v.querySelector('.grid .tile[href="careers.html"]')) kt.insertAdjacentHTML('afterend', '<a class="tile" href="careers.html"><b>채용 ·<br>친구 추천</b><small>공고 링크 보내기</small></a>');
         const hc = v.querySelector('.hcards'); if (hc) hc.insertAdjacentHTML('beforebegin', card);
         if (isBoss() || PV) {
           const H2 = hs(), wait = CANDS.filter(c => c.id === 'C1' && !H2[c.id]).length;
