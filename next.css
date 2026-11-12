@@ -433,6 +433,9 @@ body.sfit .stool,body.sfit .hz,body.sfit .pbar{padding-left:10px;padding-right:1
 .crp.top{border-color:#B04A63;box-shadow:0 8px 22px rgba(176,74,99,.18)}.crtop{display:inline-block;background:#B04A63;color:#fff;font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px;margin-bottom:10px}
 .crq{margin:14px 0 0;padding:12px 14px;border-left:3px solid #B04A63;background:#FBF4F5;font-weight:600;line-height:1.6}
 .crnote{margin:8px 0 4px;font-size:13px;line-height:1.55;color:#8a7f80;font-weight:600}
+.crbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.crs{border:1.5px solid #D8D2D3;background:#fff;border-radius:99px;height:38px;padding:0 14px;font-weight:700;font-size:13.5px;color:#4A0B18}
+.crp.hl{border-color:#4A0B18;box-shadow:0 0 0 3px rgba(74,11,24,.18)}
 
 /* ===== HR 가이드 BETA ===== */
 /* TSB People · HR 가이드 v1 */

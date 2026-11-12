@@ -266,7 +266,7 @@ ROUTES.feedback=function(v){
 };
 
 /* ── 매장 이야기 (crew.js 합침: crew.tsb.wine 프록시가 새 파일명을 안 넘겨서, 2026-11-12) ── */
-/* 매장 이야기 (구 크루 게시판, 2026-11-12 미리보기): 매장 이야기·손님 한마디·응원. API crew.list / crew.create / crew.cheer / crew.delete, 사진은 file.get */
+/* 매장 이야기 (구 크루 게시판, 2026-11-12 미리보기, cr7: 동료에게 보내기): 매장 이야기·손님 한마디·응원. API crew.list / crew.create / crew.cheer / crew.delete, 사진은 file.get */
 (function(){
 const PH=new Map();
 const STORY={k:'story',n:'Storyteller',ko:'이야기꾼',d:'이번 달 응원을 가장 많이 받은 매장 이야기를 쓴 사람. 매달 바뀌어요',c:'#B04A63',i:'M3 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H3zM21 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z'};
@@ -281,7 +281,13 @@ function card(p){return `<article class="crp ${p.top?'top':''}" data-id="${esc(p
   <div class="crh"><b>${esc(p.name)}</b><span>${p.tag?esc(p.tag)+' 이야기 · ':''}${ago(p.at)}</span></div>
   ${p.photos.length?`<div class="crph n${p.photos.length}">${p.photos.map(f=>`<img data-fid="${esc(f)}" alt="" loading="lazy">`).join('')}</div>`:''}
   <div class="crb">${esc(p.body)}</div>
-  <div class="cra"><button type="button" class="crc ${p.cheered?'on':''}" data-cheer>♥ 응원해요 <em>${p.cheers||''}</em></button>${p.canDel?'<button type="button" class="crd" data-del>지우기</button>':''}</div></article>`}
+  <div class="cra"><span class="crbtns"><button type="button" class="crc ${p.cheered?'on':''}" data-cheer>♥ 응원해요 <em>${p.cheers||''}</em></button><button type="button" class="crs" data-share>동료에게 보내기</button></span>${p.canDel?'<button type="button" class="crd" data-del>지우기</button>':''}</div></article>`}
+/* 동료에게 보내기: 글 내용은 빼고 링크만 보낸다(로그인한 직원만 열림). 카톡 등 휴대폰 공유 창, 안 되면 링크 복사 */
+async function shareStory(id){const url=location.origin+location.pathname+'#/crew/'+encodeURIComponent(id);
+  const text='탭샵바 매장 이야기에 같이 보고 싶은 글이 있어요. People 앱에서 열어 보세요.';
+  if(navigator.share){try{await navigator.share({title:'TSB 매장 이야기',text,url});return}catch(e){if(e&&e.name==='AbortError')return}}
+  try{await navigator.clipboard.writeText(text+'\n'+url);toast('링크를 복사했어요. 카톡에 붙여 넣어 주세요')}
+  catch(e){openSheet(`<h2>링크 복사</h2><p class="note" style="padding:4px 0 10px">아래 주소를 길게 눌러 복사해 주세요.</p><input class="in" readonly value="${esc(url)}" onfocus="this.select()">`)}}
 ROUTES.crew=async function(v,arg){
   if(arg==='new')return crewNew(v);
   v.innerHTML=`${back('#/')}<div class="title"><h1>매장 이야기</h1><p>손님 한마디, 오늘의 좋은 순간, 고마운 동료. 남겨 두고 같이 봐요.</p></div>${loading()}`;
@@ -298,6 +304,9 @@ ROUTES.crew=async function(v,arg){
     try{const r=await apiRaw('crew.cheer',{id});b.classList.toggle('on',r.cheered);em.textContent=r.cheers||'';S.mem={};memSave()}catch(e){b.classList.toggle('on',was);em.textContent=n||'';toast(e.message)}b.disabled=false});
   v.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{if(!confirm('이 글을 지울까요?'))return;const id=b.closest('.crp').dataset.id;
     try{await api('crew.delete',{id});toast('지웠어요');ROUTES.crew(v)}catch(e){toast(e.message)}});
+  v.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>shareStory(b.closest('.crp').dataset.id));
+  if(arg){const c=[...v.querySelectorAll('.crp')].find(x=>x.dataset.id===arg);
+    if(c){c.classList.add('hl');setTimeout(()=>c.scrollIntoView({behavior:'smooth',block:'center'}),150)}else toast('지워졌거나 찾을 수 없는 글이에요')}
 };
 function crewNew(v){
   const hq=S.data.x&&S.data.x.isHQ;let shots=[];
