@@ -79,7 +79,7 @@ ROUTES.settle=async function(v,arg){
       ${c('할인 · 서비스',`${W(pv.discount)} · ${W(svcOf())}`,pv.service==null?'서비스는 마감표 입력값':(f.svc!==''&&Number(f.svc)!==Number(pv.service)?`마감표 서비스 ${W(f.svc)}원`:''))}
       ${c('선불권 충전',W(pv.prepaidCharge)+'원','')}
       ${c('금고 현금 (직접 입력)',W(cashIn)+'원',(wd?`출금 ${W(wd)}원 · `:'')+`포스 현금 매출 ${W(p.cash)}원`,0)}</div>
-      ${pv.itemsReady?'':'<p class="sts" style="margin-top:12px">품목별 매출은 새벽에 채워져요.'+(pv.approx?' 지금 실매출은 결제 합계 기준이에요.':'')+'</p>'}${(pv.notes||[]).length?`<p class="sts">${pv.notes.map(esc).join('<br>')}</p>`:''}`};
+      ${pv.itemsReady?'':'<p class="sts" style="margin-top:12px">품목별 매출은 새벽에 채워져요.'+(pv.approx?' 지금 실매출은 결제 합계 기준이에요.':'')+'</p>'}${(pv.notes||[]).filter(n=>/새벽에 채워져요/.test(n)).length?`<p class="sts">${pv.notes.filter(n=>/새벽에 채워져요/.test(n)).map(esc).join('<br>')}</p>`:''}`};
   const finishHTML=()=>{const r=P.done||{},s=Object.assign({},(pv&&pv.sales)||{},{net:netOf()}),tm=(pv&&pv.topMenus)||[],cd=r.backend&&r.backend.cash,m=pv&&pv.month,c=pv&&pv.compare&&pv.compare.lastWeek,p=c&&c.net?pct(s.net,c.net):null;
     return `<div class="stfin"><div class="stconf">${Array.from({length:18},(_,i)=>`<i style="--i:${i}"></i>`).join('')}</div><span class="fbcheck">✓</span>
       <h1>오늘 하루도<br>정말 애쓰셨어요.</h1><p class="sts">${esc(g.branch)}의 하루를 지켜 줘서 고마워요${me.name?', '+esc(me.name)+'님':''}.</p>
