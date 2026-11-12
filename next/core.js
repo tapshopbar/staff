@@ -225,7 +225,6 @@ ROUTES['']=function vHome(v){
   <a class="hcard nt" href="#/notice"><div><b>공지사항${x.unreadRequired?`<i class="new hbadge">필독 ${x.unreadRequired}</i>`:''}</b><span>${(x.notices||[]).length?esc(x.notices[0].title):'새 공지가 없어요'}</span></div><i class="arr">${I('back',22)}</i></a>
   <a class="hcard ex" href="${EXP_URL}"><div><b>개인경비 청구</b><span>영수증 찍고 1분이면 끝</span></div><i class="arr">${I('back',22)}</i></a>
   <a class="hcard sc" href="#/schedule"><div><b>내 근무표</b><span>${ns?`다음 근무: ${shiftK(ns.date)} ${esc(ns.start)}~${esc(ns.end)}${(ns.branch||me.branch)?' · '+esc(ns.branch||me.branch):''}`:'확정된 다음 근무가 없어요'}</span></div><i class="arr">${I('back',22)}</i></a>
-  <a class="hcard mu" href="#/music"><div><b>TSB music<i class="new hbadge">NEW</i></b><span>매장 음악 · 선곡 플레이어 업데이트</span></div><i class="arr">${I('back',22)}</i></a>
   </div>
   ${x.unreadRequired?`<a class="bn y" href="#/notice"><div><b>필독 공지 ${x.unreadRequired}건</b><span>읽고 확인 버튼을 눌러 주세요</span></div><span class="go">읽기</span></a>`:''}
   ${d.inboxCount?`<a class="bn r" href="#/inbox"><div><b>결재할 문서 ${d.inboxCount}건</b><span>기다리고 있어요</span></div><span class="go">결재하기</span></a>`:''}
@@ -260,6 +259,7 @@ ROUTES['']=function vHome(v){
     <a class="tile ${x.check&&x.check['마감']?'':'n'}" href="#/check/마감"><b>마감<br>체크</b><small>${x.check&&x.check['마감']?'✓ '+esc(x.check['마감'].by)+' '+esc(x.check['마감'].at):'아직 안 했어요'}</small></a>
     <a class="tile n" href="#/incident/new"><b>사고 ·<br>클레임</b><small>바로 보고</small></a>
     <a class="tile" href="#/swap"><b>대타<br>게시판</b><small>${x.swapOpen?x.swapOpen+'건 모집중':'근무 바꾸기'}</small></a>
+    <a class="tile n" href="#/music"><b>TSB<br>music</b><small>매장 음악</small></a>
     <a class="tile" href="#/kudos"><b>칭찬<br>카드</b><small>고마운 동료에게</small></a>
     <a class="tile p" href="#/quiz" style="background-image:url(https://tapshopbar.github.io/staff/assets/quiz_glasses.jpg)"><b>와인<br>퀴즈</b><small>이번 달 랭킹</small></a>
   </div>

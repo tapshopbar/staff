@@ -1,5 +1,4 @@
 /* 크루 게시판 */
-.hcard.cr{background:linear-gradient(135deg,#F3D9DC 0%,#E9C4C9 100%);color:#4A0B18}.hcard.cr .arr{background:#4A0B18;color:#fff}
 .crl{padding:6px var(--pad) 30px;display:flex;flex-direction:column;gap:14px}
 .crp{background:#fff;border:1.5px solid var(--ink);border-radius:18px;padding:16px 16px 12px}
 .crh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.crh b{font-size:16px;font-weight:800}.crh span{font-size:13px;color:#777;white-space:nowrap}

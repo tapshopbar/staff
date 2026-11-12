@@ -12,7 +12,6 @@ ROUTES.crew=async function(v,arg){
   if(arg==='new')return crewNew(v);
   v.innerHTML=`${back('#/')}<div class="title"><h1>크루 게시판</h1><p>우리 매장 이야기, 손님 한마디, 동료 응원을 나눠요.</p></div>${loading()}`;
   let j;try{j=await api('crew.list')}catch(e){v.querySelector('.sk')?.parentElement.remove();v.insertAdjacentHTML('beforeend',`<div class="empty">${esc(e.message)}</div>`);return}
-  if(j.items[0])localStorage.setItem('tsbp_crew_last',j.items[0].body.split('\n')[0].slice(0,40));
   v.innerHTML=`${back('#/')}<div class="title"><h1>크루 게시판</h1><p>우리 매장 이야기, 손님 한마디, 동료 응원을 나눠요.</p></div>
    <div class="btnrow"><a class="pill wine" href="#/crew/new">글 쓰기</a></div>
    <div class="crl">${j.items.map(card).join('')||'<div class="empty">아직 글이 없어요. 첫 이야기를 올려 주세요.</div>'}</div>`;
@@ -37,12 +36,7 @@ function crewNew(v){
   $('#cs').onclick=async e=>{const body=$('#cb').value.trim();if(body.length<2){toast('내용을 적어 주세요');return}busy(e.currentTarget,true);
     try{await api('crew.create',{body,photos:shots,tag:$('#ct')?$('#ct').value:'',asTeam:$('#ca')?$('#ca').checked:false});toast('올렸어요');location.hash='#/crew'}catch(er){toast(er.message);busy(e.currentTarget,false)}};
 }
-/* 홈: 카드 + 전체 메뉴 타일 (core.js 수정 없이 덧붙임) */
+/* 홈: 전체 메뉴 타일만 (메인 카드는 공지·개인경비·근무표 3개 유지) */
 const home=ROUTES[''];
-ROUTES['']=function(v){const r=home.apply(this,arguments);try{
-  const last=localStorage.getItem('tsbp_crew_last');
-  v.querySelector('.hcards')?.insertAdjacentHTML('afterbegin',`<a class="hcard cr" href="#/crew"><div><b>크루 게시판<i class="new hbadge">NEW</i></b><span>${esc(last||'매장 이야기 · 손님 한마디 · 응원')}</span></div><i class="arr">${I('back',22)}</i></a>`);
-  v.querySelector('.grid .tile[href="#/kudos"]')?.insertAdjacentHTML('beforebegin',`<a class="tile w" href="#/crew"><b>크루<br>게시판</b><small>매장 이야기</small></a>`);
-  api('crew.list',{},0,true).then(j=>{if(j.items[0]){const s=j.items[0].body.split('\n')[0].slice(0,40);localStorage.setItem('tsbp_crew_last',s);const el=v.querySelector('.hcard.cr span');if(el)el.textContent=s}}).catch(()=>{});
-}catch(e){}return r};
+ROUTES['']=function(v){const r=home.apply(this,arguments);try{v.querySelector('.grid .tile[href="#/kudos"]')?.insertAdjacentHTML('beforebegin',`<a class="tile w" href="#/crew"><b>크루<br>게시판</b><small>매장 이야기</small></a>`)}catch(e){}return r};
 })();
