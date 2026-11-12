@@ -69,3 +69,10 @@
 .stconf i{position:absolute;top:-12px;left:calc(var(--i)*5.6%);width:7px;height:12px;border-radius:2px;background:#FFC100;opacity:0;animation:stfall 2.6s calc(var(--i)*.07s) ease-in forwards}
 .stconf i:nth-child(3n){background:#E7CDD3}.stconf i:nth-child(4n){background:#7BD389}.stconf i:nth-child(5n){background:#FFFDFC}
 @keyframes stfall{0%{opacity:0;transform:translateY(0) rotate(0)}10%{opacity:1}100%{opacity:0;transform:translateY(330px) rotate(540deg)}}
+.stcard.wide{grid-column:1/-1}
+.stpay{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:6px;margin-top:6px}
+.stpay span{display:block;font-size:11.5px;opacity:.7;font-weight:700}
+.stpay b{font-size:17px;margin-top:0}
+.stfacts{display:grid;grid-template-columns:1fr 1fr;max-width:320px;margin-left:auto;margin-right:auto}
+.stpride{font-size:15px;line-height:1.6;margin:14px auto 6px;max-width:320px;word-break:keep-all;opacity:.92}
+.stl .fba{margin-top:6px}
