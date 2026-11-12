@@ -11,7 +11,7 @@
   const $ = s => document.querySelector(s);
   const e = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const IMG = 'careers/';
-  const SNS = { ig: 'https://www.instagram.com/tap.shop.bar/', yt: 'https://www.youtube.com/@tsbradiokorea', web: 'https://tsb.wine/' };
+  const SNS = { ig: 'https://www.instagram.com/tap.shop.bar/', yt: 'https://www.youtube.com/@tappingseoul', web: 'https://tsb.wine/' };
   const BR = [{ k: '청계', d: '종각 · 삼일빌딩' }, { k: '상암', d: 'DMC' }, { k: '마곡', d: '마곡나루' }, { k: '동대문', d: '두타' }];
   const JOBS = [
     { id: 'hall-pt', own: [['한 잔을 쉽게 소개해요', '처음 온 손님께 "상큼해요, 부드러워요"처럼 한 단어로 먼저 추천해요.'], ['탭을 능숙하게', '탭에서 와인을 정확한 양으로 따르고, 탭 상태를 매일 확인해요.'], ['매장의 흐름을 지켜요', '맞이, 주문, 서빙, 계산까지. 바쁠 때도 침착하게 순서대로.'], ['디테일을 챙겨요', '글라스, 테이블, 위생, 오픈·마감 체크리스트를 앱으로.']], t: '홀 · 바 크루', type: '파트타임', tag: '상시', br: '4개 매장', when: '저녁 16시~마감 중심 · 주 2일부터', pay: '시급 10,320원 이상 (2026 최저임금 기준, 면접 때 확정)',
@@ -57,7 +57,7 @@
     yt: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg>',
     web: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14 0 18M12 3c-3 3.5-3 14 0 18"/></svg>'
   };
-  const snsBlock = () => `<div class="sns"><a class="ig" href="${SNS.ig}" target="_blank" rel="noopener">${ICON.ig}<span>Instagram<small>@tap.shop.bar</small></span></a><a href="${SNS.yt}" target="_blank" rel="noopener">${ICON.yt}<span>YouTube<small>tsb radio</small></span></a><a href="${SNS.web}" target="_blank" rel="noopener" style="grid-column:1/-1;background:var(--ink)">${ICON.web}<span>tsb.wine<small>매장 · 앱 · 대관</small></span></a></div>`;
+  const snsBlock = () => `<div class="sns"><a class="ig" href="${SNS.ig}" target="_blank" rel="noopener">${ICON.ig}<span>Instagram<small>@tap.shop.bar</small></span></a><a href="${SNS.yt}" target="_blank" rel="noopener">${ICON.yt}<span>YouTube<small>tapping; · 매장 음악</small></span></a><a href="${SNS.web}" target="_blank" rel="noopener" style="grid-column:1/-1;background:var(--ink)">${ICON.web}<span>tsb.wine<small>매장 · 앱 · 대관</small></span></a></div>`;
 
   function home() {
     app.innerHTML = `<div class="wrap">${pvBar}${nav()}
