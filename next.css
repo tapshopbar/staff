@@ -433,3 +433,47 @@ body.sfit .stool,body.sfit .hz,body.sfit .pbar{padding-left:10px;padding-right:1
 .crp.top{border-color:#B04A63;box-shadow:0 8px 22px rgba(176,74,99,.18)}.crtop{display:inline-block;background:#B04A63;color:#fff;font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px;margin-bottom:10px}
 .crq{margin:14px 0 0;padding:12px 14px;border-left:3px solid #B04A63;background:#FBF4F5;font-weight:600;line-height:1.6}
 .crnote{margin:8px 0 4px;font-size:13px;line-height:1.55;color:#8a7f80;font-weight:600}
+
+/* ===== HR 가이드 BETA ===== */
+/* TSB People · HR 가이드 v1 */
+.gd-sbox{padding:6px var(--pad) 0;position:sticky;top:0;z-index:5;background:var(--cream)}
+.gd-sbox .in{font-size:17px;font-weight:600;border:2px solid var(--ink);border-radius:14px;padding:14px 16px;width:100%;background:#fff}
+.gd-pop{display:flex;gap:6px;flex-wrap:wrap;padding:10px var(--pad) 0}
+.gd-pop button{font-size:13px;font-weight:700;padding:7px 12px;border-radius:99px;background:var(--grey);color:var(--ink)}
+.gd-cats{display:flex;gap:6px;overflow-x:auto;padding:16px var(--pad) 0;scrollbar-width:none}
+.gd-cats::-webkit-scrollbar{display:none}
+.gd-cats a{flex:none;font-size:13px;font-weight:800;padding:8px 13px;border-radius:99px;border:1.5px solid var(--ink)}
+.gd-cats a.on{background:var(--ink);color:#fff}
+.gd-path{font-weight:700;color:var(--wine2)}
+.gd-hit .t2 mark{background:#FFE9A8;color:var(--ink);border-radius:3px;padding:0 1px}
+.gd-cat{display:inline-block;font-size:12px;font-weight:800;color:var(--wine2);letter-spacing:.02em;margin-bottom:6px}
+.gd-apply{display:flex;flex-wrap:wrap;gap:8px;padding:12px var(--pad) 0}
+.gd-apply .pill{font-size:14px}
+.gd-toc{margin:16px var(--pad) 0;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px}
+.gd-toc summary{font-weight:800;font-size:14px;cursor:pointer}
+.gd-toc a{display:block;font-size:14px;font-weight:600;padding:7px 0;border-top:1px solid var(--line);color:var(--ink)}
+.gd-doc{padding:6px var(--pad) 0;font-size:15.5px;line-height:1.7;word-break:keep-all;color:var(--ink)}
+.gd-doc h2{font-size:23px;font-weight:800;letter-spacing:-.04em;margin:30px 0 8px;padding-top:14px;border-top:1.5px solid var(--ink);line-height:1.25}
+.gd-doc h3{font-size:18px;font-weight:800;letter-spacing:-.03em;margin:22px 0 6px}
+.gd-doc h4{font-size:16px;font-weight:800;margin:16px 0 4px}
+.gd-doc p{margin:8px 0}
+.gd-doc ul,.gd-doc ol{margin:6px 0 8px 20px}
+.gd-doc li{margin:3px 0}
+.gd-doc li.ck{list-style:none;margin-left:-20px;padding-left:26px;position:relative}
+.gd-doc li.ck:before{content:"";position:absolute;left:0;top:5px;width:15px;height:15px;border:1.5px solid var(--ink);border-radius:4px}
+.gd-doc code{background:var(--grey);padding:1px 5px;border-radius:5px;font-size:.92em}
+.gd-doc hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+.gd-doc .gd-box{background:var(--grey);border-left:4px solid var(--wine);padding:12px 14px;border-radius:10px;margin:12px 0;font-size:14.5px}
+.gd-tw{overflow-x:auto;margin:10px 0;border:1.5px solid var(--ink);border-radius:12px}
+.gd-tw table{border-collapse:collapse;width:100%;font-size:14px;min-width:420px}
+.gd-tw th{background:var(--ink);color:#fff;font-weight:800;text-align:left;padding:9px 10px;white-space:nowrap}
+.gd-tw td{padding:9px 10px;border-top:1px solid var(--line);vertical-align:top}
+.gd-todo{font-style:normal;font-size:11px;font-weight:800;background:#FFF3CC;color:var(--warn);padding:2px 7px;border-radius:99px}
+.gd-hl{background:#FFE9A8;border-radius:3px}
+.gd-flash{animation:gdf 1.8s ease}
+@keyframes gdf{0%{background:#FFE9A8}100%{background:transparent}}
+.gd-foot{margin:28px var(--pad) 10px;padding:18px;border-radius:16px;background:var(--wine);color:#fff}
+.gd-foot b{font-size:17px;font-weight:800}
+.gd-foot p{font-size:14px;opacity:.85;margin:6px 0 12px;line-height:1.5}
+.gd-foot .pill.line{border-color:#fff;color:#fff}
+.gd-beta{display:inline-block;vertical-align:middle;font-size:12px;font-weight:800;letter-spacing:.06em;padding:4px 9px;border-radius:99px;background:var(--wine);color:#fff;margin-left:6px;position:relative;top:-6px}
