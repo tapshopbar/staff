@@ -6,6 +6,7 @@ const CAT_Q={'잘된 것':'뭐가 잘됐나요?','아쉬운 것':'아쉬웠던 �
 const pct=(a,b)=>b?Math.round((a-b)/b*100):null;
 function keypad(id){return `<div class="stkp" data-kp="${id}">${['1','2','3','4','5','6','7','8','9','00','0','⌫'].map(k=>`<button type="button" data-key="${k}">${k}</button>`).join('')}</div>`}
 ROUTES.settle=async function(v,arg){
+  document.body.classList.add('stmode');
   const want=arg?decodeURIComponent(arg):'';
   v.innerHTML=`<section class="stl"><div class="sttop">${back('#/')}<span class="stbadge">마감하기</span></div><div class="stc"><div class="sk" style="height:140px;opacity:.15"></div></div></section>`;
   let g;try{g=await apiRaw('settle.get',want?{branch:want}:{})}catch(e){v.querySelector('.stc').innerHTML=`<h1>잠시 후 다시 열어 주세요</h1><p class="sts">${esc(e.message)}</p>`;return}
@@ -68,7 +69,7 @@ ROUTES.settle=async function(v,arg){
     wire();
   };
   const lineQ=()=>{const c=pv&&pv.compare&&pv.compare.lastWeek,s=pv&&pv.sales;
-    if(s&&c&&c.count){const p=pct(s.count,c.count);if(p!=null&&p!==0)return {h:`지난주 같은 요일보다 결제가 ${Math.abs(p)}% ${p>0?'많았어요':'적었어요'}.`,s:p>0?'뭐가 잘됐나요? 한 줄이면 충분해요.':'왜 그랬을까요? 내일 해 볼 것도 좋아요.'}}
+    if(s&&c&&c.count){const p=pct(s.count,c.count);if(p!=null&&p>0)return {h:`지난주 같은 요일보다 결제가 ${p}% 많았어요.`,s:'뭐가 잘됐나요? 한 줄이면 충분해요.'};if(p!=null&&p<0)return {h:'지난주보다 조용했어요.',s:'오늘 어떤 하루였나요? 한 줄이면 충분해요.'}}
     if(s&&s.count)return {h:`오늘 결제 ${W(s.count)}건이었어요.`,s:'오늘 매장은 어땠나요? 한 줄이면 충분해요.'};
     return {h:'오늘 매장은 어땠나요?',s:'한 줄이면 충분해요.'}};
   const cardsHTML=()=>{const s=Object.assign({},pv.sales||{},{net:netOf()}),p=pv.pay||{},cashIn=Number(f.cash)||0,wd=f.hasWd?(Number(f.wd)||0):0,diff=cashIn+wd-(Number(p.cash)||0);
@@ -80,12 +81,16 @@ ROUTES.settle=async function(v,arg){
       ${c('선불권 충전',W(pv.prepaidCharge)+'원','')}
       ${c('금고 현금 (직접 입력)',W(cashIn)+'원',(wd?`출금 ${W(wd)}원 · `:'')+`포스 현금 매출 ${W(p.cash)}원`,0)}</div>
       ${pv.itemsReady?'':'<p class="sts" style="margin-top:12px">품목별 매출은 새벽에 채워져요.'+(pv.approx?' 지금 실매출은 결제 합계 기준이에요.':'')+'</p>'}${(pv.notes||[]).filter(n=>/새벽에 채워져요/.test(n)).length?`<p class="sts">${pv.notes.filter(n=>/새벽에 채워져요/.test(n)).map(esc).join('<br>')}</p>`:''}`};
+  const factsHTML=(s,m,p,tm)=>{const L=[];if(s.guests)L.push([W(s.guests),'','오늘 손님']);if(s.count)L.push([W(s.count),'','오늘 결제']);
+    if(p!=null&&p>0)L.push(['+'+p,'%','지난주보다']);if(m&&m.net)L.push([W(Math.round(m.net/10000)),'만','이번 달 누적']);
+    if(s.avg)L.push([W(s.avg),'원','객단가']);if(m&&m.days)L.push([W(m.days),'일','이번 달 영업']);
+    return L.slice(0,4).map(x=>`<div><b>${x[0]}${x[1]?`<i>${x[1]}</i>`:''}</b><small>${x[2]}</small></div>`).join('')+(tm.length?`<div class="wide"><b class="sm">${esc(tm[0].name)}</b><small>오늘 가장 많이 나간 메뉴</small></div>`:'')};
   const finishHTML=()=>{const r=P.done||{},s=Object.assign({},(pv&&pv.sales)||{},{net:netOf()}),tm=(pv&&pv.topMenus)||[],cd=r.backend&&r.backend.cash,m=pv&&pv.month,c=pv&&pv.compare&&pv.compare.lastWeek,p=c&&c.net?pct(s.net,c.net):null;
     return `<div class="stfin"><div class="stconf">${Array.from({length:18},(_,i)=>`<i style="--i:${i}"></i>`).join('')}</div><span class="fbcheck">✓</span>
       <h1>오늘 하루도<br>정말 애쓰셨어요.</h1><p class="sts">${esc(g.branch)}의 하루를 지켜 줘서 고마워요${me.name?', '+esc(me.name)+'님':''}.</p>
-      <div class="stfacts">${s.guests?`<div><b>${W(s.guests)}</b><small>오늘 손님</small></div>`:''}<div><b>${W(s.count)}</b><small>결제</small></div>${m&&m.net?`<div><b>${W(Math.round(m.net/10000))}<i>만</i></b><small>이번 달 누적</small></div>`:''}${p!=null&&p>=0?`<div><b>+${p}<i>%</i></b><small>지난주 대비</small></div>`:''}</div>
+      <div class="stfacts">${factsHTML(s,m,p,tm)}</div>
       ${f.line?`<blockquote class="stq">“${esc(f.line)}”<cite>오늘 한 줄 · ${esc(me.name||'')}</cite></blockquote>`:''}
-      ${s.count?`<p class="stpride">오늘 ${esc(g.branch)}에서 ${s.guests?W(s.guests)+'분이 ':''}${W(s.count)}번 결제하며 좋은 시간을 보냈어요.<br>그 하루를 만든 건 여러분이에요.</p>`:''}${tm.length?`<p class="stpride">오늘 가장 많이 나간 메뉴는 <b>${esc(tm[0].name)}</b>${tm[0].qty?` (${W(tm[0].qty)}개)`:''}.</p>`:''}${cd&&cd.diff?`<p class="sttest">금고 현금이 장부와 ${W(cd.diff)}원 달라요. 정산 메모 '현금 시재 차이'로 남겨 주세요.</p>`:''}<p class="sts">${r.mock?'미리보기라 숫자는 예시이고, 시트에는 기록하지 않았어요.':r.test?'미리보기라 정산을 테스트 사본에만 기록했어요.':'정산을 일정산 시트에 기록했어요.'}<br>내일도 좋은 하루 만들어요.</p>
+      ${s.count?`<p class="stpride">오늘 ${esc(g.branch)}에서 ${s.guests?W(s.guests)+'분이 ':''}${W(s.count)}번 결제하며 좋은 시간을 보냈어요.<br>그 하루를 만든 건 여러분이에요.</p>`:''}${cd&&cd.diff?`<p class="sttest">금고 현금이 장부와 ${W(cd.diff)}원 달라요. 정산 메모 '현금 시재 차이'로 남겨 주세요.</p>`:''}<p class="sts">${r.mock?'미리보기라 숫자는 예시이고, 시트에는 기록하지 않았어요.':r.test?'미리보기라 정산을 테스트 사본에만 기록했어요.':'정산을 일정산 시트에 기록했어요.'}<br>내일도 좋은 하루 만들어요.</p>
       <div class="fbend"><a class="pill y" href="#/">홈으로</a></div></div>`};
   const kp=()=>{const k=v.querySelector('[data-kp]');if(!k)return;const tgt=()=>step===2?'svc':(f.hasWd&&S.kpTarget==='wd'?'wd':'cash');
     k.querySelectorAll('[data-key]').forEach(b=>b.onclick=()=>{const t=tgt(),key=b.dataset.key;let s=String(f[t]||'');if(key==='⌫')s=s.slice(0,-1);else if(s.length<9)s=(s+key).replace(/^0+/,'');f[t]=s;draw('same')});
@@ -117,6 +122,8 @@ ROUTES.settle=async function(v,arg){
   };
   draw('fwd');
 };
+/* 마법사 화면에서는 하단 탭바 숨김 */
+const stMode=()=>document.body.classList.toggle('stmode',decodeURIComponent(location.hash).startsWith('#/settle'));window.addEventListener('hashchange',stMode);
 /* 진입: 마감 체크 화면 맨 아래 버튼 */
 const _chk=ROUTES.check;
 if(_chk)ROUTES.check=async function(v,kind){const r=await _chk(v,kind);const add=()=>{if(kind!=='마감'||!decodeURIComponent(location.hash).startsWith('#/check/마감')||v.querySelector('#stgo2'))return;const b=document.createElement('div');b.className='btnrow';b.innerHTML='<a class="pill y" id="stgo2" href="#/settle">마감하고 정산 만들기</a>';const nt=v.querySelector('.note:last-of-type');(nt||v).insertAdjacentElement(nt?'afterend':'beforeend',b)};
