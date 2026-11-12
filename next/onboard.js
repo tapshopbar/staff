@@ -10,7 +10,7 @@
   const st = () => { try { return Object.assign({ step: 1, done: {}, docs: {}, reads: {}, quiz: {}, hi: '' }, JSON.parse(localStorage.getItem(KEY()) || '{}')); } catch (x) { return { step: 1, done: {}, docs: {}, reads: {}, quiz: {}, hi: '' }; } };
   const save = o => localStorage.setItem(KEY(), JSON.stringify(o));
   const nDone = o => Object.keys(o.done).filter(k => o.done[k]).length;
-  const br = b => (typeof brLabel === 'function' ? brLabel(b) : b) || '청계';
+  const br = b => { const l = String((typeof brLabel === 'function' ? brLabel(b) : b) || ''); return (!l || /전 ?지점|본사|전체/.test(l)) ? 'OO점' : /점$/.test(l) ? l : l + '점'; };
   const T = (typeof toast === 'function' ? toast : alert);
   const pvTag = '<span class="fs-pv">미리보기</span>';
 
@@ -59,13 +59,13 @@
     if (n === 1) {
       html = head(o, 1) + H(s, `${e(M.name)}님,<br>탭샵바에 오신 걸<br>환영해요.`) +
         tap('저는 마스코트 <b>탭</b>이에요. 앞으로 2주 동안 옆에서 하나씩 알려 드릴게요. <b>처음이어도 괜찮아요.</b> 오늘은 15분이면 끝나요.') +
-        `<div class="fs-card navy"><div class="k">${e(br(M.branch))}점 점장님 한마디</div><p style="font-size:16px;line-height:1.6;margin-top:8px;color:#fff">"${e(first)}님, 첫날은 아무것도 몰라도 돼요. 모르는 건 몇 번이고 물어봐요. 같이 하면 금방 익숙해져요. 만나서 반가워요!"</p><div class="fs-sign" style="color:rgba(255,255,255,.6)">실제로는 점장님이 직접 써요 · 사진 1장 첨부 가능</div></div>
+        `<div class="fs-card navy"><div class="k">${e(br(M.branch))} 점장님 한마디</div><p style="font-size:16px;line-height:1.6;margin-top:8px;color:#fff">"${e(first)}님, 첫날은 아무것도 몰라도 돼요. 모르는 건 몇 번이고 물어봐요. 같이 하면 금방 익숙해져요. 만나서 반가워요!"</p><div class="fs-sign" style="color:rgba(255,255,255,.6)">실제로는 점장님이 직접 써요 · 사진 1장 첨부 가능</div></div>
         <div class="fs-card grey"><h3>오늘 할 일 7가지</h3><ul>${STEPS.map(x => `<li>${x.t} <span class="k">· ${x.m}분</span></li>`).join('')}</ul></div>` +
         foot('좋아요, 시작할게요');
     } else if (n === 2) {
       const when = ns ? `${typeof shiftK === 'function' ? shiftK(ns.date) : e(ns.date)} ${e(ns.start)}~${e(ns.end)}` : '11월 20일 (금) 16:00~23:00';
       html = head(o, 2) + H(s, '첫 근무는<br>이렇게 오시면 돼요', '근무표에 잡힌 첫 근무가 자동으로 떠요.') +
-        `<div class="fs-card navy"><div class="k">내 첫 근무${ns ? '' : ' (예시)'}</div><div class="fs-big" style="color:#fff">${when}</div><p style="margin-top:6px">${e(br(ns && ns.branch || M.branch))}점 · 버디와 같이 근무해요</p></div>
+        `<div class="fs-card navy"><div class="k">내 첫 근무${ns ? '' : ' (예시)'}</div><div class="fs-big" style="color:#fff">${when}</div><p style="margin-top:6px">${e(br(ns && ns.branch || M.branch))} · 버디와 같이 근무해요</p></div>
         <div class="fs-card"><h3>찾아오는 길</h3><p style="margin-top:6px">매장 입구 사진과 들어오는 길이 여기 떠요. 직원 출입구가 따로 있으면 사진으로 알려 드려요.</p><p class="k" style="margin-top:6px">지점별 사진 · 길 안내는 점장님이 한 번 올려 두면 계속 써요</p></div>
         <div class="fs-card"><h3>준비물</h3><ul><li><b>검은색 미끄럼 방지 신발</b> (첫날부터 필요해요)</li><li>신분증</li><li>긴 머리면 머리끈</li><li>보건증 (아직 없으면 발급 신청한 영수증이라도)</li></ul><p class="k" style="margin-top:6px">유니폼 · 앞치마는 매장에서 드려요</p></div>
         <div class="fs-card"><h3>출근은 앱으로 찍어요</h3><p style="margin-top:6px">매장 안(약 200m 안)에서 홈의 [출근하기]를 누르면 돼요. 위치 권한을 미리 켜 두면 첫날 헤매지 않아요.</p><button class="pill sm line" style="margin-top:10px" id="fsGeo">위치 권한 켜기</button></div>` +
@@ -86,9 +86,9 @@
       html = head(o, 5) + H(s, '와인 기초 1과,<br>3분이면 끝나요', '마지막에 2문제만 맞히면 다음으로 가요.') + '<div id="fsL"><div class="fs-note">불러오는 중…</div></div>' + foot('다음', !o.quiz.pass);
     } else if (n === 6) {
       html = head(o, 6) + H(s, `${e(first)}님의 버디를<br>소개할게요`, '버디는 같은 지점 선배예요. 첫 2주 동안 사소한 것도 편하게 물어보세요.') +
-        `<div class="fs-card"><div class="fs-buddy"><div class="fs-av">버디</div><div><div class="k">${e(br(M.branch))}점 · 2년차 · 홀 (예시)</div><div class="fs-big" style="font-size:22px">OOO 님</div><p class="k" style="margin-top:2px">실제로는 점장님이 지정한 버디 사진·이름이 떠요</p></div></div>
+        `<div class="fs-card"><div class="fs-buddy"><div class="fs-av">버디</div><div><div class="k">${e(br(M.branch))} · 2년차 · 홀 (예시)</div><div class="fs-big" style="font-size:22px">OOO 님</div><p class="k" style="margin-top:2px">실제로는 점장님이 지정한 버디 사진·이름이 떠요</p></div></div>
           <div class="k" style="margin-top:14px">첫 2주 같이 근무하는 날</div><div class="fs-days"><span class="on">첫날</span><span class="on">2일차</span><span>3일차</span><span class="on">5일차</span><span class="on">7일차</span></div></div>
-        <div class="fs-card"><h3>먼저 인사 보내기</h3><textarea class="fs-ta" id="fsHi">${e(o.hi || `안녕하세요! 이번에 ${br(M.branch)}점에 들어온 ${M.name}이에요. 첫날 잘 부탁드려요 :)`)}</textarea><p class="k" style="margin-top:6px">앱 알림으로 버디에게 가요</p></div>
+        <div class="fs-card"><h3>먼저 인사 보내기</h3><textarea class="fs-ta" id="fsHi">${e(o.hi || `안녕하세요! 이번에 ${br(M.branch)}에 들어온 ${M.name}이에요. 첫날 잘 부탁드려요 :)`)}</textarea><p class="k" style="margin-top:6px">앱 알림으로 버디에게 가요</p></div>
         <div class="fs-card grey"><h3>버디에게도 물어보기 어려운 건</h3><p style="margin-top:4px">앱 <a class="u" href="#/ask" style="font-size:14px">질문하기</a>에 남기면 인사팀이 답해요. 이름 숨기기도 돼요.</p></div>` +
         foot('인사 보내기', false, '<button class="pill line full" id="fsSkip" style="color:var(--mute)">나중에 직접 인사할게요</button>');
     } else if (n === 7) {
