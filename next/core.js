@@ -16,7 +16,7 @@ const TYPES = [
   {g:'휴가',k:'가족돌봄휴가',label:'가족돌봄휴가',sub:'무급 · 연 10일',pol:'가족의 질병·사고·노령·양육으로 돌봄이 필요할 때 연 최대 10일, 1일 단위로 사용해요.',docs:'가족관계증명서, 진단서 등'},
   {g:'휴가',k:'기타·휴직',label:'기타 · 휴직',sub:'상담 후 결정',pol:'무급휴가·휴직 등은 대표 및 HR과 상담 후 진행 여부를 정해요. 30일 전 신청을 권장해요.',docs:'사유 증빙 서류'}
 ];
-const ROLECOL = {'직원':'#C99A9E','점장':'#6E1426','매니저':'#141B33','임원':'#3B4A7A','이사':'#4A0B18','대표':'#0E0E0E'};
+const ROLECOL = {'직원':'#C99A9E','점장':'#6E1426','매니저':'#141B33','임원':'#3B4A7A','이사':'#4A0B18','팀장':'#4A0B18','대표':'#0E0E0E'};
 const BR = ['청계','상암','마곡','동대문','서여의도','본사'];
 const I = (n,s=22)=>{const p={
  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
@@ -531,7 +531,7 @@ ROUTES.admin=async function(v){
      <label class="f">이메일</label><input class="in" id="a_em" type="email" autocapitalize="off" placeholder="name@tsb.wine 또는 개인 이메일">
      <label class="f">이름</label><input class="in" id="a_nm">
      <div class="two"><div><label class="f">지점</label><select class="in" id="a_br" ${j.canEditRole?'':'disabled'}>${j.branches.map(b=>`<option ${b===S.data.me.branch?'selected':''}>${esc(b)}</option>`).join('')}</select></div>
-     <div><label class="f">역할</label><select class="in" id="a_rl" ${j.canEditRole?'':'disabled'}>${['직원','점장','매니저','임원','이사','대표'].map(x=>`<option>${x}</option>`).join('')}</select></div></div>
+     <div><label class="f">역할</label><select class="in" id="a_rl" ${j.canEditRole?'':'disabled'}>${['직원','점장','매니저','임원','팀장','대표'].map(x=>`<option>${x}</option>`).join('')}</select></div></div>
      <div class="two"><div><label class="f">입사일</label><input class="in" type="date" id="a_hd"></div><div><label class="f">생년월일</label><input class="in" type="date" id="a_bd"></div></div>
      <button class="pill wine full" style="margin-top:20px" id="a_sv">추가하기</button>`,m=>{
      m.querySelector('#a_sv').onclick=async e=>{busy(e.currentTarget,true);try{await api('admin.addUser',{email:m.querySelector('#a_em').value,name:m.querySelector('#a_nm').value,branch:m.querySelector('#a_br').value,role:m.querySelector('#a_rl').value,hire:m.querySelector('#a_hd').value,birth:m.querySelector('#a_bd').value});m.remove();toast('추가했어요');ROUTES.admin(v)}catch(er){toast(er.message);busy(e.currentTarget,false)}}});
@@ -539,7 +539,7 @@ ROUTES.admin=async function(v){
     openSheet(`<h2>${esc(u.name)}</h2><div class="note" style="padding:0">${esc(u.email)}</div>
      <label class="f">이름</label><input class="in" id="u_nm" value="${esc(u.name)}">
      <div class="two"><div><label class="f">지점</label><select class="in" id="u_br" ${j.canEditRole?'':'disabled'}>${j.branches.map(b=>`<option ${b===u.branch?'selected':''}>${esc(b)}</option>`).join('')}</select></div>
-     <div><label class="f">역할</label><select class="in" id="u_rl" ${j.canEditRole?'':'disabled'}>${['직원','점장','매니저','임원','이사','대표'].map(x=>`<option ${x===u.role?'selected':''}>${x}</option>`).join('')}</select></div></div>
+     <div><label class="f">역할</label><select class="in" id="u_rl" ${j.canEditRole?'':'disabled'}>${['직원','점장','매니저','임원','팀장','대표'].map(x=>`<option ${x===u.role?'selected':''}>${x}</option>`).join('')}</select></div></div>
      <div class="two"><div><label class="f">입사일</label><input class="in" type="date" id="u_hd" value="${esc(u.hire||'')}"></div><div><label class="f">연차 조정(±일)</label><input class="in" id="u_adj" inputmode="decimal" value="${esc(u.adj||'')}" placeholder="예) -3"></div></div>
      <label class="f">상태</label><select class="in" id="u_st">${['대기','초대전','재직','퇴사'].map(x=>`<option ${x===u.status?'selected':''}>${x}</option>`).join('')}</select>
      <div class="btnrow" style="padding:22px 0 0"><a class="pill line" href="#/onb/${encodeURIComponent(u.email)}" data-close>온보딩</a><button class="pill wine" id="u_sv">${u.status==='대기'?'승인하고 저장':'저장'}</button></div>`,m=>{
