@@ -28,7 +28,8 @@ const ICO={
  more:'<circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/>'
 };
 const AUTO={'시설':'fix','고장':'fix','수리':'fix','비품':'box','소모품':'box','POS':'wifi','IT':'wifi','앱':'wifi','환불':'refund','충전금':'refund','클레임':'alert','사고':'alert','대관':'party','휴가':'cal','연차':'cal','대타':'swap','근무':'swap','지원':'help','증명':'doc','명함':'card','근무복':'shirt','건강':'heart','급여':'user','인사':'user','경비':'receipt','정산':'won','결제':'won','아이디어':'bulb','개선':'bulb','질문':'chat','의견':'chat'};
-function ico(it,s){let k=it.icon&&ICO[it.icon]?it.icon:'';if(!k){for(const w in AUTO){if(String(it.title||'').includes(w)){k=AUTO[w];break}}}k=k||'more';
+const KEYICO={fix:'fix',repair:'fix',supply:'box',it:'wifi',refund:'refund',incident:'alert',claim:'alert',rental:'party',leave:'cal',leave2:'cal',swap:'swap',help:'help',helpout:'help',payhr:'user',pay:'user',cert:'doc',card:'card',bcard:'card',uniform:'shirt',checkup:'heart',expense:'receipt',settle:'won',appidea:'bulb',idea:'bulb',ask:'chat',etc:'more',other:'more'};
+function ico(it,s){let k=it.icon&&ICO[it.icon]?it.icon:(KEYICO[it.key]||'');if(!k){for(const w in AUTO){if(String(it.title||'').includes(w)){k=AUTO[w];break}}}k=k||'more';
   return `<svg width="${s||22}" height="${s||22}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICO[k]}</svg>`}
 const T=(k,l,t,ty,o)=>Object.assign({key:k,label:l,type:t||'text',required:!!(o&&o.req)},ty?{placeholder:ty}:{},o||{});
 const P=()=>T('photo','사진','photo','',{});
@@ -62,7 +63,9 @@ const FALLBACK={groups:[
   {key:'other',icon:'more',title:'그 밖의 요청',desc:'어디로 보낼지 모를 때',mode:'ticket',team:'전략기획팀',fields:[T('what','내용','textarea','무엇이 / 언제부터 / 어디서 / 원하는 것',{req:1}),P()]}]}
 ]};
 const R={cat:null,ready:null,open:null};
-async function catalog(){if(R.cat)return R.cat;try{const j=await apiRaw('req.catalog');R.cat=j;R.ready=true}catch(e){if(NOTYET(e)){R.cat=FALLBACK;R.ready=false}else throw e}return R.cat}
+const FBD={};FALLBACK.groups.forEach(g=>g.items.forEach(it=>{if(it.link)FBD[it.link]=it.desc}));
+function norm(c){c.groups.forEach(g=>{g.title=String(g.title||'').replace(/·/g,' · ');g.items.forEach(it=>{const ex=it.examples;it.examples=Array.isArray(ex)?ex.filter(Boolean):(ex?[ex]:[]);it.title=String(it.title||'').replace(/·/g,' · ');it.desc=String(it.desc||'').replace(/·/g,' · ');if(it.mode==='link'&&(/^기존|질문함|^바로 발급/.test(it.desc))&&FBD[it.link.replace('#/help/new','#/help')])it.desc=FBD[it.link.replace('#/help/new','#/help')];if(it.link==='#/new/휴가')it.desc='경조 · 병가 · 공가 · 특별 휴가';if(it.link==='#/help/new')it.desc='사람이 모자란 지점에 지원 요청 올리기'})});return c}
+async function catalog(){if(R.cat)return R.cat;try{const j=await apiRaw('req.catalog');R.cat=norm(j);R.ready=true}catch(e){if(NOTYET(e)){R.cat=FALLBACK;R.ready=false}else throw e}return R.cat}
 function findItem(c,k){for(const g of c.groups)for(const it of g.items)if(it.key===k)return it;return null}
 const hrefOf=it=>it.mode==='link'?(it.link==='#/exp/new'&&typeof EXP_URL!=='undefined'?'#/exp/new':it.link):'#/request/new/'+encodeURIComponent(it.key);
 const soon=()=>`<div class="rqsoon"><b>곧 열려요</b><span>요청 접수 연결을 마무리하고 있어요. 급한 건 hello+request@tsb.wine 으로 메일 주세요.</span></div>`;
@@ -168,7 +171,8 @@ function list(items,tab){if(!items.length)return `<div class="empty" style="padd
   return `<div class="rql">${items.map(r=>{const src=SRC[r.source]||r.source||'요청';const href=r.link||(/^REQ-/.test(r.id)?'#/ticket/'+r.id:'#/req/'+r.id);
    return `<a class="rqr" href="${esc(href)}"><span class="src s-${esc(src)}">${esc(src)}</span><div class="m"><div class="t1">${esc(r.title||r.kind||'')}</div><div class="t2">${/^REQ-/.test(r.id)?esc(r.id)+' · ':''}${esc(r.team||r.kind||'')}${r.updated||r.at?' · '+esc(ds(r.updated||r.at)):''}</div></div>${stChip(r.status)}</a>`}).join('')}</div>`}
 /* ── 알림함 ── */
-const KIND=n=>{const l=String(n.link||''),t=String(n.title||'');if(n.type)return n.type;
+const TYK={req:'요청',ticket:'요청',request:'요청',approval:'결재',approve:'결재',notice:'공지'};
+const KIND=n=>{const l=String(n.link||''),t=String(n.title||'');if(n.type&&TYK[n.type])return TYK[n.type];
   if(/^#\/(ticket|request|myreq)/.test(l)||/REQ-\d/.test(t))return '요청';
   if(/^#\/notice/.test(l)||/^\[공지\]/.test(t))return '공지';
   if(/^#\/(inbox|exp|close|admin)/.test(l)||/결재|승인 요청|리마인드|확인해 주세요/.test(t))return '결재';
@@ -182,9 +186,9 @@ ROUTES.notis=async function(v,tab){
   const unread=items.filter(n=>!n.read).length;
   v.innerHTML=`${back('#/')}<div class="title rqnh"><div><h1>알림함</h1><p>요청 진행, 결재, 공지가 여기 모여요. Slack 알림을 누르면 이곳으로 와요.</p></div>${unread?`<button class="pill sm line" id="rqall">모두 읽음</button>`:''}</div>
    <div class="rqtabs">${tabs.map(t=>`<a class="${t===tab?'on':''}" href="#/notis/${t==='전체'?'':t}">${t}</a>`).join('')}</div>
-   <div class="rqn">${items.length?items.map(n=>`<a class="rqni ${n.read?'':'new'}" href="${esc(n.link||'#/')}" data-id="${esc(n.id)}"><span class="kd k-${esc(n.k)}">${esc(n.k==='기타'?'알림':n.k)}</span><div class="m"><div class="t1">${esc(n.title)}</div>${n.body?`<div class="t2">${esc(n.body)}</div>`:''}<div class="t3">${esc(ds(n.at))}</div></div>${n.read?'':'<i class="ud"></i>'}</a>`).join(''):`<div class="empty" style="padding:48px var(--pad)">${tab==='전체'?'새 알림이 없어요':tab+' 알림이 없어요'}</div>`}</div>`;
+   <div class="rqn">${items.length?items.map(n=>`<a class="rqni ${n.read?'':'un'}" href="${esc(n.link||'#/')}" data-id="${esc(n.id)}"><span class="kd k-${esc(n.k)}">${esc(n.k==='기타'?'알림':n.k)}</span><div class="m"><div class="t1">${esc(n.title)}</div>${n.body?`<div class="t2">${esc(n.body)}</div>`:''}<div class="t3">${esc(ds(n.at))}</div></div>${n.read?'':'<i class="ud"></i>'}</a>`).join(''):`<div class="empty" style="padding:48px var(--pad)">${tab==='전체'?'새 알림이 없어요':tab+' 알림이 없어요'}</div>`}</div>`;
   v.querySelectorAll('.rqni').forEach(a=>a.onclick=ev=>{const id=a.dataset.id,n=(S.data.notis||[]).find(x=>x.id===id);if(n)n.read=true;
-    if(a.classList.contains('new'))apiRaw('notis.readOne',{id}).catch(()=>apiRaw('notis.read').catch(()=>{})).finally(()=>refresh&&refresh())});
+    if(a.classList.contains('un'))apiRaw('notis.readOne',{id}).catch(()=>apiRaw('notis.read').catch(()=>{})).finally(()=>refresh&&refresh())});
   const all=$('#rqall');if(all)all.onclick=async()=>{busy(all,true);try{await api('notis.read');(S.data.notis||[]).forEach(x=>x.read=true);shell(true);ROUTES.notis(v,tab)}catch(e){busy(all,false);toast(e.message)}};
 };
 /* ── 홈: 요청하기 카드 + 진행 중 칩 / 하단 '신청' → '요청' ── */
