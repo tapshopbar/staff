@@ -214,7 +214,7 @@ ROUTES.learn=async function(v,id){
      ${l.img?`<div class="lrn-comic"><img src="${LIMG}${esc(l.img)}" alt="${esc(l.t)} 만화" loading="lazy"><ol>${(l.panels||[]).map(p=>`<li>${esc(p)}</li>`).join('')}</ol></div>`:''}
      <div class="lrn-say"><img src="${LIMG}mascot.jpg" alt=""><span>탭이가 정리해 줄게요!</span></div>
      ${l.cards.map(c=>`<div class="lrn-card">${c}</div>`).join('')}
-     ${l.vid?`<div class="sec"><h2>영상으로 한 번 더</h2></div><div class="lrn-vid"><iframe src="https://www.youtube-nocookie.com/embed/${esc(l.vid)}?rel=0" title="영상" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><p class="note" style="padding:6px var(--pad) 0">외부 유튜브 영상이에요. 안 나오면 <a class="u" href="https://youtu.be/${esc(l.vid)}" target="_blank" rel="noopener">유튜브에서 보기</a></p>`:''}
+     ${l.vid?`<div class="sec"><h2>영상으로 한 번 더</h2></div><div class="lrn-vid"><iframe referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/${esc(l.vid)}?rel=0" title="영상" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><p class="note" style="padding:6px var(--pad) 0">외부 유튜브 영상이에요. 안 나오면 <a class="u" href="https://youtu.be/${esc(l.vid)}" target="_blank" rel="noopener">유튜브에서 보기</a></p>`:''}
      <div class="sec"><h2>확인 문제</h2></div>
      ${l.q.map((q,qi)=>`<div class="lrn-q" data-q="${qi}"><div class="qq">${qi+1}. ${esc(q.q)}</div>${q.o.map((o,oi)=>`<button data-o="${oi}">${esc(o)}</button>`).join('')}</div>`).join('')}
      <div id="lend" style="display:none"><div class="lrn-done"><img src="${LIMG}mascot.jpg" alt=""><div><b id="ldt">완료!</b><span>도장 하나 찍었어요</span></div><i class="stamp">✓</i></div>
