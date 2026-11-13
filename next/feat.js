@@ -86,7 +86,7 @@ ROUTES.exp=async function(v,id){
 async function expNew(v){
   let me={bank:'',account:''};try{me=await api('exp.list')}catch(e){}
   const st={kind:'개인경비',receipt:''};
-  v.innerHTML=`${back()}<div class="title"><h1>경비 · 소모품<br>청구</h1><p>승인되면 장분도 이사의 지급 목록에 이체 메모까지 자동으로 올라가요.</p></div>
+  v.innerHTML=`${back()}<div class="title"><h1>경비 · 소모품<br>청구</h1><p>승인되면 서포트센터 지급 목록에 이체 메모까지 자동으로 올라가요.</p></div>
    <div class="seg"><button class="on" data-k="개인경비">개인경비</button><button data-k="소모품">소모품 (매장 구매)</button></div>
    <div class="form"><label class="f">영수증 사진</label><label class="photo-in" id="ph"><input type="file" accept="image/*" capture="environment" id="pf" hidden><span style="font-size:26px">+</span><span>카메라로 찍기 · 앨범에서 고르기</span></label>
    <label class="f">금액</label><input class="in" id="am" inputmode="numeric" placeholder="0원" style="font-size:26px;font-weight:800">
@@ -94,7 +94,7 @@ async function expNew(v){
    <div class="two"><div><label class="f">사용처</label><input class="in" id="pl" placeholder="예) 쿠팡"></div><div><label class="f">결제 수단</label><select class="in" id="mt"><option>개인카드</option><option>현금</option><option>계좌이체</option></select></div></div>
    <label class="f">내용 <em>(선택)</em></label><textarea class="in" id="mm" placeholder="예) 주방 소모품 긴급 구매"></textarea>
    <div class="two"><div><label class="f">입금 은행</label><input class="in" id="bk" value="${esc(me.bank||'')}" placeholder="예) 카카오뱅크"></div><div><label class="f">계좌번호</label><input class="in" id="ac" value="${esc(me.account||'')}" inputmode="numeric" placeholder="본인 명의"></div></div>
-   <p class="note" style="padding:8px 0">계좌는 한 번 입력하면 기억해요. 30만원 이상은 장분도 이사 승인까지 가요.</p></div>
+   <p class="note" style="padding:8px 0">계좌는 한 번 입력하면 기억해요. 30만원 이상은 서포트센터 팀장 승인까지 가요.</p></div>
    <div class="btnrow"><button class="pill wine" id="sb">청구하기</button></div>`;
   v.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{v.querySelectorAll('.seg button').forEach(x=>x.classList.remove('on'));b.classList.add('on');st.kind=b.dataset.k});
   $('#pf').onchange=async e=>{const f=e.target.files[0];if(!f)return;st.receipt=await fileToDataUrl(f);$('#ph').innerHTML=`<img src="${st.receipt}"><input type="file" accept="image/*" capture="environment" id="pf" hidden>`;$('#ph').querySelector('input').onchange=$('#pf')?.onchange};

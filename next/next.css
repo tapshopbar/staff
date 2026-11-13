@@ -734,3 +734,51 @@ body.sfit .stool,body.sfit .hz,body.sfit .pbar{padding-left:10px;padding-right:1
 .subl:before{content:'';width:4px;height:16px;border-radius:2px;background:var(--rqb)}
 .sec+.subl{padding-top:6px}
 .grid.g3+.subl{margin-top:10px}
+
+
+/* ═══ 시즌 색 Winter in Wine (2026-11-14 ~ 12/25) · 코치님 11/14 결정: 사내 앱 People부터 PINE 조기 적용 ═══
+ * 버튼·탭바 활성·강조 = PINE(--season-main), 그린 위 글자 = CREAM(--season-on), 작은 배지·포인트 = YELLOW(--season-pt).
+ * 와인은 의미색으로만 남김: 소믈리에 배지, 역할 칩(점장·팀장), 근무 프리셋 색(마감 등), 축하 색종이. 위험·삭제는 원래 --bad(#C2283A).
+ * 대비(WCAG): CREAM on PINE 14.9:1, PINE on CREAM 14.9:1, --season-2 on CREAM 10.4:1, INK on YELLOW 11.6:1 → 전부 AA 통과.
+ * 되돌리기(12/26 이후): 이 블록(아래 '시즌 색 끝'까지)을 통째로 지우고 index.html ?v 올리기 + manifest 색 #4A0B18. 와인 원래 값은 style.css :root 그대로. */
+:root{--season-main:#0F2A20;--season-2:#1B4433;--season-3:#081A13;--season-on:#FFFDFC;--season-pt:#FFC100;--season-tint:#EAF2EE;
+  --wine:var(--season-main);--wine2:var(--season-2);--wine3:var(--season-3)}
+.pill.wine,.tile.w,.bn.w,.type.on,.ck.on,.hdr.dark,.sh,.cal .p,.pl.cl,.ab.cl,.gd-foot,.gdq-n,.crc.on,.pchip,.sseg.m button.on{color:var(--season-on)}
+.nav a.on{color:var(--season-main)}
+.nav a.on:after{background:var(--season-main)}
+.nav a.plus span.pl{color:var(--season-on);box-shadow:0 6px 16px rgba(15,42,32,.35)}
+.hero.photo:before{background:linear-gradient(180deg,rgba(15,42,32,.5),rgba(8,26,19,.9))}
+.login:before{background:linear-gradient(180deg,rgba(15,42,32,.3) 0%,rgba(8,26,19,.6) 45%,rgba(4,12,9,.96) 100%)}
+.expcard,.hcard.ex{background:linear-gradient(135deg,var(--season-2) 0%,var(--season-main) 55%,var(--season-3) 100%)}
+.hcard.ex{box-shadow:0 10px 24px rgba(15,42,32,.28)}
+.gd-rvb,.qk-ex .qi{background:linear-gradient(135deg,var(--season-2),var(--season-3))}
+.hybi,.hpp.a{background:linear-gradient(90deg,var(--season-2) 50%,#141B33 50%)}
+.lrn-comic li:before{background:var(--season-2)}
+.tpv button.on{background:var(--season-tint)}
+.crc.on{background:var(--season-main);border-color:var(--season-main)}
+.crrule{background:var(--season-tint);color:var(--season-main)}
+.crs{color:var(--season-main)}
+.crp.hl{border-color:var(--season-main);box-shadow:0 0 0 3px rgba(15,42,32,.18)}
+.gd-beta,.hpp:not(.a){background:var(--season-pt);color:var(--ink)}
+/* ═══ 시즌 색 끝 ═══ */
+
+/* ===== CREW 단순화 (2026-11-14) — 지우면 원래대로 ===== */
+.crgrid .tile.crall{background:#fff;border:1.5px dashed #C9CCD3;color:#0E0E0E}
+.crgrid .tile.crall small{color:var(--mute)}
+.crctx{display:flex;align-items:center;gap:14px;margin:14px var(--pad) 0;padding:16px 18px;border-radius:18px;background:var(--season-main,#0F2A20);color:#FFFDFC;text-decoration:none;box-shadow:0 6px 18px rgba(15,42,32,.18)}
+.crctx i{font-style:normal;width:40px;height:40px;border-radius:12px;background:rgba(255,253,252,.14);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.crctx b{display:block;font-size:16px;font-weight:800;letter-spacing:-.02em}
+.crctx span{display:block;font-size:12.5px;opacity:.78;margin-top:2px}
+.crctx em{margin-left:auto;font-style:normal;background:#FFC100;color:#0E0E0E;font-weight:800;font-size:13px;padding:8px 14px;border-radius:99px;white-space:nowrap}
+.crctx.ok{background:var(--season-tint,#EAF2EE);color:#0E0E0E;box-shadow:none}
+.crctx.ok i{background:#DDEBE2;color:#0F2A20}
+details.crfold{margin:26px var(--pad) 0;border:1.5px solid #E6E6E3;border-radius:16px;background:#fff;overflow:hidden}
+details.crfold>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:10px;padding:16px 18px}
+details.crfold>summary::-webkit-details-marker{display:none}
+details.crfold>summary b{font-size:16px;font-weight:800;letter-spacing:-.02em}
+details.crfold>summary span{font-size:12.5px;color:var(--mute);font-weight:600}
+details.crfold>summary:after{content:'›';margin-left:auto;font-size:20px;color:#8C8C88;transform:rotate(90deg);transition:transform .2s}
+details.crfold[open]>summary:after{transform:rotate(-90deg)}
+details.crfold #board{border-top:1px solid #EEE}
+details.crfold a.crfl{display:block;padding:12px 18px 16px;font-size:13px;font-weight:800;color:var(--ink)}
+/* ===== CREW 단순화 끝 ===== */

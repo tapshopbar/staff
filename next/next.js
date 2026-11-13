@@ -24,7 +24,7 @@ ROUTES.policy=function(v){v.innerHTML=`${back('#/')}<div class="title"><h1>회�
    <li>한 번에 10만원 미만으로 나눠 결제해 주세요.</li>
    <li>마감 · 업무 이동 택시비는 1회 3만원까지예요 (카카오T 이용내역 캡처 첨부).</li>
    <li>CJ프레시웨이 · 커피 리브레 · 미트프렌즈 · 닭리닭매 · 에디션덴마크는 서포트센터가 계좌이체로 결제해요. 개인카드로 결제하지 말고 서포트센터에 발주 요청해 주세요.</li></ul>
-  <h3>휴가</h3><ul><li>연차 · 휴가는 점장 승인으로 확정돼요. 점장님이 없는 서포트센터와 점장님 본인은 매니저가 승인해요.</li><li>확정된 휴가 날짜를 바꾸려면 내 신청에서 [날짜 바꾸기]를 눌러 주세요. 새 날짜가 승인되면 원래 신청은 자동으로 취소돼요.</li></ul>
+  <h3>휴가</h3><ul><li>연차 · 휴가는 점장 승인으로 확정돼요. 점장님이 없는 서포트센터와 점장님 본인은 매니저가 승인해요.</li><li>확정된 휴가 날짜를 바꾸려면 내 요청에서 [날짜 바꾸기]를 눌러 주세요. 새 날짜가 승인되면 원래 신청은 자동으로 취소돼요.</li></ul>
   <a class="pill line full" style="margin-top:24px" href="https://www.notion.so/34ccdbb0aa9280b99452f801728669c6" target="_blank" rel="noopener">Notion에서 전체 보기</a>
  </div>`};
 const ASK_KINDS=['질문','제안','불편','칭찬'];
@@ -105,7 +105,7 @@ function renderLogin(step='email',email=''){
 }
 function splash(ms){return new Promise(res=>{const d=document.createElement('div');d.className='welcome';
   d.innerHTML=`<div class="wbg"></div><div class="wshade"></div>
-   <div class="wtop"><img src="${LOGO}" alt="TAP SHOP BAR"><span class="new">PEOPLE</span></div>
+   <div class="wtop"><img src="${LOGO}" alt="TAP SHOP BAR"><span class="new">CREW</span></div>
    <div class="wbot"><span class="tag"><i class="new">NEW</i> 직원 전용 앱</span><h1>함께 일하는<br>탭샵바인의 공간.</h1><p>출퇴근, 스케줄, 휴가, 경비까지. 폰 하나로 끝내요.</p></div>`;
   d.style.setProperty('--wdur',ms+'ms');
   document.body.appendChild(d);requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add('on')));
@@ -131,6 +131,7 @@ const BADGES=[
  {k:'key',n:'Keyholder',ko:'키홀더',d:'오픈·마감 책임자 인증',c:'#8A6A2E',i:'M8 14a4 4 0 1 1 3.5-6L20 8v3h-2v2h-2v-2h-4.5A4 4 0 0 1 8 14z'},
  {k:'pass',n:'Passport',ko:'패스포트',d:'다른 지점 지원을 갈 때마다 도장 한 칸. 5칸을 채우면 완성',c:'#2F4858',i:'M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM12 7.5a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM9.2 10.5h5.6M9.5 17h5'},
  {k:'hr',n:'HR',ko:'인사 담당',d:'인사와 결재를 맡아요. 결재선과 HR 가이드에 이름이 들어가요',c:'#141B33',i:'M8 7a4 4 0 1 0 8 0a4 4 0 1 0-8 0M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1M17 3.5l1 2 2 .3-1.5 1.4.4 2-1.9-1-1.9 1 .4-2L14 5.8l2-.3z'},
+ {k:'edu',n:'Education',ko:'교육',d:'직원 교육과 아카데미를 맡아요',c:'#6E1426',i:'M2 9l10-5 10 5-10 5zM6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5'},
  {k:'ssc',n:'Support Center',ko:'서포트센터',d:'전 지점을 돕는 팀. 매장이 잘 돌아가게 뒤에서 챙겨요',c:'#156DFF',i:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6'},
  {k:'kind',n:'Kindness',ko:'카인드니스',d:'지점별 매달 1명, 매달 바뀌어요',c:'#FFC100',dark:1,i:'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z'}
 ];
@@ -157,7 +158,7 @@ function brLabel(b){return b==='본사'||b==='서포트센터'?'전 지점':b}
 
 /* ── BETA 표시 + TSB music (2026-11-10) ── */
 const APP_V='BETA 0.12';
-function betaInfo(){openSheet(`<h2>지금은 베타 버전이에요</h2><div style="font-size:15px;line-height:1.75;font-weight:500;margin-top:10px;word-break:keep-all">매장에서 쓰면서 매주 고치고 있어요. 지금이 <b>12번째 업데이트(BETA 0.12)</b>예요.<br><b>12월 25일까지</b> 의견을 받고 베타를 마쳐요. 그리고 <b>2027년 1월, 정식 버전 1.0</b>으로 시작해요.<br><br>아주 작은 것도 좋아요. 고칠 것, 있으면 좋겠는 것, 좋았던 것까지 알려 주세요. 서포트센터가 전부 읽어요.</div><a class="pill wine full" href="#/feedback" data-close style="margin-top:18px">의견 보내기</a><p class="note" style="margin-top:12px;text-align:center">TSB People ${APP_V}</p>`)}
+function betaInfo(){openSheet(`<h2>지금은 베타 버전이에요</h2><div style="font-size:15px;line-height:1.75;font-weight:500;margin-top:10px;word-break:keep-all">매장에서 쓰면서 매주 고치고 있어요. 지금이 <b>12번째 업데이트(BETA 0.12)</b>예요.<br><b>12월 25일까지</b> 의견을 받고 베타를 마쳐요. 그리고 <b>2027년 1월, 정식 버전 1.0</b>으로 시작해요.<br><br>아주 작은 것도 좋아요. 고칠 것, 있으면 좋겠는 것, 좋았던 것까지 알려 주세요. 서포트센터가 전부 읽어요.</div><a class="pill wine full" href="#/feedback" data-close style="margin-top:18px">의견 보내기</a><p class="note" style="margin-top:12px;text-align:center">TSB CREW ${APP_V}</p>`)}
 const RADIO='https://tsb.wine/radio/';
 const MU_STORES=[['청계','cg'],['상암','sa'],['마곡','mg'],['동대문','dd']];
 ROUTES.music=function(v){const me=(S.data&&S.data.me)||{};
@@ -213,7 +214,7 @@ ROUTES.learn=async function(v,id){
      ${l.img?`<div class="lrn-comic"><img src="${LIMG}${esc(l.img)}" alt="${esc(l.t)} 만화" loading="lazy"><ol>${(l.panels||[]).map(p=>`<li>${esc(p)}</li>`).join('')}</ol></div>`:''}
      <div class="lrn-say"><img src="${LIMG}mascot.jpg" alt=""><span>탭이가 정리해 줄게요!</span></div>
      ${l.cards.map(c=>`<div class="lrn-card">${c}</div>`).join('')}
-     ${l.vid?`<div class="sec"><h2>영상으로 한 번 더</h2></div><div class="lrn-vid"><iframe src="https://www.youtube-nocookie.com/embed/${esc(l.vid)}?rel=0" title="영상" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><p class="note" style="padding:6px var(--pad) 0">외부 유튜브 영상이에요. 안 나오면 <a class="u" href="https://youtu.be/${esc(l.vid)}" target="_blank" rel="noopener">유튜브에서 보기</a></p>`:''}
+     ${l.vid?`<div class="sec"><h2>영상으로 한 번 더</h2></div><div class="lrn-vid"><iframe referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/${esc(l.vid)}?rel=0" title="영상" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><p class="note" style="padding:6px var(--pad) 0">외부 유튜브 영상이에요. 안 나오면 <a class="u" href="https://youtu.be/${esc(l.vid)}" target="_blank" rel="noopener">유튜브에서 보기</a></p>`:''}
      <div class="sec"><h2>확인 문제</h2></div>
      ${l.q.map((q,qi)=>`<div class="lrn-q" data-q="${qi}"><div class="qq">${qi+1}. ${esc(q.q)}</div>${q.o.map((o,oi)=>`<button data-o="${oi}">${esc(o)}</button>`).join('')}</div>`).join('')}
      <div id="lend" style="display:none"><div class="lrn-done"><img src="${LIMG}mascot.jpg" alt=""><div><b id="ldt">완료!</b><span>도장 하나 찍었어요</span></div><i class="stamp">✓</i></div>
@@ -285,7 +286,7 @@ function card(p){return `<article class="crp ${p.top?'top':''}" data-id="${esc(p
   <div class="cra"><span class="crbtns"><button type="button" class="crc ${p.cheered?'on':''}" data-cheer>♥ 응원해요 <em>${p.cheers||''}</em></button><button type="button" class="crs" data-share>동료에게 보내기</button></span>${p.canDel?'<button type="button" class="crd" data-del>지우기</button>':''}</div></article>`}
 /* 동료에게 보내기: 글 내용은 빼고 링크만 보낸다(로그인한 직원만 열림). 카톡 등 휴대폰 공유 창, 안 되면 링크 복사 */
 async function shareStory(id){const url=location.origin+location.pathname+'#/crew/'+encodeURIComponent(id);
-  const text='탭샵바 매장 이야기에 같이 보고 싶은 글이 있어요. People 앱에서 열어 보세요.';
+  const text='탭샵바 매장 이야기에 같이 보고 싶은 글이 있어요. CREW 앱에서 열어 보세요.';
   if(navigator.share){try{await navigator.share({title:'TSB 매장 이야기',text,url});return}catch(e){if(e&&e.name==='AbortError')return}}
   try{await navigator.clipboard.writeText(text+'\n'+url);toast('링크를 복사했어요. 카톡에 붙여 넣어 주세요')}
   catch(e){openSheet(`<h2>링크 복사</h2><p class="note" style="padding:4px 0 10px">아래 주소를 길게 눌러 복사해 주세요.</p><input class="in" readonly value="${esc(url)}" onfocus="this.select()">`)}}
@@ -721,7 +722,7 @@ ROUTES['']=function(v){const r=_home.apply(this,arguments);try{const x=(S.data&&
   const EXTRA=[
     ['#/new/연차','연차 · 반차 신청','휴가 쓰기 · 남은 연차','휴가 연차 반차 쉬는날 월차 오프'],
     ['#/new/휴가','특별 휴가 신청','경조 · 병가 · 공가','경조 결혼 장례 병가 아파 공가 예비군 출산'],
-    ['#/apply','내 신청','신청한 것 · 결재 상태','결재 승인 상태 신청내역'],
+    ['#/myreq','내 요청','요청 · 휴가 신청 · 질문 진행 상황','내신청 신청 결재 승인 상태 신청내역 요청 진행'],
     ['#/exp/new','경비 신청','영수증 · 택시 · 소모품','경비 영수증 택시 교통비 카드 구매 소모품 지출 청구'],
     ['#/sup/명함','명함 신청','점장 → 매니저 승인','명함'],
     ['#/sup/근무복','근무복 신청','점장 → 매니저 승인','근무복 유니폼 옷 앞치마'],
@@ -876,7 +877,7 @@ const FALLBACK={groups:[
  {key:'store',title:'매장 · 시설',items:[
   {key:'repair',icon:'fix',title:'고장 · 수리',desc:'누수 · 전기 · 냉장고 · 디스펜서',examples:['[마곡] 2번 디스펜서 온도 오류'],mode:'ticket',team:'시설팀',fields:[T('what','무엇이 문제인가요','textarea','예) 2번 디스펜서 온도가 18도로 떠요',{req:1}),T('since','언제부터','text','예) 오늘 오픈 때부터'),T('where','어디서','text','기계 번호 · 위치'),P()]},
   {key:'supply',icon:'box',title:'비품 · 소모품',desc:'떨어진 것 · 새로 필요한 것',examples:['[상암] 냅킨 · 와인잔 보충'],mode:'ticket',team:'구매원가팀',fields:[T('items','필요한 것과 수량','textarea','예) 와인잔 12개, 냅킨 2박스',{req:1}),T('when','언제까지','date'),P()]},
-  {key:'it',icon:'wifi',title:'POS · 기기 · 앱 오류',desc:'포스 · 와이파이 · 프린터 · People 앱',examples:['[청계] 2번 포스 결제 오류'],mode:'ticket',team:'IT팀',fields:[T('what','어떤 오류인가요','textarea','화면에 뜬 문구 그대로 적어 주세요',{req:1}),T('since','언제부터','text'),P()]}]},
+  {key:'it',icon:'wifi',title:'POS · 기기 · 앱 오류',desc:'포스 · 와이파이 · 프린터 · CREW 앱',examples:['[청계] 2번 포스 결제 오류'],mode:'ticket',team:'IT팀',fields:[T('what','어떤 오류인가요','textarea','화면에 뜬 문구 그대로 적어 주세요',{req:1}),T('since','언제부터','text'),P()]}]},
  {key:'guest',title:'고객',items:[
   {key:'refund',icon:'refund',title:'고객 충전금 환불',desc:'남은 잔액 환불 요청 전달',examples:['[마곡] 홍길동 고객 충전금 환불'],mode:'ticket',team:'재무팀',fields:[T('name','고객 이름','text','',{req:1}),T('phone','앱 가입 번호','text','010-',{req:1}),T('charged','충전일 · 금액','text','예) 2024.7.28 30,000원'),T('remain','남은 잔액','money','숫자만',{req:1}),T('account','환불 계좌','text','은행 / 번호 / 예금주'),T('why','사유','textarea')]},
   {key:'claim',icon:'alert',title:'고객 클레임 · 사고 보고',desc:'바로 보고 화면으로 가요',mode:'link',link:'#/incident/new'},
@@ -895,7 +896,7 @@ const FALLBACK={groups:[
   {key:'expense',icon:'receipt',title:'개인경비 청구',desc:'영수증 찍고 1분이면 끝',mode:'link',link:'#/exp/new'},
   {key:'settle',icon:'won',title:'결제 · 정산 문의',desc:'정산 금액 · 이체 확인',mode:'ticket',team:'재무팀',fields:[T('what','무엇이 궁금한가요','textarea','',{req:1}),T('amount','금액','money')]}]},
  {key:'voice',title:'의견',items:[
-  {key:'idea',icon:'bulb',title:'앱 개선 아이디어',desc:'People · crew를 더 편하게',examples:['근무표에서 다음 주 바로 보기'],mode:'ticket',team:'IT팀',fields:[T('what','무엇을 바꾸면 좋을까요','textarea','',{req:1}),P()]},
+  {key:'idea',icon:'bulb',title:'앱 개선 아이디어',desc:'CREW 앱을 더 편하게',examples:['근무표에서 다음 주 바로 보기'],mode:'ticket',team:'IT팀',fields:[T('what','무엇을 바꾸면 좋을까요','textarea','',{req:1}),P()]},
   {key:'ask',icon:'chat',title:'질문 · 제안 · 불편 · 칭찬',desc:'익명으로도 보낼 수 있어요',mode:'link',link:'#/ask'}]},
  {key:'etc',title:'기타',items:[
   {key:'other',icon:'more',title:'그 밖의 요청',desc:'어디로 보낼지 모를 때',mode:'ticket',team:'전략기획팀',fields:[T('what','내용','textarea','무엇이 / 언제부터 / 어디서 / 원하는 것',{req:1}),P()]}]}
@@ -1107,3 +1108,93 @@ const _mark=markNav;markNav=function(){_mark();const k=location.hash.replace(/^#
   document.body?go():document.addEventListener('DOMContentLoaded',go);
   const _t=window.toast;if(typeof _t==='function')window.toast=function(m,ms){return _t(String(m).replace(RE,'서포트센터'),ms)};
 })();
+
+
+/* ── 확인 요청 (2026-11-14, 코치님): #/confirm/<id> 질문 + 버튼. 누르면 서버(API v47 CONFIRM_KINDS)가 정해 둔 동작을 실행. 화면은 모든 종류 공용 ── */
+ROUTES.confirm=async function(v,id){
+  v.innerHTML=`${back('#/notis','알림')}<div class="title"><h1>확인 요청</h1><p>버튼을 누르면 앱이 알아서 바꿔요.</p></div><div id="cfb">${loading()}</div>`;
+  let it;try{it=(await api('confirm.get',{id})).item}catch(e){$('#cfb').innerHTML=`<div class="empty">${esc(e.message)}</div>`;return}
+  if(location.hash!=='#/confirm/'+id)return;
+  const box=$('#cfb');
+  const draw=()=>{
+    box.innerHTML=`<div class="form"><p style="font-size:16.5px;line-height:1.65;font-weight:600">${esc(it.q)}</p></div>`+(it.status==='대기'
+      ?`<div class="btnrow" id="cfbtn">${it.choices.map((c,i)=>`<button class="pill ${i?'line':'wine'}" data-k="${esc(c[0])}">${esc(c[1])}</button>`).join('')}</div><p class="note" style="padding:0 var(--pad)">한 번 누르면 바로 반영돼요.</p>`
+      :`<div class="form"><div class="policy" style="margin-top:4px"><b>${esc(it.answer||'')}</b> · ${esc(String(it.answeredAt||'').slice(5,16))}<br>${esc(it.result||'')}</div></div>`);
+    box.querySelectorAll('[data-k]').forEach(b=>b.onclick=async()=>{
+      box.querySelectorAll('[data-k]').forEach(x=>x.disabled=true);busy(b,true,'바꾸는 중…');
+      try{it=(await api('confirm.answer',{id,choice:b.dataset.k})).item;toast('반영했어요');draw()}catch(e){toast(e.message);busy(b,false);box.querySelectorAll('[data-k]').forEach(x=>x.disabled=false)}
+    });
+  };
+  draw();
+};
+
+/* ===== CREW 단순화 (2026-11-14 코치님): 이름 CREW · 홈 자주 쓰는 메뉴 8개 · 오픈/마감 체크 시간대 카드 · 중복 섹션 접기 · 내 신청 → 내 요청 =====
+   되돌리기: 이 블록(끝 표시까지)과 next.css 끝 'CREW 단순화' 블록을 지우면 원래 홈으로 돌아감 */
+(function(){
+  /* 1) 화면 글자 People → CREW (서버 문구·알림 포함, 입력값은 그대로) */
+  const PR=[[/People\s?·\s?crew를/g,'CREW 앱을'],[/People\s?·\s?crew/g,'CREW 앱'],[/TSB People/g,'TSB CREW'],[/People은/g,'CREW는'],[/People이/g,'CREW가'],[/People을/g,'CREW를'],[/People과/g,'CREW와'],[/People으로/g,'CREW로'],[/People(?=[\s에의도앱만·,.)!?]|$)/g,'CREW']];
+  const SKIP=/^(SCRIPT|STYLE|TEXTAREA|INPUT)$/;
+  const rep=s=>{for(const [a,b] of PR)s=s.replace(a,b);return s};
+  const fixT=n=>{const t=n.nodeValue;if(t&&t.indexOf('People')>=0&&!(n.parentNode&&SKIP.test(n.parentNode.nodeName))){const r=rep(t);if(r!==t)n.nodeValue=r}};
+  const fix=n=>{if(n.nodeType===3)return fixT(n);if(n.nodeType!==1||SKIP.test(n.nodeName))return;const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT);let t;while((t=w.nextNode()))fixT(t)};
+  const mo=new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')fixT(m.target);else m.addedNodes.forEach(fix)}});
+  const go=()=>{fix(document.body);mo.observe(document.body,{childList:true,subtree:true,characterData:true});if(/People/.test(document.title))document.title=rep(document.title)};
+  document.body?go():document.addEventListener('DOMContentLoaded',go);
+  const _t=window.toast;if(typeof _t==='function')window.toast=function(m,ms){return _t(rep(String(m)),ms)};
+
+  /* 2) 내 신청 → 내 요청 하나로 (#/apply 옛 주소는 #/myreq로) */
+  ROUTES.apply=function(v){v.innerHTML='';location.replace(location.pathname+location.search+'#/myreq')};
+  const _mr=ROUTES.myreq;if(_mr)ROUTES.myreq=async function(v){const r=await _mr.apply(this,arguments);
+    try{if(!v.querySelector('.crexp')){const b=v.querySelector('.btnrow')||null;const h=`<a class="li crexp" href="#/exp"><div class="m"><div class="t1">내 경비 청구</div><div class="t2">영수증 · 지급 상태는 여기서</div></div><span class="ar">${I('next',18)}</span></a>`;
+      (b?b:v).insertAdjacentHTML(b?'beforebegin':'beforeend',`<div class="list" style="margin-top:8px">${h}</div>`)}}catch(e){}return r};
+
+  /* 3) 홈 */
+  const KEEP=['#/new/연차','#/avail','#/swap','#/log','#/memo','#/payslip','#/crew','#/slack'];
+  const keyOf=a=>{const h=a.getAttribute('href')||'';return KEEP.find(k=>h===k||h.indexOf(k+'/')===0)||h};
+  const HQ=b=>!b||/^(본사|서포트센터|전 지점)$/.test(b);
+  function ctxCard(v){const d=S.data||{},x=d.x||{},me=d.me||{};
+    v.querySelectorAll('.crctx').forEach(e=>e.remove());
+    if(HQ(me.branch)&&!localStorage.getItem('tsbp_ctxcheck'))return;
+    const h=new Date().getHours(), k=(h>=5&&h<17)?'오픈':'마감', done=x.check&&x.check[k];
+    const html=done?`<a class="crctx ok" href="#/check/${k}"><i>✓</i><div><b>${k} 체크 완료</b><span>${esc(done.by||'')} ${esc(done.at||'')}</span></div></a>`
+      :`<a class="crctx" href="#/check/${k}"><i>${k==='오픈'?'☀':'☾'}</i><div><b>${k} 체크</b><span>${k==='오픈'?'문 열기 전에 한 번 · 사진 인증':'문 닫기 전에 한 번 · 사진 인증'}</span></div><em>시작</em></a>`;
+    const q=v.querySelector('.rqquick');if(q)q.insertAdjacentHTML('afterend',html);else{const s=v.querySelector('.sec');s&&s.insertAdjacentHTML('beforebegin',html)}}
+  function tf(v){try{
+    const secs=[...v.querySelectorAll('.sec')];
+    const menu=secs.find(s=>/전체 메뉴|자주 쓰는 메뉴/.test((s.querySelector('h2')||{}).textContent||''));
+    if(menu&&!v.querySelector('.grid.crgrid')){
+      const grids=[...v.querySelectorAll('.grid.g3')];const tiles={};
+      grids.forEach(g=>g.querySelectorAll('a.tile').forEach(a=>{const k=keyOf(a);if(!tiles[k])tiles[k]=a}));
+      const ng=document.createElement('div');ng.className='grid g3 crgrid';
+      KEEP.forEach(k=>{if(tiles[k])ng.appendChild(tiles[k])});
+      ng.insertAdjacentHTML('beforeend',`<a class="tile crall" href="#/more"><b>전체<br>메뉴</b><small>러닝 · 증명서 · 퀴즈 …</small></a>`);
+      menu.querySelector('h2').textContent='자주 쓰는 메뉴';
+      if(!menu.querySelector('a'))menu.insertAdjacentHTML('beforeend','<a href="#/more">전체</a>');
+      v.querySelectorAll('.subl').forEach(e=>{if(/탭샵바인|매장 · 성장/.test(e.textContent))e.remove()});
+      grids.forEach(g=>g.remove());
+      menu.insertAdjacentElement('afterend',ng);
+    }
+    const g=v.querySelector('.grid.crgrid');if(g)g.querySelectorAll('a.tile').forEach(a=>{if(!a.classList.contains('crall')&&KEEP.indexOf(keyOf(a))<0)a.remove()});
+    /* 홈 아래 중복: 공지 목록·내 신청은 빼고(바로가기·알림함·내 요청에 있음), 오늘 우리 매장은 접기 */
+    [...v.querySelectorAll('.sec')].forEach(s=>{const t=(s.querySelector('h2')||{}).textContent||'';
+      if(/^공지 · 매뉴얼$|^내 신청$/.test(t.trim())){const n=s.nextElementSibling;if(n&&n.classList.contains('list'))n.remove();s.remove()}
+      else if(/오늘 우리 매장/.test(t)&&!s.closest('details')){const b=v.querySelector('#board');const lk=s.querySelector('a');
+        const dt=document.createElement('details');dt.className='crfold';
+        dt.innerHTML=`<summary><b>오늘 우리 매장</b><span>누가 근무 중인지 보기</span></summary>`;
+        s.insertAdjacentElement('beforebegin',dt);if(b)dt.appendChild(b);if(lk){lk.className='crfl';dt.appendChild(lk)}s.remove()}});
+    if(v.querySelector('.rqquick'))ctxCard(v);
+  }catch(e){console.warn('crew tf',e)}}
+  const _h=ROUTES[''];ROUTES['']=function(v){const r=_h.apply(this,arguments);tf(v);Promise.resolve(r).then(()=>{setTimeout(()=>tf(v),0);setTimeout(()=>tf(v),450)});return r};
+
+  /* 4) 더보기: 홈에서 옮긴 메뉴를 '매장 · 성장'으로 */
+  const MORE=[['#/myreq','내 요청','요청 · 휴가 신청 · 질문 진행 상황'],['#/check/오픈','오픈 체크','문 열기 전 · 사진 인증'],['#/check/마감','마감 체크','문 닫기 전 · 사진 인증'],['#/crew','매장 이야기','손님 · 동료 한마디'],['#/music','TSB music','매장 음악'],['#/learn','러닝','와인 · 업무 공부'],['#/quiz','와인 퀴즈','이번 달 랭킹'],['#/kudos','칭찬 카드','고마운 동료에게'],['#/incident/new','사고 · 클레임 보고','바로 보고'],['#/help','지원 요청','다른 지점 돕기'],['#/rental','대관 응대','손님 답 복사'],['#/cert','증명서','재직 · 경력'],['#/policy','회사 정책','꼭 알아둘 것'],['#/slack','슬랙 열기','대화 · 알림은 슬랙에서']];
+  const _m=ROUTES.more;if(_m)ROUTES.more=function(v){const r=_m.apply(this,arguments);
+    const add=()=>{try{if(v.querySelector('.crmore'))return;const have=new Set([...v.querySelectorAll('a.li[href]')].map(a=>a.getAttribute('href')));
+      const items=MORE.filter(m=>!have.has(m[0])||m[0]==='#/myreq');
+      const ck=v.querySelector('a.li[href="#/check/오픈"]');if(ck&&/오픈 · 마감/.test(ck.textContent))ck.remove();
+      const list=items.filter(m=>m[0]!=='#/myreq'||!have.has('#/myreq')).map(m=>`<a class="li" href="${m[0]}"><div class="m"><div class="t1">${m[1]}</div><div class="t2">${m[2]}</div></div><span class="ar">${I('next',18)}</span></a>`).join('');
+      const first=v.querySelector('.sec + .list');if(!first)return;
+      first.insertAdjacentHTML('afterend',`<div class="sec crmore"><h2>매장 · 성장</h2></div><div class="list">${list}</div>`)}catch(e){console.warn('crew more',e)}};
+    Promise.resolve(r).then(()=>{add();setTimeout(()=>{const s=v.querySelector('.crmore');if(s){/* 다른 확장이 늦게 넣은 메뉴 중복 정리 */const seen=new Set();v.querySelectorAll('a.li[href]').forEach(a=>{const h=a.getAttribute('href');if(seen.has(h))a.remove();else seen.add(h)})}else add()},500)});return r};
+})();
+/* ===== CREW 단순화 끝 ===== */
