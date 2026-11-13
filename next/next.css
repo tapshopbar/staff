@@ -729,3 +729,8 @@ body.sfit .stool,body.sfit .hz,body.sfit .pbar{padding-left:10px;padding-right:1
 .qk .bd.y{background:#FFC100;color:#0E0E0E}
 .qk-nt:has(.bd.y){border-color:#FFC100}
 @media (max-width:370px){.rqquick{gap:8px}.qk{padding:12px 10px 11px;border-radius:18px}.qk .qi{width:36px;height:36px;top:11px;left:10px}.qk b{font-size:14.5px}.qk small{font-size:11px}}
+/* v5 전체 메뉴: 그룹 사이 간격 + 그룹 제목 */
+.subl{padding:30px var(--pad) 12px;font-size:17px;font-weight:800;letter-spacing:-.02em;color:#0E0E0E;display:flex;align-items:center;gap:8px}
+.subl:before{content:'';width:4px;height:16px;border-radius:2px;background:var(--rqb)}
+.sec+.subl{padding-top:6px}
+.grid.g3+.subl{margin-top:10px}
