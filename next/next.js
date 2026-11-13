@@ -1189,10 +1189,12 @@ ROUTES.confirm=async function(v,id){
   /* 4) 더보기: 홈에서 옮긴 메뉴를 '매장 · 성장'으로 */
   const MORE=[['#/myreq','내 요청','요청 · 휴가 신청 · 질문 진행 상황'],['#/check/오픈','오픈 체크','문 열기 전 · 사진 인증'],['#/check/마감','마감 체크','문 닫기 전 · 사진 인증'],['#/crew','매장 이야기','손님 · 동료 한마디'],['#/music','TSB music','매장 음악'],['#/learn','러닝','와인 · 업무 공부'],['#/quiz','와인 퀴즈','이번 달 랭킹'],['#/kudos','칭찬 카드','고마운 동료에게'],['#/incident/new','사고 · 클레임 보고','바로 보고'],['#/help','지원 요청','다른 지점 돕기'],['#/rental','대관 응대','손님 답 복사'],['#/cert','증명서','재직 · 경력'],['#/policy','회사 정책','꼭 알아둘 것'],['#/slack','슬랙 열기','대화 · 알림은 슬랙에서']];
   const _m=ROUTES.more;if(_m)ROUTES.more=function(v){const r=_m.apply(this,arguments);
-    const add=()=>{try{if(v.querySelector('.crmore'))return;const have=new Set([...v.querySelectorAll('a.li[href]')].map(a=>a.getAttribute('href')));
-      const items=MORE.filter(m=>!have.has(m[0])||m[0]==='#/myreq');
+    const add=()=>{try{if(v.querySelector('.crmore'))return;
       const ck=v.querySelector('a.li[href="#/check/오픈"]');if(ck&&/오픈 · 마감/.test(ck.textContent))ck.remove();
-      const list=items.filter(m=>m[0]!=='#/myreq'||!have.has('#/myreq')).map(m=>`<a class="li" href="${m[0]}"><div class="m"><div class="t1">${m[1]}</div><div class="t2">${m[2]}</div></div><span class="ar">${I('next',18)}</span></a>`).join('');
+      const have=new Set([...v.querySelectorAll('a.li[href]')].map(a=>a.getAttribute('href')));
+      const row=m=>`<a class="li" href="${m[0]}"><div class="m"><div class="t1">${m[1]}</div><div class="t2">${m[2]}</div></div><span class="ar">${I('next',18)}</span></a>`;
+      const fb=v.querySelector('a.li[href="#/feedback"]');if(fb&&!have.has('#/myreq')){fb.insertAdjacentHTML('afterend',row(MORE[0]));have.add('#/myreq')}
+      const list=MORE.filter(m=>!have.has(m[0])).map(row).join('');
       const first=v.querySelector('.sec + .list');if(!first)return;
       first.insertAdjacentHTML('afterend',`<div class="sec crmore"><h2>매장 · 성장</h2></div><div class="list">${list}</div>`)}catch(e){console.warn('crew more',e)}};
     Promise.resolve(r).then(()=>{add();setTimeout(()=>{const s=v.querySelector('.crmore');if(s){/* 다른 확장이 늦게 넣은 메뉴 중복 정리 */const seen=new Set();v.querySelectorAll('a.li[href]').forEach(a=>{const h=a.getAttribute('href');if(seen.has(h))a.remove();else seen.add(h)})}else add()},500)});return r};
