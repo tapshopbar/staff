@@ -86,3 +86,4 @@
 .rqhome .rqd i{width:7px;height:7px}
 .rqbody{margin:0 var(--pad);padding:14px 16px;border-radius:14px;background:#F4F5F7;font-size:14.5px;line-height:1.6;white-space:pre-wrap;word-break:keep-all}
 .rqtl .empty{padding:6px 0 14px}
+.rqtabs a .tc{font-style:normal;margin-left:6px;font-size:11px;background:#156DFF;color:#fff;border-radius:99px;padding:1px 6px}

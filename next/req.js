@@ -143,7 +143,7 @@ ROUTES.ticket=async function(v,id){
   v.innerHTML=`${back('#/myreq','내 요청')}
    <section class="rqtk"><div class="k">${dots}요청 번호</div><div class="no">${esc(t.id||id)}</div><p class="tt">${esc(t.title||'')}</p>
     <div class="rqst">${STEP.map((s,i)=>`<div class="${i<=si?'on':''}"><i></i>${s}</div>`).join('')}</div>${note?`<p class="nt">${esc(note)}</p>`:''}</section>
-   ${t.status==='완료'&&!t.csat?`<section class="rqcs"><b>해결됐나요?</b><span>한 번만 눌러 주세요. 아직이면 바로 다시 열어요.</span><div class="btnrow" style="padding:12px 0 0"><button class="pill line" data-cs="bad">아직이에요</button><button class="pill rqbtn" data-cs="good">해결됐어요</button></div></section>`:''}
+   ${(j.canCsat!==undefined?j.canCsat:(t.status==='완료'&&!t.csat))?`<section class="rqcs"><b>해결됐나요?</b><span>한 번만 눌러 주세요. 아직이면 바로 다시 열어요.</span><div class="btnrow" style="padding:12px 0 0"><button class="pill line" data-cs="bad">아직이에요</button><button class="pill rqbtn" data-cs="good">해결됐어요</button></div></section>`:''}
    ${t.csat?`<p class="note" style="padding:12px var(--pad) 0">남겨 주신 평가: <b>${esc(t.csat)}</b></p>`:''}
    <dl class="kv rqkv"><dt>상태</dt><dd>${stChip(t.status)}</dd><dt>종류</dt><dd>${esc(t.kind||'')}</dd><dt>담당</dt><dd>${esc(t.team||'')}</dd><dt>접수</dt><dd>${esc(ds(t.at))}</dd><dt>첫 답 기한</dt><dd>${esc(t.dueText||ds(t.due))}${t.firstAt?' · 답함':''}</dd>${memo?`<dt>담당 메모</dt><dd>${esc(memo)}</dd>`:''}</dl>
    ${t.body?`<div class="sec"><h2>보낸 내용</h2></div><div class="rqbody">${esc(t.body)}</div>`:''}
@@ -155,7 +155,7 @@ ROUTES.ticket=async function(v,id){
   $('#rqcmb').onclick=async e=>{const tx=$('#rqcm').value.trim();if(!tx)return toast('메모를 적어 주세요');busy(e.currentTarget,true);try{await api('req.comment',{id:t.id||id,text:tx});toast('남겼어요');ROUTES.ticket(v,id)}catch(x){busy(e.currentTarget,false);toast(x.message)}};
 };
 /* ── 내 요청 (티켓 + 신청 + 질문 한곳에) ── */
-const SRC={ticket:'요청',티켓:'요청',leave:'휴가',휴가:'휴가',신청:'신청',ask:'질문',질문:'질문',질문함:'질문',sup:'신청',지원:'지원'};
+const SRC={apply:'신청',ticket:'요청',티켓:'요청',leave:'휴가',휴가:'휴가',신청:'신청',ask:'질문',질문:'질문',질문함:'질문',sup:'신청',지원:'지원'};
 ROUTES.myreq=async function(v,tab){
   tab=tab==='closed'?'closed':'open';
   const head=`${back('#/request','요청하기')}<div class="title"><h1>내 요청</h1><p>보낸 요청, 휴가 신청, 질문을 번호별로 한곳에서 봐요.</p></div>
@@ -184,11 +184,12 @@ ROUTES.notis=async function(v,tab){
   tab=['요청','결재','공지'].includes(tab)?tab:'전체';
   const tabs=['전체','요청','결재','공지'];
   let items=null;
-  try{const j=await apiRaw('notis.list',{tab:tab==='전체'?'all':({요청:'req',결재:'approval',공지:'notice'})[tab],limit:60});items=(j.items||[]).map(n=>Object.assign({},n,{k:KIND(n)}))}
+  var NJ=null;
+  try{const j=await apiRaw('notis.list',{tab:tab==='전체'?'all':({요청:'req',결재:'approval',공지:'notice'})[tab],limit:60});NJ=j;items=(j.items||[]).map(n=>Object.assign({},n,{k:KIND(n)}))}
   catch(e){items=(S.data.notis||[]).map(n=>Object.assign({},n,{k:KIND(n)}));if(tab!=='전체')items=items.filter(n=>n.k===tab)}
-  const unread=items.filter(n=>!n.read).length;
+  const unread=items.filter(n=>!n.read).length, UC=(typeof NJ!=='undefined'&&NJ&&NJ.unread)||null;
   v.innerHTML=`${back('#/')}<div class="title rqnh"><div><h1>알림함</h1><p>요청 진행, 결재, 공지가 여기 모여요. Slack 알림을 누르면 이곳으로 와요.</p></div>${unread?`<button class="pill sm line" id="rqall">모두 읽음</button>`:''}</div>
-   <div class="rqtabs">${tabs.map(t=>`<a class="${t===tab?'on':''}" href="#/notis/${t==='전체'?'':t}">${t}</a>`).join('')}</div>
+   <div class="rqtabs">${tabs.map(t=>{const c=UC?UC[({전체:'all',요청:'req',결재:'approval',공지:'notice'})[t]]:0;return `<a class="${t===tab?'on':''}" href="#/notis/${t==='전체'?'':t}">${t}${c?`<i class="tc">${c}</i>`:''}</a>`}).join('')}</div>
    <div class="rqn">${items.length?items.map(n=>`<a class="rqni ${n.read?'':'un'}" href="${esc(n.link||'#/')}" data-id="${esc(n.id)}"><span class="kd k-${esc(n.k)}">${esc(n.k==='기타'?'알림':n.k)}</span><div class="m"><div class="t1">${esc(n.title)}</div>${n.body?`<div class="t2">${esc(n.body)}</div>`:''}<div class="t3">${esc(ds(n.at))}</div></div>${n.read?'':'<i class="ud"></i>'}</a>`).join(''):`<div class="empty" style="padding:48px var(--pad)">${tab==='전체'?'새 알림이 없어요':tab+' 알림이 없어요'}</div>`}</div>`;
   v.querySelectorAll('.rqni').forEach(a=>a.onclick=ev=>{const id=a.dataset.id,n=(S.data.notis||[]).find(x=>x.id===id);if(n)n.read=true;
     if(a.classList.contains('un'))apiRaw('notis.readOne',{id}).catch(()=>apiRaw('notis.read').catch(()=>{})).finally(()=>refresh&&refresh())});
