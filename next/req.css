@@ -84,3 +84,5 @@
 .kd.k-요청{background:#EEF4FF;color:var(--rqb)}.kd.k-결재{background:#FBE1E4;color:#C2283A}.kd.k-공지{background:#FFF1C9;color:#7A5200}
 .rqhome .rqd{display:inline-flex!important;background:#fff;padding:6px 9px;border-radius:99px;margin:0 0 12px}
 .rqhome .rqd i{width:7px;height:7px}
+.rqbody{margin:0 var(--pad);padding:14px 16px;border-radius:14px;background:#F4F5F7;font-size:14.5px;line-height:1.6;white-space:pre-wrap;word-break:keep-all}
+.rqtl .empty{padding:6px 0 14px}

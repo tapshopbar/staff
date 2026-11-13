@@ -73,6 +73,7 @@ const STEP=['접수','담당 확인','진행 중','완료'];
 function stepIdx(t){const s=t.status;if(s==='완료')return 3;if(s==='진행 중'||s==='답 기다림'||s==='보류'||s==='다시 열림')return 2;return t.firstAt?1:0}
 const ST={접수:'신청','진행 중':'진행중','답 기다림':'진행중',보류:'미확정',완료:'확정','다시 열림':'진행중'};
 const stChip=s=>chip(ST[s]||'신청',s||'접수');
+const dueK=s=>{const m=String(s||'').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}:\d{2})/);if(!m)return s;const d=new Date(+m[1],m[2]-1,+m[3]);return `${+m[2]}/${+m[3]}(${WD[d.getDay()]}) ${m[4]}`};
 const ds=s=>{if(!s)return'';const t=String(s).replace('T',' ');return t.slice(5,16).replace('-','.')};
 
 /* ── 요청하기 허브 ── */
@@ -126,7 +127,7 @@ async function reqNew(v,kind){kind=decodeURIComponent(kind);
 }
 function done(v,r,it,title){
   v.innerHTML=`<div class="rqdone">${dots}<div class="k">접수 완료</div><div class="no">${esc(r.id)}</div><p class="tt">${esc(title)}</p>
-   <dl><dt>담당</dt><dd>${esc(r.team||it.team||'본사')}</dd><dt>첫 답</dt><dd>${esc(r.due||'다음 영업일 18시')}까지</dd></dl>
+   <dl><dt>담당</dt><dd>${esc(r.team||it.team||'본사')}</dd><dt>첫 답</dt><dd>${esc(r.dueText||dueK(r.due)||'다음 영업일 18시')}까지</dd></dl>
    <div class="slk"><b>알림은 Slack으로 와요</b><span>담당이 정해지고 상태가 바뀔 때마다 TSB CREW가 DM을 보내요. 누르면 이 화면으로 와요.</span></div></div>
    <div class="btnrow"><a class="pill line" href="#/">홈으로</a><a class="pill rqbtn" href="#/ticket/${encodeURIComponent(r.id)}">진행 상황 보기</a></div>`;
   window.scrollTo(0,0);
@@ -135,7 +136,8 @@ function done(v,r,it,title){
 ROUTES.ticket=async function(v,id){
   v.innerHTML=`${back('#/myreq','내 요청')}${loading()}`;
   let j;try{j=await apiRaw('req.get',{id})}catch(e){v.innerHTML=`${back('#/myreq','내 요청')}${NOTYET(e)?'<div class="title"><h1>'+esc(id)+'</h1></div>'+soon():'<div class="empty">'+esc(e.message)+'</div>'}`;return}
-  const t=j.ticket||j.item||j, logs=j.log||j.history||j.timeline||t.log||[];
+  const t=j.ticket||j.item||j, logs=j.logs||j.log||j.history||j.timeline||t.log||[];
+  const memo=t.pub||t.note||'';
   const si=stepIdx(t);
   const note={'답 기다림':'요청자님의 답을 기다리고 있어요. 아래 메모로 알려 주세요.','보류':'잠시 보류 중이에요. 이유는 메모를 봐 주세요.','다시 열림':'다시 열어서 이어서 챙기고 있어요.'}[t.status]||'';
   v.innerHTML=`${back('#/myreq','내 요청')}
@@ -143,7 +145,8 @@ ROUTES.ticket=async function(v,id){
     <div class="rqst">${STEP.map((s,i)=>`<div class="${i<=si?'on':''}"><i></i>${s}</div>`).join('')}</div>${note?`<p class="nt">${esc(note)}</p>`:''}</section>
    ${t.status==='완료'&&!t.csat?`<section class="rqcs"><b>해결됐나요?</b><span>한 번만 눌러 주세요. 아직이면 바로 다시 열어요.</span><div class="btnrow" style="padding:12px 0 0"><button class="pill line" data-cs="bad">아직이에요</button><button class="pill rqbtn" data-cs="good">해결됐어요</button></div></section>`:''}
    ${t.csat?`<p class="note" style="padding:12px var(--pad) 0">남겨 주신 평가: <b>${esc(t.csat)}</b></p>`:''}
-   <dl class="kv rqkv"><dt>상태</dt><dd>${stChip(t.status)}</dd><dt>종류</dt><dd>${esc(t.kind||'')}</dd><dt>담당</dt><dd>${esc(t.team||'')}</dd><dt>접수</dt><dd>${esc(ds(t.at))}</dd><dt>첫 답 기한</dt><dd>${esc(ds(t.due))}${t.firstAt?' · 답함':''}</dd>${t.pub?`<dt>메모</dt><dd>${esc(t.pub)}</dd>`:''}</dl>
+   <dl class="kv rqkv"><dt>상태</dt><dd>${stChip(t.status)}</dd><dt>종류</dt><dd>${esc(t.kind||'')}</dd><dt>담당</dt><dd>${esc(t.team||'')}</dd><dt>접수</dt><dd>${esc(ds(t.at))}</dd><dt>첫 답 기한</dt><dd>${esc(t.dueText||ds(t.due))}${t.firstAt?' · 답함':''}</dd>${memo?`<dt>담당 메모</dt><dd>${esc(memo)}</dd>`:''}</dl>
+   ${t.body?`<div class="sec"><h2>보낸 내용</h2></div><div class="rqbody">${esc(t.body)}</div>`:''}
    <div class="sec"><h2>기록</h2></div>
    <div class="rqtl">${logs.length?logs.slice().reverse().map(l=>`<div><i></i><b>${esc(l.event||l.action||'')}</b>${l.text?` · ${esc(l.text)}`:''}<small>${esc(ds(l.at))}</small></div>`).join(''):'<div class="empty">아직 기록이 없어요</div>'}</div>
    <div class="form"><label class="f">메모 남기기 <em>(담당팀이 바로 봐요)</em></label><textarea class="in" id="rqcm" placeholder="더 알려 줄 것, 바뀐 상황"></textarea></div>
