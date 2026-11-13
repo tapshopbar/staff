@@ -55,7 +55,7 @@ ROUTES.incident=async function(v,id){
   if(id)return incDetail(v,id);
   v.innerHTML=`<div class="title"><h1>사고 · 클레임</h1></div>${loading()}`;
   const j=await api('inc.list');
-  v.innerHTML=`${back()}<div class="title"><h1>사고 · 클레임</h1><p>작은 일이라도 바로 남겨 주세요. 점장 · 박한울 매니저 · 장분도 이사에게 바로 가고, 긴급하면 대표님께도 가요.</p></div>
+  v.innerHTML=`${back()}<div class="title"><h1>사고 · 클레임</h1><p>작은 일이라도 바로 남겨 주세요. 점장 · 박한울 매니저 · 서포트센터 팀장에게 바로 가고, 긴급하면 대표님께도 가요.</p></div>
    <div class="btnrow"><a class="pill wine" href="#/incident/new">보고하기</a></div>
    <div class="list">${j.items.map(i=>`<a class="li" href="#/incident/${i.id}"><div class="m"><div class="t1">${esc(i.type)} <span style="color:var(--mute);font-weight:600;font-size:13px">${esc(brLabel(i.branch))} · ${esc(i.name)}</span></div><div class="t2">${esc(String(i.at).slice(5,16))} · ${esc(i.body)}</div></div>${i.severity==='긴급'||i.severity==='높음'?chip('반려',i.severity):''}${chip(i.status==='완료'?'승인완료':i.status==='처리중'?'진행중':'신청',i.status)}</a>`).join('')||'<div class="empty">보고된 사고가 없어요</div>'}</div>`;
 };
@@ -160,7 +160,7 @@ ROUTES.log=async function(v,arg){
   const j=await api('log.list',{date,branch});
   date=j.date; let cat=j.cats[0], photo='';
   const today=(()=>{const d=new Date(Date.now()-6*3600e3);return ymd(d)})();
-  v.innerHTML=`${back()}<div class="title"><h1>업무일지</h1><p>누구나 한 줄씩. 매일 저녁 서포트센터(장분도 · 박한울)로 모아서 메일이 가요.</p></div>
+  v.innerHTML=`${back()}<div class="title"><h1>업무일지</h1><p>누구나 한 줄씩. 매일 저녁 서포트센터로 모아서 메일이 가요.</p></div>
    ${date===today?`<div class="form"><textarea class="in" id="tx" style="min-height:90px" placeholder="예) 19시 단체 예약 12명, 와인 3병 추가 판매 · 냉장고 2번 온도 높음"></textarea>
    <div class="presets">${j.cats.map((c,i)=>`<button data-c="${esc(c)}" class="${i===0?'on':''}">${esc(c)}</button>`).join('')}<label class="u" style="margin-left:auto;align-self:center;font-size:13px">사진<input type="file" accept="image/*" capture="environment" hidden id="pf"></label></div><div id="pv"></div></div>
    <div class="btnrow"><button class="pill wine" id="sb">남기기</button></div>`:''}
@@ -213,7 +213,7 @@ ROUTES.schedule=async function(v,arg){
   const canOff=p=>can(p.part);
   const presetOf=s=>j.presets.find(x=>x.name===s.pos&&(x.part===s.part||s.part==='하이브리드'));
   const isDraft=()=>st.shifts.some(s=>s.status!=='확정'&&can(s.part))||st.offs.some(o=>o.status!=='확정'&&can(P(o.email).part));
-  const shBg=p=>p==='주방'?'var(--navy)':p==='하이브리드'?'linear-gradient(90deg,#6E1426 50%,#141B33 50%)':'var(--wine)';
+  const shBg=p=>p==='주방'?'var(--navy)':p==='하이브리드'?'linear-gradient(90deg,var(--wine2) 50%,#141B33 50%)':'var(--wine)';
 
   const cellHtml=(p,ds)=>{
     const cell=st.shifts.filter(s=>s.email===p.email&&s.date===ds);
@@ -249,7 +249,7 @@ ROUTES.schedule=async function(v,arg){
     <div class="sgrid sg2 ${st.color==='시간대'?'tm':''}"><table><thead><tr><th style="text-align:left">직원</th>${days.map(ds=>{const dt=pd(ds);return `<th class="${ds===today?'today':''}">${WD[dt.getDay()]} ${dt.getMonth()+1}.${dt.getDate()}<span class="h">홀 ${cnt(ds,'홀')} · 주방 ${cnt(ds,'주방')}</span></th>`}).join('')}</tr></thead><tbody>
     ${groups.map(G=>`<tr class="grp"><td colspan="8"><span class="gdot ${G.g==='주방'?'k':''}"></span>${G.g} <small>${G.list.length}명${G.g==='주방'&&!can('주방')&&!j.canEdit?'':''}</small></td></tr>`+G.list.map(p=>`<tr><td class="nm ${j.canEditStaff?'ed':''}" data-sp="${esc(p.email)}">${esc(p.name)}${p.hybrid?hybI(13):''}<small>${p.helper?'Hybrid · '+esc(p.part)+' 소속':total(p).toFixed(1)+'h · 휴무 '+po(p)}</small>${!p.helper&&p.other?`<small class="oth">타지점 ${p.other}h 포함</small>`:''}${!p.helper&&over(p)?`<small class="ov ${over(p)}">${over(p)==='x'?'52h 초과':'52h 임박'}</small>`:''}${p.role==='점장'?'<small class="rl">점장</small>':p.sous?'<small class="rl">수쉐프</small>':''}</td>${days.map(ds=>`<td data-e="${esc(p.email)}" data-d="${ds}" class="${st.mode==='paint'&&canCell(p)?'pt':''}">${cellHtml(p,ds)}</td>`).join('')}</tr>`).join('')).join('')}
     </tbody></table></div>
-    <div class="legend">${st.color==='시간대'?Object.entries(TCOL).map(([k,c])=>`<span><i style="background:${c[0]}"></i>${k==='미들마감'?'미들~마감':k==='풀'?'풀타임':k}</span>`).join(''):`<span><i style="background:var(--wine)"></i>홀</span><span><i style="background:var(--navy)"></i>주방</span><span><i style="background:linear-gradient(90deg,#6E1426 50%,#141B33 50%)"></i>단독(Hybrid)</span>`}<span><i style="background:#D9D4D1"></i>휴무</span><span><i style="${st.color==='시간대'?'background:#fff;border:2px solid var(--yellow)':'background:var(--yellow)'}"></i>휴가</span><span><i style="border:1.5px dashed var(--ink);background:transparent"></i>임시 (직원에게 안 보임)</span></div>
+    <div class="legend">${st.color==='시간대'?Object.entries(TCOL).map(([k,c])=>`<span><i style="background:${c[0]}"></i>${k==='미들마감'?'미들~마감':k==='풀'?'풀타임':k}</span>`).join(''):`<span><i style="background:var(--wine)"></i>홀</span><span><i style="background:var(--navy)"></i>주방</span><span><i style="background:linear-gradient(90deg,var(--wine2) 50%,#141B33 50%)"></i>단독(Hybrid)</span>`}<span><i style="background:#D9D4D1"></i>휴무</span><span><i style="${st.color==='시간대'?'background:#fff;border:2px solid var(--yellow)':'background:var(--yellow)'}"></i>휴가</span><span><i style="border:1.5px dashed var(--ink);background:transparent"></i>임시 (직원에게 안 보임)</span></div>
     ${j.canEdit?`<div class="btnrow" style="flex-wrap:wrap"><button class="pill line sm" id="cp">지난주 복사</button>${st.dirty?'<button class="pill ink sm" id="sv">임시 저장</button>':''}<button class="pill wine sm" id="pub" ${(!draft&&!st.dirty)?'disabled':''}>${sous?'주방 ':''}확정하고 알리기</button></div>
       <p class="note">${sous?'수쉐프님은 주방 근무와 주방 직원 휴무를 편집할 수 있어요. Hybrid 배지가 있는 홀 직원도 주방 근무로 넣을 수 있어요.':'빈 칸 + 를 누르거나 연속 넣기로 근무를 넣고, 확정하면 직원에게 메일·앱 알림이 가요.'}${j.canEditStaff?' 이름을 누르면 홀/주방, Hybrid를 바꿀 수 있어요.':''} <a class="u" href="javascript:void 0" id="pm">프리셋 관리</a></p>`:''}
     <div class="list" style="margin-top:14px"><a class="li" href="#/avail/${start}"><div class="m"><div class="t1">근무 신청 ${j.canEdit?'· 신청 현황':''}</div><div class="t2">${j.canEdit?(j.reqs.length?'이번 주 '+new Set(j.reqs.map(q=>q.email)).size+'명 신청 · 표에 점선 칩으로 보여요':'아직 신청한 사람이 없어요'):'휴무 희망 · 근무 희망 내기'}</div></div><span class="ar">${I('next',18)}</span></a><a class="li" href="#/help"><div class="m"><div class="t1">지원 요청</div><div class="t2">다른 지점에 사람이 필요할 때 · 가고 싶을 때</div></div><span class="ar">${I('next',18)}</span></a><a class="li" href="#/swap"><div class="m"><div class="t1">대타 게시판</div><div class="t2">근무를 바꿔야 하면 여기서</div></div><span class="ar">${I('next',18)}</span></a><a class="li" href="#/cal"><div class="m"><div class="t1">휴가 캘린더</div><div class="t2">월간 휴가 현황</div></div><span class="ar">${I('next',18)}</span></a>${d.x&&d.x.isHQ?`<a class="li" href="#/console"><div class="m"><div class="t1">전 지점 스케줄 한눈에</div><div class="t2">운영 콘솔</div></div><span class="ar">${I('next',18)}</span></a>`:''}</div>`;

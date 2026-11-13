@@ -131,6 +131,7 @@ const BADGES=[
  {k:'key',n:'Keyholder',ko:'키홀더',d:'오픈·마감 책임자 인증',c:'#8A6A2E',i:'M8 14a4 4 0 1 1 3.5-6L20 8v3h-2v2h-2v-2h-4.5A4 4 0 0 1 8 14z'},
  {k:'pass',n:'Passport',ko:'패스포트',d:'다른 지점 지원을 갈 때마다 도장 한 칸. 5칸을 채우면 완성',c:'#2F4858',i:'M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM12 7.5a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM9.2 10.5h5.6M9.5 17h5'},
  {k:'hr',n:'HR',ko:'인사 담당',d:'인사와 결재를 맡아요. 결재선과 HR 가이드에 이름이 들어가요',c:'#141B33',i:'M8 7a4 4 0 1 0 8 0a4 4 0 1 0-8 0M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1M17 3.5l1 2 2 .3-1.5 1.4.4 2-1.9-1-1.9 1 .4-2L14 5.8l2-.3z'},
+ {k:'edu',n:'Education',ko:'교육',d:'직원 교육과 아카데미를 맡아요',c:'#6E1426',i:'M2 9l10-5 10 5-10 5zM6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5'},
  {k:'ssc',n:'Support Center',ko:'서포트센터',d:'전 지점을 돕는 팀. 매장이 잘 돌아가게 뒤에서 챙겨요',c:'#156DFF',i:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6'},
  {k:'kind',n:'Kindness',ko:'카인드니스',d:'지점별 매달 1명, 매달 바뀌어요',c:'#FFC100',dark:1,i:'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z'}
 ];
@@ -1107,3 +1108,22 @@ const _mark=markNav;markNav=function(){_mark();const k=location.hash.replace(/^#
   document.body?go():document.addEventListener('DOMContentLoaded',go);
   const _t=window.toast;if(typeof _t==='function')window.toast=function(m,ms){return _t(String(m).replace(RE,'서포트센터'),ms)};
 })();
+
+
+/* ── 확인 요청 (2026-11-14, 코치님): #/confirm/<id> 질문 + 버튼. 누르면 서버(API v47 CONFIRM_KINDS)가 정해 둔 동작을 실행. 화면은 모든 종류 공용 ── */
+ROUTES.confirm=async function(v,id){
+  v.innerHTML=`${back('#/notis','알림')}<div class="title"><h1>확인 요청</h1><p>버튼을 누르면 앱이 알아서 바꿔요.</p></div><div id="cfb">${loading()}</div>`;
+  let it;try{it=(await api('confirm.get',{id})).item}catch(e){$('#cfb').innerHTML=`<div class="empty">${esc(e.message)}</div>`;return}
+  if(location.hash!=='#/confirm/'+id)return;
+  const box=$('#cfb');
+  const draw=()=>{
+    box.innerHTML=`<div class="form"><p style="font-size:16.5px;line-height:1.65;font-weight:600">${esc(it.q)}</p></div>`+(it.status==='대기'
+      ?`<div class="btnrow" id="cfbtn">${it.choices.map((c,i)=>`<button class="pill ${i?'line':'wine'}" data-k="${esc(c[0])}">${esc(c[1])}</button>`).join('')}</div><p class="note" style="padding:0 var(--pad)">한 번 누르면 바로 반영돼요.</p>`
+      :`<div class="form"><div class="policy" style="margin-top:4px"><b>${esc(it.answer||'')}</b> · ${esc(String(it.answeredAt||'').slice(5,16))}<br>${esc(it.result||'')}</div></div>`);
+    box.querySelectorAll('[data-k]').forEach(b=>b.onclick=async()=>{
+      box.querySelectorAll('[data-k]').forEach(x=>x.disabled=true);busy(b,true,'바꾸는 중…');
+      try{it=(await api('confirm.answer',{id,choice:b.dataset.k})).item;toast('반영했어요');draw()}catch(e){toast(e.message);busy(b,false);box.querySelectorAll('[data-k]').forEach(x=>x.disabled=false)}
+    });
+  };
+  draw();
+};

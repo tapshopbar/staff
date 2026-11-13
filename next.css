@@ -734,3 +734,30 @@ body.sfit .stool,body.sfit .hz,body.sfit .pbar{padding-left:10px;padding-right:1
 .subl:before{content:'';width:4px;height:16px;border-radius:2px;background:var(--rqb)}
 .sec+.subl{padding-top:6px}
 .grid.g3+.subl{margin-top:10px}
+
+
+/* ═══ 시즌 색 Winter in Wine (2026-11-14 ~ 12/25) · 코치님 11/14 결정: 사내 앱 People부터 PINE 조기 적용 ═══
+ * 버튼·탭바 활성·강조 = PINE(--season-main), 그린 위 글자 = CREAM(--season-on), 작은 배지·포인트 = YELLOW(--season-pt).
+ * 와인은 의미색으로만 남김: 소믈리에 배지, 역할 칩(점장·팀장), 근무 프리셋 색(마감 등), 축하 색종이. 위험·삭제는 원래 --bad(#C2283A).
+ * 대비(WCAG): CREAM on PINE 14.9:1, PINE on CREAM 14.9:1, --season-2 on CREAM 10.4:1, INK on YELLOW 11.6:1 → 전부 AA 통과.
+ * 되돌리기(12/26 이후): 이 블록(아래 '시즌 색 끝'까지)을 통째로 지우고 index.html ?v 올리기 + manifest 색 #4A0B18. 와인 원래 값은 style.css :root 그대로. */
+:root{--season-main:#0F2A20;--season-2:#1B4433;--season-3:#081A13;--season-on:#FFFDFC;--season-pt:#FFC100;--season-tint:#EAF2EE;
+  --wine:var(--season-main);--wine2:var(--season-2);--wine3:var(--season-3)}
+.pill.wine,.tile.w,.bn.w,.type.on,.ck.on,.hdr.dark,.sh,.cal .p,.pl.cl,.ab.cl,.gd-foot,.gdq-n,.crc.on,.pchip,.sseg.m button.on{color:var(--season-on)}
+.nav a.on{color:var(--season-main)}
+.nav a.on:after{background:var(--season-main)}
+.nav a.plus span.pl{color:var(--season-on);box-shadow:0 6px 16px rgba(15,42,32,.35)}
+.hero.photo:before{background:linear-gradient(180deg,rgba(15,42,32,.5),rgba(8,26,19,.9))}
+.login:before{background:linear-gradient(180deg,rgba(15,42,32,.3) 0%,rgba(8,26,19,.6) 45%,rgba(4,12,9,.96) 100%)}
+.expcard,.hcard.ex{background:linear-gradient(135deg,var(--season-2) 0%,var(--season-main) 55%,var(--season-3) 100%)}
+.hcard.ex{box-shadow:0 10px 24px rgba(15,42,32,.28)}
+.gd-rvb,.qk-ex .qi{background:linear-gradient(135deg,var(--season-2),var(--season-3))}
+.hybi,.hpp.a{background:linear-gradient(90deg,var(--season-2) 50%,#141B33 50%)}
+.lrn-comic li:before{background:var(--season-2)}
+.tpv button.on{background:var(--season-tint)}
+.crc.on{background:var(--season-main);border-color:var(--season-main)}
+.crrule{background:var(--season-tint);color:var(--season-main)}
+.crs{color:var(--season-main)}
+.crp.hl{border-color:var(--season-main);box-shadow:0 0 0 3px rgba(15,42,32,.18)}
+.gd-beta,.hpp:not(.a){background:var(--season-pt);color:var(--ink)}
+/* ═══ 시즌 색 끝 ═══ */

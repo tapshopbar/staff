@@ -353,7 +353,7 @@ ROUTES.apply=function(v){
   const d=S.data;
   v.innerHTML=`<div class="title"><h1>신청</h1><p>필요한 걸 고르면, 결재선은 알아서 잡혀요.</p></div>
   <div class="list" style="margin-top:14px">
-   ${[['#/new/연차','연차 · 반차','점장 승인으로 확정 · 장분도·나기정 보고'],['#/new/휴가','휴가 (경조·병가·공가 등)','점장 승인으로 확정 · 장분도·나기정 보고'],['#/sup/명함','명함 신청','점장 → 매니저 승인 · 비용이 나가 2~3주 걸릴 수 있어요'],['#/sup/근무복','근무복 신청','점장 → 매니저 승인 · 비용이 나가 2~3주 걸릴 수 있어요'],['#/sup/건강검진','건강검진 완료 등록','완료 날짜만 기록 · 결과는 받지 않아요'],['#/exp/new','경비 · 소모품 청구','영수증 사진만 찍으면 이체 메모까지 자동'],['#/swap','대타 요청','내 근무를 동료에게 넘기기 · 점장 승인'],['#/incident/new','사고 · 클레임 보고','유형·긴급도는 AI가 자동 분류'],['#/avail','근무 가능 시간','다음 주 가능한 시간 제출'],['#/cert','재직 · 경력증명서','PDF로 바로 발급'],['#/payslip','급여명세서','본인만 열람']].map(([h,t,s])=>`<a class="li" href="${h}"><div class="m"><div class="t1">${t}</div><div class="t2">${s}</div></div><span class="ar">${I('next',18)}</span></a>`).join('')}
+   ${[['#/new/연차','연차 · 반차','점장 승인으로 확정 · 서포트센터·대표 보고'],['#/new/휴가','휴가 (경조·병가·공가 등)','점장 승인으로 확정 · 서포트센터·대표 보고'],['#/sup/명함','명함 신청','점장 → 매니저 승인 · 비용이 나가 2~3주 걸릴 수 있어요'],['#/sup/근무복','근무복 신청','점장 → 매니저 승인 · 비용이 나가 2~3주 걸릴 수 있어요'],['#/sup/건강검진','건강검진 완료 등록','완료 날짜만 기록 · 결과는 받지 않아요'],['#/exp/new','경비 · 소모품 청구','영수증 사진만 찍으면 이체 메모까지 자동'],['#/swap','대타 요청','내 근무를 동료에게 넘기기 · 점장 승인'],['#/incident/new','사고 · 클레임 보고','유형·긴급도는 AI가 자동 분류'],['#/avail','근무 가능 시간','다음 주 가능한 시간 제출'],['#/cert','재직 · 경력증명서','PDF로 바로 발급'],['#/payslip','급여명세서','본인만 열람']].map(([h,t,s])=>`<a class="li" href="${h}"><div class="m"><div class="t1">${t}</div><div class="t2">${s}</div></div><span class="ar">${I('next',18)}</span></a>`).join('')}
   </div>
   <a class="blk" href="${esc(d.policyUrl)}" target="_blank" rel="noopener" style="display:block;margin-top:18px;background:var(--grey)"><span class="tag"><i class="new">규정</i></span><div style="font-size:20px;font-weight:800;letter-spacing:-.03em;margin-top:8px">휴가 및 휴직 가이드</div><span class="u" style="margin-top:10px;font-size:13px">Notion에서 전문 읽기</span></a>
   <div class="sec"><h2>내 신청</h2></div><div class="list">${reqRows(d.requests)||'<div class="empty">아직 없어요</div>'}</div>
@@ -375,7 +375,7 @@ ROUTES.new=function(v,g){
    <div id="docs"></div><div class="policy" id="pol"></div>
    <label class="check"><input type="checkbox" id="ag"> <span>휴가 규정을 확인했고, 점장님과 스케줄을 먼저 맞췄어요</span></label>
    <label class="f">결재선</label>${lineHTML(d.me,chain.steps.map(s=>({...s,status:'대기'})),chain.report,-1)}
-   <p class="note" style="padding:6px 0 0">${g==='연차'?'점장님이 승인하면 확정되고 장분도 이사 · 나기정 대표에게 보고돼요. (점장님이 없는 서포트센터·점장님 본인은 박한울 매니저가 승인)':'점장님이 승인하면 확정되고 장분도 이사 · 나기정 대표에게 보고돼요. (점장님이 없는 서포트센터·점장님 본인은 매니저 승인)'}</p></div>
+   <p class="note" style="padding:6px 0 0">${g==='연차'?'점장님이 승인하면 확정되고 서포트센터와 대표에게 보고돼요. (점장님이 없는 서포트센터·점장님 본인은 박한울 매니저가 승인)':'점장님이 승인하면 확정되고 서포트센터와 대표에게 보고돼요. (점장님이 없는 서포트센터·점장님 본인은 매니저 승인)'}</p></div>
    <div class="btnrow"><button class="pill wine" id="sb">신청하기</button></div>`;
   v.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>location.hash='#/new/'+b.dataset.g);
   const draw=()=>{const t=st.type;
