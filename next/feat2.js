@@ -188,7 +188,7 @@ const TCLS=s=>{const n=String(s.pos||'');if(/미들\s*\/?\s*마감|롱/.test(n))
   const a=toM(s.start);let b=toM(s.end);if(a==null||b==null)return '미들';if(b<=a)b+=1440;
   if(a<11*60)return b>=22*60?'풀':'오픈';if(b>=22*60+30)return a>=13*60?'마감':'미들마감';return '미들'};
 const TCOL={오픈:['#FFC100','#0E0E0E'],미들:['#C99A9E','#0E0E0E'],미들마감:['#8A5A62','#fff'],마감:['#4A0B18','#fff'],풀:['#2B2F3A','#fff']};
-const brL=b=>b==='본사'?'서포트센터':b;
+const brL=b=>b==='본사'||b==='서포트센터'?'서포트센터':b;
 const hybI=(sz=14)=>`<i class="hybi" style="width:${sz}px;height:${sz}px" title="Hybrid"></i>`;
 window.hybI=hybI;
 

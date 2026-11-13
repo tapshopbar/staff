@@ -153,7 +153,7 @@ const GROUP_ORDER=['대표','팀장','매니저','IT Team','청계','상암','�
 function peopleGroup(p){if(p.role==='대표')return '대표';if(p.role==='이사'||p.role==='팀장')return '팀장';if(p.role==='매니저')return '매니저';if(/^(CTO|IT)/.test(p.title||''))return 'IT Team';return p.branch||'기타'}
 function sortGroups(ks){return ks.sort((a,b)=>{const ia=GROUP_ORDER.indexOf(a),ib=GROUP_ORDER.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)})}
 
-function brLabel(b){return b==='본사'?'전 지점':b}
+function brLabel(b){return b==='본사'||b==='서포트센터'?'전 지점':b}
 
 /* ── BETA 표시 + TSB music (2026-11-10) ── */
 const APP_V='BETA 0.12';
@@ -500,8 +500,8 @@ ROUTES['']=function(v){const r=home.apply(this,arguments);try{v.querySelector('.
           <div class="gdq-act"><button class="pill wine" data-cp="${k}">복사</button>${navigator.share ? `<button class="pill line" data-sh="${k}">보내기</button>` : ''}</div></div>
         ${x.note ? `<div class="gdq-note"><span class="gdq-lab2">직원만</span>${autolink(x.note)}</div>` : ''}
       </section>`).join('')}</article>
-      <p class="note" style="padding:14px var(--pad) 0">담당 ${e(it.owner || '본사')} · 최종수정 ${e(it.updated || G.updated || '')} · 새 질문은 계속 추가해요</p>
-      <div class="gd-foot"><b>여기 없는 질문이 오면</b><p>손님께는 "확인하고 바로 알려 드릴게요"라고 하고, 본사에 물어봐 주세요. 받은 질문은 이 목록에 추가해요.</p><a class="pill line" href="#/ask" data-gq="1">본사에 질문하기</a></div>`;
+      <p class="note" style="padding:14px var(--pad) 0">담당 ${e(it.owner || '서포트센터')} · 최종수정 ${e(it.updated || G.updated || '')} · 새 질문은 계속 추가해요</p>
+      <div class="gd-foot"><b>여기 없는 질문이 오면</b><p>손님께는 "확인하고 바로 알려 드릴게요"라고 하고, 서포트센터에 물어봐 주세요. 받은 질문은 이 목록에 추가해요.</p><a class="pill line" href="#/ask" data-gq="1">서포트센터에 질문하기</a></div>`;
     el.querySelector('.gdq-doc').onclick = ev => {
       const c = ev.target.closest('[data-cp]'), s2 = ev.target.closest('[data-sh]');
       if (c) { copyText(it.qa[+c.dataset.cp].a); c.textContent = '복사됨'; setTimeout(() => { c.textContent = '복사'; }, 1600); }
@@ -544,11 +544,11 @@ ROUTES['']=function(v){const r=home.apply(this,arguments);try{v.querySelector('.
       const draw = () => {
         const q = inp.value.trim();
         if (!q) { res.innerHTML = `<div class="list" style="margin-top:14px">${xs.map(it => `<a class="li" href="#/guide/${e(it.id)}"><div class="m"><div class="t1">${e(it.title)}</div><div class="t2">${e(it.summary || ((it.qa || []).length + '개 질문'))}</div></div><span class="ar">${I('next', 18)}</span></a>`).join('')}</div>
-          <div class="gd-foot"><b>여기 없는 질문이 오면</b><p>손님께는 "확인하고 바로 알려 드릴게요"라고 하고, 본사에 물어봐 주세요. 받은 질문은 이 목록에 추가해요.</p><a class="pill line" href="#/ask" data-gq="1">본사에 질문하기</a></div>`;
+          <div class="gd-foot"><b>여기 없는 질문이 오면</b><p>손님께는 "확인하고 바로 알려 드릴게요"라고 하고, 서포트센터에 물어봐 주세요. 받은 질문은 이 목록에 추가해요.</p><a class="pill line" href="#/ask" data-gq="1">서포트센터에 질문하기</a></div>`;
           const g = res.querySelector('[data-gq]'); if (g) g.onclick = () => sessionStorage.setItem('ask_prefill', '[대관 질문] '); return; }
         const r = search(q).filter(x => x.it.cat === RV);
         res.innerHTML = r.length ? `<div class="sec"><h2>찾은 질문 ${r.length}</h2></div><div class="list">${r.map(x => `<a class="li gd-hit" href="#/guide/${e(x.it.id)}/${x.s.i}" data-q="${e(q)}"><div class="m"><div class="t1">${e(x.it.title)}${x.s.i ? ` <span class="gd-path">› ${e(x.s.h)}</span>` : ''}</div><div class="t2 w">${snippet(x.s.text || x.it.summary, q)}</div></div><span class="ar">${I('next', 18)}</span></a>`).join('')}</div>`
-          : `<div class="blk"><div class="empty">'${e(q)}'에 맞는 답을 못 찾았어요. 손님께는 "확인하고 알려 드릴게요"라고 하고 <a class="u" href="#/ask">본사에 질문하기</a>로 물어봐 주세요.</div></div>`;
+          : `<div class="blk"><div class="empty">'${e(q)}'에 맞는 답을 못 찾았어요. 손님께는 "확인하고 알려 드릴게요"라고 하고 <a class="u" href="#/ask">서포트센터에 질문하기</a>로 물어봐 주세요.</div></div>`;
       };
       let t; inp.oninput = () => { clearTimeout(t); t = setTimeout(draw, 140); };
       $('#rpop').onclick = ev => { const b = ev.target.closest('button'); if (!b) return; inp.value = b.dataset.w; draw(); };
@@ -567,7 +567,7 @@ const PASS=(typeof BADGES!=='undefined'&&BADGES.find(b=>b.k==='pass'))||{k:'pass
 if(typeof BADGES!=='undefined'){const b=BADGES.find(x=>x.k==='pass');if(b)b.d='다른 지점 지원을 한 번 다녀오면 발급, 갈 때마다 도장 한 칸. 5칸이면 완성'}
 /* 근무표 저장·확정·대타 지원: 새 화면 표시(hv) → 서버 겹침 검사 */
 const _api=api;api=function(a,d,...r){if(/^(schedule\.(save|publish)|swap\.apply)$/.test(a))d=Object.assign({},d,{hv:1});return _api(a,d,...r)};
-const BRS=b=>b==='본사'?'서포트센터':b;
+const BRS=b=>b==='본사'||b==='서포트센터'?'서포트센터':b;
 const md=s=>{const d=pd(s);return `${d.getMonth()+1}.${d.getDate()}`};
 const ST={수쉐프확인:['수쉐프 확인 중','진행중'],소속확인:['점장 결재 중','진행중'],요청확인:['요청 지점 확인 중','진행중'],확정:['확정','확정'],반려:['어려워요','반려'],철회:['철회','취소'],취소:['취소','취소'],마감:['마감','취소']};
 const stc=s=>{const x=ST[s]||[s,s];return chip(x[1],x[0])};
@@ -732,7 +732,7 @@ ROUTES['']=function(v){const r=_home.apply(this,arguments);try{const x=(S.data&&
     ['#/learn','러닝','교육 · 만화로 배우기','러닝 교육 공부 배우기 신입'],
     ['#/music','TSB music','매장 음악 · 선곡','음악 노래 플레이리스트 라디오 bgm'],
     ['#/badges','배지','Hybrid · Sommelier · Passport','배지 뱃지 badge'],
-    ['#/ask','질문함','본사에 묻기 · 답변 보기','질문 문의 건의 답변'],
+    ['#/ask','질문함','서포트센터에 묻기 · 답변 보기','질문 문의 건의 답변'],
     ['#/policy','회사 정책','규칙 · 정책','정책 규칙 규정'],
     ['#/memo','정산 메모','오늘 마감 메모','정산 마감 메모 현금 일정산'],
     ['#/contract','내 계약서','근로계약서 읽기 · 서명','계약서 근로계약 서명'],
@@ -836,7 +836,7 @@ ROUTES['']=function(v){const r=_home.apply(this,arguments);try{const x=(S.data&&
 })();
 
 
-/* 요청함 v3 (2026-11-14 미리보기): 요청하기 하나로 · 지점 고르기 · 진행 단계(배송 조회식 트래커) · 내 요청 · 알림함
+/* 요청함 v4 (2026-11-14 미리보기, 바로가기 3칸 · 서포트센터 표기): 요청하기 하나로 · 지점 고르기 · 진행 단계(배송 조회식 트래커) · 내 요청 · 알림함
    벤치마크: ServiceNow Employee Center(정문 하나 · My Requests · To-dos), Workday Inbox, Jira Cloud for Slack(Slack은 알림, 앱은 처리)
    API req.catalog / req.create / req.mine / req.get / req.comment / req.csat / notis.list / notis.readOne
    화면 #/request · #/request/new/<kind> · #/ticket/<REQ-id> · #/myreq · #/notis */
@@ -928,8 +928,9 @@ const HOLD={'보류':'잠시 멈춰 있어요. 이유는 아래 담당 메모를
 function nowOf(j,t,steps,si){if(j.nowText||t.nowText)return j.nowText||t.nowText;const team=j.owner||t.owner||t.team||'담당팀';
   if(t.status==='완료')return '처리를 마쳤어요';if(t.status==='보류')return '잠시 멈춰 있어요';if(t.status==='답 기다림')return '요청자님의 답을 기다리고 있어요';
   if(si===0)return team+'에 전달됐어요';return team+'이 '+(steps[si].label||'처리')+' 중이에요'}
-const brOpts=c=>{const l=(Array.isArray(c.branches)&&c.branches.length?c.branches.slice():['청계','상암','마곡','동대문','서여의도']).map(b=>typeof b==='string'?b:(b.name||b.branch));const o=l.filter(b=>b&&b!=='본사');o.push('본사');return o};
-const brK=b=>b==='본사'?'본사 (서포트센터)':b;
+const brOpts=c=>{const l=(Array.isArray(c.branches)&&c.branches.length?c.branches.slice():['청계','상암','마곡','동대문','서여의도']).map(b=>typeof b==='string'?b:(b.name||b.branch));const hq=l.includes('서포트센터')?'서포트센터':'본사';const o=l.filter(b=>b&&!HQ(b));o.push(hq);return o};
+const HQ=b=>b==='본사'||b==='서포트센터';
+const brK=b=>HQ(b)?'서포트센터':b;
 const strip=steps=>`<div class="rqstrip"><div class="h">보내면 이렇게 진행돼요</div><ol>${steps.map((s,i)=>`<li><i>${i+1}</i><span>${esc(s.label)}</span></li>`).join('')}</ol></div>`;
 
 /* ── 요청하기 허브 ── */
@@ -942,7 +943,7 @@ ROUTES.request=async function(v,arg){
   v.innerHTML=head+`${R.ready===false?soon():''}
    <a class="rqmine" href="#/myreq"><div><b>내 요청</b><span>${open?`진행 중 ${open}건 · 지금 어디까지 왔는지 봐요`:'보낸 요청과 신청을 한곳에서'}</span></div><i>${I('next',18)}</i></a>
    ${c.groups.map(g=>`<div class="sec"><h2>${esc(g.title)}</h2></div><div class="rqg">${g.items.map(it=>`<a class="rqi ${it.mode==='link'?'lk':''}" href="${esc(hrefOf(it))}"><span class="rqic">${ico(it)}</span><span class="rqt"><b>${esc(it.title)}</b><small>${esc(it.desc||'')}</small>${it.examples&&it.examples.length?`<em>예) ${esc(String(it.examples[0]).replace(/^예\)\s*/,''))}</em>`:''}</span><span class="rqgo">${it.mode==='link'?'바로가기':(it.team?esc(it.team):'')}</span></a>`).join('')}</div>`).join('')}
-   <p class="note rqfoot">급한 건(화재 · 누수 · 정전 · 가스 냄새)은 먼저 점장님과 본사에 전화하고, 그다음 요청을 남겨 주세요.</p>`;
+   <p class="note rqfoot">급한 건(화재 · 누수 · 정전 · 가스 냄새)은 먼저 점장님과 서포트센터에 전화하고, 그다음 요청을 남겨 주세요.</p>`;
 };
 /* ── 요청 양식 (지점 고르기 + 진행 단계 미리보기) ── */
 async function reqNew(v,kind){kind=decodeURIComponent(kind);
@@ -950,7 +951,7 @@ async function reqNew(v,kind){kind=decodeURIComponent(kind);
   let c;try{c=await catalog()}catch(e){v.innerHTML=`${back('#/request','요청하기')}<div class="empty">${esc(e.message)}</div>`;return}
   const it=findItem(c,kind);if(!it){v.innerHTML=`${back('#/request','요청하기')}<div class="empty">없는 요청 종류예요</div>`;return}
   if(it.mode==='link'){location.replace(hrefOf(it));return}
-  const me=S.data.me, photos=[], brs=brOpts(c);let br=(c.me&&c.me.branch)||me.branch||'본사';if(!brs.includes(br))brs.unshift(br);
+  const me=S.data.me, photos=[], brs=brOpts(c);let br=(c.me&&c.me.branch)||me.branch||'본사';if(HQ(br))br=brs.find(HQ)||br;if(!brs.includes(br))brs.unshift(br);
   const steps=stepsOf(it,it.team);
   const fld=f=>{const id='rf_'+f.key, lab=`<label class="f">${esc(f.label)}${f.required?'':' <em>(선택)</em>'}</label>`;
     if(f.type==='photo')return '';
@@ -960,7 +961,7 @@ async function reqNew(v,kind){kind=decodeURIComponent(kind);
     if(f.type==='money')return lab+`<input class="in" inputmode="numeric" id="${id}" placeholder="${esc(f.placeholder||'숫자만')}">`;
     return lab+`<input class="in" id="${id}" placeholder="${esc(f.placeholder||'')}">`};
   const hasPhoto=(it.fields||[]).some(f=>f.type==='photo');
-  v.innerHTML=`${back('#/request','요청하기')}<div class="title"><div class="rqhd"><span class="rqic big">${ico(it,26)}</span><div><h1>${esc(it.title)}</h1><p>담당 ${esc(it.team||'본사')}</p></div></div></div>
+  v.innerHTML=`${back('#/request','요청하기')}<div class="title"><div class="rqhd"><span class="rqic big">${ico(it,26)}</span><div><h1>${esc(it.title)}</h1><p>담당 ${esc(it.team||'서포트센터')}</p></div></div></div>
    ${R.ready===false?soon():''}
    ${strip(steps)}
    <div class="form">
@@ -979,7 +980,7 @@ async function reqNew(v,kind){kind=decodeURIComponent(kind);
     for(const f of it.fields||[]){if(f.type==='photo')continue;const el=$('#rf_'+f.key);const val=(el&&el.value||'').trim();if(f.required&&!val&&!miss)miss=f.label;if(val)fields[f.key]=val}
     let title=$('#rf__title').value.trim();
     if(miss)return toast(miss+'을(를) 적어 주세요');
-    if(!title){const first=Object.values(fields)[0]||'';title=`[${br}] ${it.title}${first?' · '+String(first).split('\n')[0].slice(0,24):''}`}
+    if(!title){const first=Object.values(fields)[0]||'';title=`[${brK(br)}] ${it.title}${first?' · '+String(first).split('\n')[0].slice(0,24):''}`}
     busy(b,true);
     try{const r=await api('req.create',{kind:it.key,title,fields,urgent:$('#rf__urgent').checked?1:'',photos:photos.map(p=>({name:p.name,mime:p.mime,data:p.data})),branch:br});
       R.open=(R.open||0)+1;done(v,r,it,title,br,steps)}
@@ -989,7 +990,7 @@ function done(v,r,it,title,br,steps){
   steps=stepsOf(r.steps?r:it,r.team||it.team);
   const due=r.dueText||dueK(r.due)||'다음 영업일 18시';
   v.innerHTML=`<div class="rqdone">${dots}<div class="k">접수 완료</div><div class="no">${esc(r.id)}</div><p class="tt">${esc(title)}</p>
-   <dl><dt>지점</dt><dd>${esc(brK(r.branch||br))}</dd><dt>담당</dt><dd>${esc(r.team||it.team||'본사')}</dd><dt>첫 답</dt><dd>${esc(due)}까지</dd></dl>
+   <dl><dt>지점</dt><dd>${esc(brK(r.branch||br))}</dd><dt>담당</dt><dd>${esc(r.team||it.team||'서포트센터')}</dd><dt>첫 답</dt><dd>${esc(due)}까지</dd></dl>
    <div class="rqvs sm">${steps.map((s,i)=>`<div class="${i===0?'done':'fut'}"><i>${i===0?'✓':i+1}</i><div><b>${esc(s.label)}${i===0?' <small>지금</small>':''}</b>${s.desc?`<span>${esc(s.desc)}</span>`:''}${i===1?`<span class="due">첫 답 ${esc(due)}까지</span>`:''}</div></div>`).join('')}</div>
    ${it.afterSubmit?`<p class="aft">${esc(it.afterSubmit)}</p>`:''}
    <div class="slk"><b>알림은 Slack으로 와요</b><span>단계가 바뀔 때마다 TSB CREW가 DM을 보내요. 누르면 이 요청의 진행 화면으로 와요.</span></div></div>
@@ -1075,11 +1076,34 @@ ROUTES.notis=async function(v,tab){
   const all=$('#rqall');if(all)all.onclick=async()=>{busy(all,true);try{await api('notis.read');(S.data.notis||[]).forEach(x=>x.read=true);shell(true);ROUTES.notis(v,tab)}catch(e){busy(all,false);toast(e.message)}};
 };
 /* ── 홈: 요청하기 카드 + 진행 중 칩 / 하단 '신청' → '요청' ── */
+const QI={nt:'<path d="M4 10v4h3l6 4V6L7 10z"/><path d="M16.5 9a4 4 0 0 1 0 6M19 6.5a7.5 7.5 0 0 1 0 11"/>',ex:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 14.5h2"/>',sc:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8 14h3v3H8z"/>'};
+const qico=k=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${QI[k]}</svg>`;
+function quickRow(v){const d=S.data,x=d.x||{},me=d.me;const hc=v.querySelector('.hcards');if(!hc||hc.querySelector('.rqquick'))return;
+  const get=c=>hc.querySelector('.hcard.'+c), nt=get('nt'), ex=get('ex'), sc=get('sc');
+  const ns=(x.shifts||[])[0], nots=x.notices||[], req=x.unreadRequired||0, unread=nots.filter(n=>n.read===false).length;
+  const ntS=req?`필독 ${req}건 확인`:(nots[0]?esc(nots[0].title):'새 공지 없음'), ntB=req?`<em class="bd y">${req}</em>`:(unread?`<em class="bd">${unread}</em>`:'');
+  const scS=ns?`${typeof shiftK==='function'?shiftK(ns.date):ns.date} ${esc(ns.start)}`:'다음 근무 없음';
+  const tile=(k,href,label,st,badge)=>`<a class="qk qk-${k}" href="${esc(href)}">${badge||''}<span class="qi">${qico(k)}</span><b>${label}</b><small>${st}</small></a>`;
+  const html=`<div class="rqql">바로가기</div><div class="rqquick">${tile('nt',nt?nt.getAttribute('href'):'#/notice','공지사항',ntS,ntB)}${tile('ex',ex?ex.getAttribute('href'):(typeof EXP_URL!=='undefined'?EXP_URL:'#/exp/new'),'개인경비','1분이면 끝','')}${tile('sc',sc?sc.getAttribute('href'):'#/schedule','내 근무표',scS,'')}</div>`;
+  [nt,ex,sc].forEach(e=>e&&e.remove());
+  const rq=hc.querySelector('.rqhome');rq?rq.insertAdjacentHTML('afterend',html):hc.insertAdjacentHTML('afterbegin',html)}
 const _home=ROUTES[''];
-ROUTES['']=function(v,a){const r=_home.apply(this,arguments);Promise.resolve(r).then(()=>{if(v.querySelector('.rqhome'))return;
+ROUTES['']=function(v,a){const r=_home.apply(this,arguments);Promise.resolve(r).then(()=>{if(!v.querySelector('.rqhome')){
   const html=`<a class="rqhome" href="#/request"><div>${dots}<b>요청하기</b><span>수리 · 고객 환불 · 서류 · 앱 오류까지 한곳에서</span><em id="rqchip" class="${R.open?'':'z'}">${R.open?`내 요청 진행 중 ${R.open}`:'번호로 끝까지 챙겨요'}</em></div><i class="arr">${I('plus',24)}</i></a>`;
-  const hc=v.querySelector('.hcards');if(hc)hc.insertAdjacentHTML('afterbegin',html);else{const pb=v.querySelector('#punchBlk');pb?pb.insertAdjacentHTML('afterend',`<div class="hcards">${html}</div>`):v.insertAdjacentHTML('afterbegin',html)}
+  const hc=v.querySelector('.hcards');if(hc)hc.insertAdjacentHTML('afterbegin',html);else{const pb=v.querySelector('#punchBlk');pb?pb.insertAdjacentHTML('afterend',`<div class="hcards">${html}</div>`):v.insertAdjacentHTML('afterbegin',html)}}
+  quickRow(v);
   apiRaw('req.mine',{status:'open'}).then(j=>{R.open=(j.counts&&j.counts.open!=null)?j.counts.open:(j.items||[]).length;const c=$('#rqchip');if(c){c.textContent=R.open?`내 요청 진행 중 ${R.open}`:'번호로 끝까지 챙겨요';c.classList.toggle('z',!R.open);if(R.open)c.onclick=e=>{e.preventDefault();location.hash='#/myreq'}}}).catch(()=>{})});return r};
 const _shell=shell;shell=function(){const r=_shell.apply(this,arguments);const p=document.querySelector('.nav a.plus');if(p){p.setAttribute('href','#/request');p.dataset.r='request';p.lastChild&&p.lastChild.nodeType===3&&(p.lastChild.textContent='요청')}return r};
 const _mark=markNav;markNav=function(){_mark();const k=location.hash.replace(/^#\/?/,'').split('/')[0];if(['request','ticket','myreq','apply','new','req','sup','exp','incident'].includes(k))document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.r==='request'))};
+})();
+/* 화면에 '본사' 대신 '서포트센터' (API 데이터 포함, 2026-11-14 코치님). 입력값·전송값은 그대로 */
+(function(){const RE=/본사/g, SKIP=/^(SCRIPT|STYLE|TEXTAREA|INPUT)$/;
+  const fixT=n=>{if(n.nodeValue&&n.nodeValue.indexOf('본사')>=0&&!(n.parentNode&&SKIP.test(n.parentNode.nodeName)))n.nodeValue=n.nodeValue.replace(RE,'서포트센터')};
+  const fix=n=>{if(n.nodeType===3)return fixT(n);if(n.nodeType!==1||SKIP.test(n.nodeName))return;
+    const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT);let t;while((t=w.nextNode()))fixT(t);
+    [n,...n.querySelectorAll('[placeholder*="본사"],[title*="본사"],[aria-label*="본사"]')].forEach(e=>['placeholder','title','aria-label'].forEach(k=>{const val=e.getAttribute&&e.getAttribute(k);if(val&&val.indexOf('본사')>=0)e.setAttribute(k,val.replace(RE,'서포트센터'))}))};
+  const mo=new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')fixT(m.target);else m.addedNodes.forEach(fix)}});
+  const go=()=>{fix(document.body);mo.observe(document.body,{childList:true,subtree:true,characterData:true})};
+  document.body?go():document.addEventListener('DOMContentLoaded',go);
+  const _t=window.toast;if(typeof _t==='function')window.toast=function(m,ms){return _t(String(m).replace(RE,'서포트센터'),ms)};
 })();
