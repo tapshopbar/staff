@@ -217,7 +217,7 @@ ROUTES.onb=async function(v,email){
 ROUTES.close=async function(v,arg){
   const d=S.data, now=new Date();
   const lm=ymd(new Date(now.getFullYear(),now.getMonth()-1,1)).slice(0,7);
-  let [month,branch]=(arg||'').split('@'); month=month||lm; branch=branch||(d.me.branch==='본사'?'청계':d.me.branch);
+  let [month,branch]=(arg||'').split('@'); month=month||lm; branch=branch||(d.me.branch==='본사'||d.me.branch==='서포트센터'?'청계':d.me.branch);
   v.innerHTML=`<div class="title"><h1>근태 마감</h1></div>${loading()}`;
   let j;try{j=await api('close.preview',{month,branch})}catch(e){v.innerHTML=`<div class="title"><h1>근태 마감</h1><p>${esc(e.message)}</p></div>`;return}
   const isHQ=d.x&&d.x.isHQ, issues=j.rows.reduce((a,r)=>a+r.issues.filter(i=>i.type!=='지각').length,0);
@@ -248,7 +248,7 @@ ROUTES.console=async function(v){
   const p=j.pending, days=[...Array(7)].map((_,i)=>addD(ov.start,i)), today=ymd(new Date());
   v.innerHTML=`<section class="hero photo" style="background-image:url(assets/loc_hall.jpg);padding:40px var(--pad) 30px"><span class="tag"><i class="new">HQ</i> ${fmtDay(j.today)}</span><h1 style="font-size:44px;margin:12px 0 0">운영 콘솔.</h1><div style="font-size:15px;font-weight:600;opacity:.85;margin-top:6px">전 지점 근무 · 결재 · 경비 · 공지를 한 화면에서.</div></section>
    <div class="sec"><h2>오늘 매장</h2><a href="#/schedule">스케줄 편집</a></div>
-   <div class="cgrid">${j.branches.filter(b=>b.branch!=='본사').map(b=>`<div class="cbox"><h3>${esc(brLabel(b.branch))} ${b.missing.length?chip('반려','미출근 '+b.missing.length):b.scheduled?chip('정상','정상'):chip('미확정','스케줄 없음')}</h3>
+   <div class="cgrid">${j.branches.filter(b=>b.branch!=='본사'&&b.branch!=='서포트센터').map(b=>`<div class="cbox"><h3>${esc(brLabel(b.branch))} ${b.missing.length?chip('반려','미출근 '+b.missing.length):b.scheduled?chip('정상','정상'):chip('미확정','스케줄 없음')}</h3>
      <div style="display:flex;gap:18px;margin-top:12px"><div><div class="n">${b.working}</div><div class="note" style="padding:0">근무 중</div></div><div><div class="n" style="color:var(--mute)">${b.scheduled}</div><div class="note" style="padding:0">오늘 스케줄</div></div><div><div class="n" style="color:var(--mute)">${b.done}</div><div class="note" style="padding:0">퇴근</div></div></div>
      ${b.missing.length?`<div class="warn">미출근: ${b.missing.map(esc).join(', ')}</div>`:''}
      <div class="row" style="margin-top:12px"><span>휴가</span><span>${b.off.length?b.off.map(esc).join(', '):'-'}</span></div>

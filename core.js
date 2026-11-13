@@ -4,7 +4,7 @@ const LOGO = 'assets/tsb_wordmark_h.png';
 const GOOGLE_CLIENT_ID = '207804770718-9ilhgaprc47k3ul52nnreofbbu62lpt3.apps.googleusercontent.com';
 const TYPES = [
   {g:'연차',k:'연차',label:'연차',sub:'1일 · 유급',pol:'입사 1년 미만은 한 달 개근 시 1일(최대 11일), 1년 이상은 15일(2년마다 +1일, 최대 25일). 입사일 기준으로 관리해요.',docs:''},
-  {g:'연차',k:'오전 반차',label:'오전 반차',sub:'0.5일 · 4시간',half:'오전',pol:'반차는 0.5일(4시간)이에요. 신청 → 점장 승인 → 매니저 승인 → 스케줄 반영 순서예요.',docs:''},
+  {g:'연차',k:'오전 반차',label:'오전 반차',sub:'0.5일 · 4시간',half:'오전',pol:'반차는 0.5일(4시간)이에요. 신청 → 점장 승인 → 스케줄 반영 순서예요.',docs:''},
   {g:'연차',k:'오후 반차',label:'오후 반차',sub:'0.5일 · 4시간',half:'오후',pol:'반차는 0.5일(4시간)이에요. 먼저 점장님과 스케줄을 맞춰 주세요.',docs:''},
   {g:'휴가',k:'경조휴가',label:'경조휴가',sub:'유급 · 연차와 별도',pol:'결혼·출산·사망 등 경조사에 사용해요. 주말·공휴일 포함 연속 일수로 부여되고, 입사 3개월 이상이면 경조금도 지급돼요.',docs:'청첩장, 가족관계증명서, 사망 관련 증빙 등'},
   {g:'휴가',k:'병가',label:'병가',sub:'무급 · 연차 우선',pol:'발생한 연차를 먼저 쓰고, 모두 쓴 경우 협의해 병가를 사용해요. 당일 병가는 점장님께 먼저 연락하고 사후에 신청해 주세요.',docs:'진료확인서·진단서·입퇴원확인서 중 1개 이상'},
@@ -16,7 +16,7 @@ const TYPES = [
   {g:'휴가',k:'가족돌봄휴가',label:'가족돌봄휴가',sub:'무급 · 연 10일',pol:'가족의 질병·사고·노령·양육으로 돌봄이 필요할 때 연 최대 10일, 1일 단위로 사용해요.',docs:'가족관계증명서, 진단서 등'},
   {g:'휴가',k:'기타·휴직',label:'기타 · 휴직',sub:'상담 후 결정',pol:'무급휴가·휴직 등은 대표 및 HR과 상담 후 진행 여부를 정해요. 30일 전 신청을 권장해요.',docs:'사유 증빙 서류'}
 ];
-const ROLECOL = {'직원':'#C99A9E','점장':'#6E1426','매니저':'#141B33','임원':'#3B4A7A','이사':'#4A0B18','대표':'#0E0E0E'};
+const ROLECOL = {'직원':'#C99A9E','점장':'#6E1426','매니저':'#141B33','임원':'#3B4A7A','이사':'#4A0B18','팀장':'#4A0B18','대표':'#0E0E0E'};
 const BR = ['청계','상암','마곡','동대문','서여의도','본사'];
 const I = (n,s=22)=>{const p={
  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
@@ -241,7 +241,7 @@ ROUTES['']=function vHome(v){
   <div class="grid g3">
     <a class="tile n" href="#/notice"><b>공지</b><small>${x.unreadRequired?'필독 '+x.unreadRequired+'건':'매뉴얼 · 소식'}</small></a>
     <a class="tile" href="#/schedule"><b>근무표</b><small>스케줄 · 대타</small></a>
-    <a class="tile w" href="#/new/연차"><b>휴가</b><small>점장 → 매니저</small></a>
+    <a class="tile w" href="#/new/연차"><b>휴가</b><small>점장 승인</small></a>
     <a class="tile y" href="#/payslip"><b>급여<br>명세서</b><small>바로 열람</small></a>
     <a class="tile" href="#/cert"><b>증명서</b><small>재직 · 경력</small></a>
     <a class="tile w" href="#/learn"><b>러닝</b><small>와인 · 업무 공부</small></a>
@@ -353,7 +353,7 @@ ROUTES.apply=function(v){
   const d=S.data;
   v.innerHTML=`<div class="title"><h1>신청</h1><p>필요한 걸 고르면, 결재선은 알아서 잡혀요.</p></div>
   <div class="list" style="margin-top:14px">
-   ${[['#/new/연차','연차 · 반차','점장 승인 → 박한울 매니저 승인 · 장분도·나기정 보고'],['#/new/휴가','휴가 (경조·병가·공가 등)','점장 → 매니저 → 이사 승인 · 대표 보고'],['#/sup/명함','명함 신청','점장 → 매니저 승인 · 비용이 나가 2~3주 걸릴 수 있어요'],['#/sup/근무복','근무복 신청','점장 → 매니저 승인 · 비용이 나가 2~3주 걸릴 수 있어요'],['#/sup/건강검진','건강검진 완료 등록','완료 날짜만 기록 · 결과는 받지 않아요'],['#/exp/new','경비 · 소모품 청구','영수증 사진만 찍으면 이체 메모까지 자동'],['#/swap','대타 요청','내 근무를 동료에게 넘기기 · 점장 승인'],['#/incident/new','사고 · 클레임 보고','유형·긴급도는 AI가 자동 분류'],['#/avail','근무 가능 시간','다음 주 가능한 시간 제출'],['#/cert','재직 · 경력증명서','PDF로 바로 발급'],['#/payslip','급여명세서','본인만 열람']].map(([h,t,s])=>`<a class="li" href="${h}"><div class="m"><div class="t1">${t}</div><div class="t2">${s}</div></div><span class="ar">${I('next',18)}</span></a>`).join('')}
+   ${[['#/new/연차','연차 · 반차','점장 승인으로 확정 · 장분도·나기정 보고'],['#/new/휴가','휴가 (경조·병가·공가 등)','점장 승인으로 확정 · 장분도·나기정 보고'],['#/sup/명함','명함 신청','점장 → 매니저 승인 · 비용이 나가 2~3주 걸릴 수 있어요'],['#/sup/근무복','근무복 신청','점장 → 매니저 승인 · 비용이 나가 2~3주 걸릴 수 있어요'],['#/sup/건강검진','건강검진 완료 등록','완료 날짜만 기록 · 결과는 받지 않아요'],['#/exp/new','경비 · 소모품 청구','영수증 사진만 찍으면 이체 메모까지 자동'],['#/swap','대타 요청','내 근무를 동료에게 넘기기 · 점장 승인'],['#/incident/new','사고 · 클레임 보고','유형·긴급도는 AI가 자동 분류'],['#/avail','근무 가능 시간','다음 주 가능한 시간 제출'],['#/cert','재직 · 경력증명서','PDF로 바로 발급'],['#/payslip','급여명세서','본인만 열람']].map(([h,t,s])=>`<a class="li" href="${h}"><div class="m"><div class="t1">${t}</div><div class="t2">${s}</div></div><span class="ar">${I('next',18)}</span></a>`).join('')}
   </div>
   <a class="blk" href="${esc(d.policyUrl)}" target="_blank" rel="noopener" style="display:block;margin-top:18px;background:var(--grey)"><span class="tag"><i class="new">규정</i></span><div style="font-size:20px;font-weight:800;letter-spacing:-.03em;margin-top:8px">휴가 및 휴직 가이드</div><span class="u" style="margin-top:10px;font-size:13px">Notion에서 전문 읽기</span></a>
   <div class="sec"><h2>내 신청</h2></div><div class="list">${reqRows(d.requests)||'<div class="empty">아직 없어요</div>'}</div>
@@ -375,7 +375,7 @@ ROUTES.new=function(v,g){
    <div id="docs"></div><div class="policy" id="pol"></div>
    <label class="check"><input type="checkbox" id="ag"> <span>휴가 규정을 확인했고, 점장님과 스케줄을 먼저 맞췄어요</span></label>
    <label class="f">결재선</label>${lineHTML(d.me,chain.steps.map(s=>({...s,status:'대기'})),chain.report,-1)}
-   <p class="note" style="padding:6px 0 0">${g==='연차'?'점장님 승인 후 박한울 매니저가 승인하면 장분도 이사 · 나기정 대표에게 보고돼요.':'모든 승인이 끝나면 나기정 대표에게 보고돼요.'}</p></div>
+   <p class="note" style="padding:6px 0 0">${g==='연차'?'점장님이 승인하면 확정되고 장분도 이사 · 나기정 대표에게 보고돼요. (점장님이 없는 서포트센터·점장님 본인은 박한울 매니저가 승인)':'점장님이 승인하면 확정되고 장분도 이사 · 나기정 대표에게 보고돼요. (점장님이 없는 서포트센터·점장님 본인은 매니저 승인)'}</p></div>
    <div class="btnrow"><button class="pill wine" id="sb">신청하기</button></div>`;
   v.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>location.hash='#/new/'+b.dataset.g);
   const draw=()=>{const t=st.type;
@@ -531,7 +531,7 @@ ROUTES.admin=async function(v){
      <label class="f">이메일</label><input class="in" id="a_em" type="email" autocapitalize="off" placeholder="name@tsb.wine 또는 개인 이메일">
      <label class="f">이름</label><input class="in" id="a_nm">
      <div class="two"><div><label class="f">지점</label><select class="in" id="a_br" ${j.canEditRole?'':'disabled'}>${j.branches.map(b=>`<option ${b===S.data.me.branch?'selected':''}>${esc(b)}</option>`).join('')}</select></div>
-     <div><label class="f">역할</label><select class="in" id="a_rl" ${j.canEditRole?'':'disabled'}>${['직원','점장','매니저','임원','이사','대표'].map(x=>`<option>${x}</option>`).join('')}</select></div></div>
+     <div><label class="f">역할</label><select class="in" id="a_rl" ${j.canEditRole?'':'disabled'}>${['직원','점장','매니저','임원','팀장','대표'].map(x=>`<option>${x}</option>`).join('')}</select></div></div>
      <div class="two"><div><label class="f">입사일</label><input class="in" type="date" id="a_hd"></div><div><label class="f">생년월일</label><input class="in" type="date" id="a_bd"></div></div>
      <button class="pill wine full" style="margin-top:20px" id="a_sv">추가하기</button>`,m=>{
      m.querySelector('#a_sv').onclick=async e=>{busy(e.currentTarget,true);try{await api('admin.addUser',{email:m.querySelector('#a_em').value,name:m.querySelector('#a_nm').value,branch:m.querySelector('#a_br').value,role:m.querySelector('#a_rl').value,hire:m.querySelector('#a_hd').value,birth:m.querySelector('#a_bd').value});m.remove();toast('추가했어요');ROUTES.admin(v)}catch(er){toast(er.message);busy(e.currentTarget,false)}}});
@@ -539,7 +539,7 @@ ROUTES.admin=async function(v){
     openSheet(`<h2>${esc(u.name)}</h2><div class="note" style="padding:0">${esc(u.email)}</div>
      <label class="f">이름</label><input class="in" id="u_nm" value="${esc(u.name)}">
      <div class="two"><div><label class="f">지점</label><select class="in" id="u_br" ${j.canEditRole?'':'disabled'}>${j.branches.map(b=>`<option ${b===u.branch?'selected':''}>${esc(b)}</option>`).join('')}</select></div>
-     <div><label class="f">역할</label><select class="in" id="u_rl" ${j.canEditRole?'':'disabled'}>${['직원','점장','매니저','임원','이사','대표'].map(x=>`<option ${x===u.role?'selected':''}>${x}</option>`).join('')}</select></div></div>
+     <div><label class="f">역할</label><select class="in" id="u_rl" ${j.canEditRole?'':'disabled'}>${['직원','점장','매니저','임원','팀장','대표'].map(x=>`<option ${x===u.role?'selected':''}>${x}</option>`).join('')}</select></div></div>
      <div class="two"><div><label class="f">입사일</label><input class="in" type="date" id="u_hd" value="${esc(u.hire||'')}"></div><div><label class="f">연차 조정(±일)</label><input class="in" id="u_adj" inputmode="decimal" value="${esc(u.adj||'')}" placeholder="예) -3"></div></div>
      <label class="f">상태</label><select class="in" id="u_st">${['대기','초대전','재직','퇴사'].map(x=>`<option ${x===u.status?'selected':''}>${x}</option>`).join('')}</select>
      <div class="btnrow" style="padding:22px 0 0"><a class="pill line" href="#/onb/${encodeURIComponent(u.email)}" data-close>온보딩</a><button class="pill wine" id="u_sv">${u.status==='대기'?'승인하고 저장':'저장'}</button></div>`,m=>{
