@@ -918,16 +918,16 @@ function genStage(t){const s=t.status;if(s==='완료')return 3;if(s==='진행 �
 function stageIdx(j,t,steps){let k=j.stage!=null?j.stage:t.stage;
   if(typeof k==='string'&&!/^\d+$/.test(k)){const i=steps.findIndex(s=>s.label===k);k=i<0?null:i}
   if(k==null||k==='')return Math.min(genStage(t),steps.length-1);
-  k=Number(k);if(t.status==='완료')return steps.length-1;return Math.max(0,Math.min(steps.length-1,k))}
+  k=Number(k)-1;/* 서버 stage는 1부터 */if(t.status==='완료')return steps.length-1;return Math.max(0,Math.min(steps.length-1,k))}
 function timeAt(j,t,steps,i){const st=j.stageTimes||t.stageTimes;
   if(Array.isArray(st))return st[i]||'';
-  if(st&&typeof st==='object')return st[i]||st[String(i)]||st[steps[i].label]||'';
+  if(st&&typeof st==='object')return st[i+1]||st[String(i+1)]||st[steps[i].label]||'';
   if(i===0)return t.at;if(i===steps.length-1&&t.doneAt)return t.doneAt;if(i===1&&t.firstAt)return t.firstAt;return ''}
 const HOLD={'보류':'잠시 멈춰 있어요. 이유는 아래 담당 메모를 봐 주세요. 다시 움직이면 바로 알려 드려요.','답 기다림':'담당팀이 요청자님의 답을 기다리고 있어요. 아래 메모 남기기로 알려 주세요.','다시 열림':'아직 해결되지 않았다고 알려 주셔서 다시 열었어요. 이어서 챙길게요.'};
 function nowOf(j,t,steps,si){if(j.nowText||t.nowText)return j.nowText||t.nowText;const team=j.owner||t.owner||t.team||'담당팀';
   if(t.status==='완료')return '처리를 마쳤어요';if(t.status==='보류')return '잠시 멈춰 있어요';if(t.status==='답 기다림')return '요청자님의 답을 기다리고 있어요';
   if(si===0)return team+'에 전달됐어요';return team+'이 '+(steps[si].label||'처리')+' 중이에요'}
-const brOpts=c=>{const l=(Array.isArray(c.branches)&&c.branches.length?c.branches.slice():['청계','상암','마곡','동대문','서여의도']).map(b=>typeof b==='string'?b:(b.name||b.branch));if(!l.includes('본사'))l.push('본사');return l};
+const brOpts=c=>{const l=(Array.isArray(c.branches)&&c.branches.length?c.branches.slice():['청계','상암','마곡','동대문','서여의도']).map(b=>typeof b==='string'?b:(b.name||b.branch));const o=l.filter(b=>b&&b!=='본사');o.push('본사');return o};
 const brK=b=>b==='본사'?'본사 (서포트센터)':b;
 const strip=steps=>`<div class="rqstrip"><div class="h">보내면 이렇게 진행돼요</div><ol>${steps.map((s,i)=>`<li><i>${i+1}</i><span>${esc(s.label)}</span></li>`).join('')}</ol></div>`;
 
@@ -1042,10 +1042,10 @@ ROUTES.myreq=async function(v,tab){
   v.innerHTML=head+list(items,tab)+`<div class="btnrow"><a class="pill rqbtn" href="#/request">새 요청하기</a></div><div style="height:24px"></div>`;wire();
 };
 function mini(r){const isT=r.source==='ticket'||/^REQ-/.test(r.id);if(!isT)return '';
-  const n=Number(r.stepCount||r.steps||(Array.isArray(r.stepLabels)?r.stepLabels.length:0))||4;
+  const n=Number(r.stepsN||r.stepCount||(typeof r.steps==='number'?r.steps:(Array.isArray(r.steps)?r.steps.length:0)))||4;
   let k=r.stage;let lab=r.stageLabel||'';
   if(typeof k==='string'&&!/^\d+$/.test(k)){lab=lab||k;k=null}
-  if(k==null||k===''){k=genStage(r)}k=Number(k);
+  if(k==null||k===''){k=genStage(r)}else k=Number(k)-1;
   if(r.status==='완료'||r.open===false)k=n-1;
   if(!lab)lab=(Array.isArray(r.stepLabels)&&r.stepLabels[k])||GEN()[Math.min(k,3)].label;
   return `<div class="rqmini"><div class="bar"><i style="width:${Math.round((k+1)/n*100)}%"></i></div><span>${k+1}/${n} ${esc(lab)}</span></div>`}
