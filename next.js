@@ -347,8 +347,8 @@ ROUTES['']=function(v){const r=home.apply(this,arguments);try{v.querySelector('.
     ['최소 이용 금액', '최소 금액', '미니멈', '최소이용'], ['패키지', '가격', '얼마', '견적', '1인'], ['콜키지', '외부 와인', '와인 반입'], ['세금계산서', '계산서', '현금영수증', '증빙'],
     ['데코', '꽃', '포토존', '장식', '풍선'], ['마이크', '빔', '프로젝터', '음향', '미디어월'], ['폰트', '글꼴', '서체'], ['사이즈', '해상도', '규격', '크기'], ['색', '컬러', '색상']
   ];
-  const POP = ['연차', '육아휴직', '급여일', '증명서', '야간수당', '퇴사', '경조금', '폰트'];
-  const RV = '대관 응대';
+  const POP = ['연차', '육아휴직', '급여일', '증명서', '야간수당', '퇴사', '경조금', '건강검진'];
+  const RV = '대관 응대', DZ = '브랜드·디자인';
   const CATS = [];
   const norm = s => String(s || '').toLowerCase().replace(/\s+/g, '');
   const e = s => (typeof esc === 'function' ? esc(s) : String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])));
@@ -432,8 +432,8 @@ ROUTES['']=function(v){const r=home.apply(this,arguments);try{v.querySelector('.
   ROUTES.guide = function (v, a) {
     const parts = String(a || '').split('/'), mode = parts[0] || '';
     if (mode === 'c' && decodeURIComponent(parts.slice(1).join('/')) === RV) { try { history.replaceState(null, '', '#/rental'); } catch (x) {} return ROUTES.rental(v); }
-    const isRv = /^rv/.test(mode);
-    v.innerHTML = `${back(isRv ? '#/rental' : (mode && mode !== 's' && mode !== 'c' ? '#/guide' : '#/more'), isRv ? '대관 응대' : (mode && mode !== 's' && mode !== 'c' ? '가이드' : '더보기'))}<div id="gdv">${loading()}</div>`;
+    const isRv = /^rv/.test(mode), isDz = mode === 'design';
+    v.innerHTML = `${back(isDz ? '#/more' : isRv ? '#/rental' : (mode && mode !== 's' && mode !== 'c' ? '#/guide' : '#/more'), isDz ? '더보기' : isRv ? '대관 응대' : (mode && mode !== 's' && mode !== 'c' ? '가이드' : '더보기'))}<div id="gdv">${loading()}</div>`;
     load().then(() => { const el = $('#gdv'); if (!el) return; if (!mode || mode === 's' || mode === 'c') list(el, mode === 's' ? parts.slice(1).join('/') : '', mode === 'c' ? parts.slice(1).join('/') : ''); else doc(el, mode, parts[1]); })
       .catch(x => { const el = $('#gdv'); if (el) el.innerHTML = `<div class="blk"><div class="empty">가이드를 불러오지 못했어요. ${e(x.message || '')}</div></div>`; });
   };
@@ -450,9 +450,9 @@ ROUTES['']=function(v){const r=home.apply(this,arguments);try{v.querySelector('.
         const c = cat && CATS.includes(cat) ? cat : '';
         const rv1 = its.find(it => it.cat === RV);
         const banner = '' && rv1 ? `<a class="gd-rvb" href="#/guide/c/${encodeURIComponent(RV)}"><span class="k">손님 대관 질문</span><b>대관 문의, 답을 찾아 복사해서 보내요</b><span class="s">가격 · 예약금 · 환불 · 반입 · 링크 ${its.filter(it => it.cat === RV).reduce((n, it) => n + (it.qa || []).length, 0)}개</span><span class="ar">${I('next', 20)}</span></a>` : '';
-        res.innerHTML = banner + `<div class="gd-cats">${CATS.filter(k => k !== RV).map(k => `<a href="#/guide/c/${encodeURIComponent(k)}" class="${k === c ? 'on' : ''}">${k}</a>`).join('')}</div>` +
-          CATS.filter(k => k !== RV && (!c || k === c)).map(k => { const xs = its.filter(it => (it.cat || '') === k); if (!xs.length) return ''; return `<div class="sec"><h2>${e(k)}</h2></div><div class="list">${xs.map(it => `<a class="li" href="#/guide/${e(it.id)}"><div class="m"><div class="t1">${e(it.title)}</div><div class="t2">${e(it.summary || '')}</div></div><span class="ar">${I('next', 18)}</span></a>`).join('')}</div>`; }).join('') +
-          `<p class="note" style="padding:18px var(--pad) 0">HR 인사팀 HARPER · 디자인 마케팅팀 · 대관 응대는 더보기·홈 '대관 문의'${G.updated ? ' · 최종수정 ' + e(G.updated) : ''}</p>` + foot();
+        res.innerHTML = banner + `<div class="gd-cats">${CATS.filter(k => k !== RV && k !== DZ).map(k => `<a href="#/guide/c/${encodeURIComponent(k)}" class="${k === c ? 'on' : ''}">${k}</a>`).join('')}</div>` +
+          CATS.filter(k => k !== RV && k !== DZ && (!c || k === c)).map(k => { const xs = its.filter(it => (it.cat || '') === k); if (!xs.length) return ''; return `<div class="sec"><h2>${e(k)}</h2></div><div class="list">${xs.map(it => `<a class="li" href="#/guide/${e(it.id)}"><div class="m"><div class="t1">${e(it.title)}</div><div class="t2">${e(it.summary || '')}</div></div><span class="ar">${I('next', 18)}</span></a>`).join('')}</div>`; }).join('') +
+          `<p class="note" style="padding:18px var(--pad) 0">HR 인사팀 HARPER · 대관 응대·디자인 가이드는 더보기에 따로 있어요${G.updated ? ' · 최종수정 ' + e(G.updated) : ''}</p>` + foot();
         return;
       }
       const r = search(qq);
@@ -474,7 +474,7 @@ ROUTES['']=function(v){const r=home.apply(this,arguments);try{v.querySelector('.
       ${applyBtns(it)}
       ${secs.length > 3 ? `<details class="gd-toc"><summary>목차 ${secs.length}</summary>${secs.map(s => `<a href="javascript:void 0" data-si="${s.i}">${e(s.h)}</a>`).join('')}</details>` : ''}
       <article class="gd-doc">${md(String(it.body || '').replace(/^\s*#\s+[^\n]*\n/, ''))}</article>
-      <p class="note" style="padding:14px var(--pad) 0">담당 ${e(it.owner || '인사팀 HARPER')} · 최종수정 ${e(it.updated || G.updated || '')}</p>${foot()}`;
+      <p class="note" style="padding:14px var(--pad) 0">담당 ${e(it.owner || '인사팀 HARPER')} · 최종수정 ${e(it.updated || G.updated || '')}</p>${it.cat === DZ ? `<div class="gd-foot"><b>그래도 궁금하면</b><p>마케팅팀에 물어보세요. 로고·사진 원본이 필요하면 질문하기로 요청해 주세요.</p><a class="pill line" href="#/ask" data-gq="1">질문하기</a></div>` : foot()}`;
     const go = n => { const h = el.querySelector('#gs' + n); if (h) { h.scrollIntoView({ block: 'start' }); window.scrollBy(0, -70); h.classList.add('gd-flash'); setTimeout(() => h.classList.remove('gd-flash'), 1800); } };
     el.querySelectorAll('[data-si]').forEach(a => a.onclick = () => go(a.dataset.si));
     el.querySelector('[data-gq]').onclick = () => sessionStorage.setItem('ask_prefill', '[' + it.title + '] ');
@@ -735,12 +735,13 @@ ROUTES['']=function(v){const r=_home.apply(this,arguments);try{const x=(S.data&&
     ['#/policy','회사 정책','규칙 · 정책','정책 규칙 규정'],
     ['#/memo','정산 메모','오늘 마감 메모','정산 마감 메모 현금 일정산'],
     ['#/contract','내 계약서','근로계약서 읽기 · 서명','계약서 근로계약 서명'],
-    ['#/guide','HR 가이드','휴가 · 급여 · 복지 · 규칙','가이드 규정 복지 디자인 매뉴얼'],
+    ['#/guide','HR 가이드','휴가 · 급여 · 복지 · 규칙','가이드 규정 복지 매뉴얼'],
+    ['#/guide/design','디자인 가이드','로고 · 색 · 폰트 · 사이즈','디자인 폰트 글꼴 로고 색 컬러 사이즈 브랜드'],
     ['#/rental','대관 응대','손님 대관 질문 · 답 복사','대관 파티 단체 행사 예약금 렌탈 통대관'],
     ['#/slack','슬랙 열기','회사 슬랙','슬랙 slack 메신저']
   ];
   /* 더보기 목록 메뉴에 붙일 비슷한 말 (주소 기준) */
-  const SYN={'#/rental':'대관 파티 단체 행사 예약금 렌탈 통대관 가격 환불 콜키지','#/guide':'가이드 규정 복지 매뉴얼 hr','#/payslip':'급여 월급 명세서 돈 임금 급여일','#/cert':'재직증명서 경력증명서 서류 증명','#/att':'출근 퇴근 출퇴근 gps 위치 지각','#/cal':'휴가 연차 누가 쉬어','#/swap':'대타 교대 근무바꾸기 바꿔','#/avail':'근무신청 휴무 희망 스케줄신청 쉬는날','#/exp':'경비 영수증 택시 지급','#/notice':'공지 매뉴얼 필독 안내','#/feedback':'의견 건의 불편 버그 제안 고쳐','#/incident':'사고 클레임 파손 다침 컴플레인','#/quiz':'와인 퀴즈 랭킹 레벨','#/kudos':'칭찬 감사 고마워','#/log':'업무일지 퇴근한줄 기록 일지','#/onb':'온보딩 입사 신입 체크','#/check/오픈':'오픈 마감 체크리스트 사진','#/schedule':'근무표 스케줄 시간표','#/console':'운영 콘솔 전지점','#/close':'근태 마감 월말','#/pay':'경비 지급 이체','#/notice/new':'공지 쓰기 작성','#/admin':'직원 관리 입사일 역할','#/help':'지원 헬프 인력'};
+  const SYN={'#/guide/design':'디자인 폰트 글꼴 로고 색 컬러 사이즈 해상도 브랜드 포스터 메뉴판','#/rental':'대관 파티 단체 행사 예약금 렌탈 통대관 가격 환불 콜키지','#/guide':'가이드 규정 복지 매뉴얼 hr','#/payslip':'급여 월급 명세서 돈 임금 급여일','#/cert':'재직증명서 경력증명서 서류 증명','#/att':'출근 퇴근 출퇴근 gps 위치 지각','#/cal':'휴가 연차 누가 쉬어','#/swap':'대타 교대 근무바꾸기 바꿔','#/avail':'근무신청 휴무 희망 스케줄신청 쉬는날','#/exp':'경비 영수증 택시 지급','#/notice':'공지 매뉴얼 필독 안내','#/feedback':'의견 건의 불편 버그 제안 고쳐','#/incident':'사고 클레임 파손 다침 컴플레인','#/quiz':'와인 퀴즈 랭킹 레벨','#/kudos':'칭찬 감사 고마워','#/log':'업무일지 퇴근한줄 기록 일지','#/onb':'온보딩 입사 신입 체크','#/check/오픈':'오픈 마감 체크리스트 사진','#/schedule':'근무표 스케줄 시간표','#/console':'운영 콘솔 전지점','#/close':'근태 마감 월말','#/pay':'경비 지급 이체','#/notice/new':'공지 쓰기 작성','#/admin':'직원 관리 입사일 역할','#/help':'지원 헬프 인력'};
   const POP=['급여명세서','연차','증명서','경비','근무표','대타'];
   function menus(v){
     const out=[],seen=new Set();
@@ -790,5 +791,5 @@ ROUTES['']=function(v){const r=_home.apply(this,arguments);try{const x=(S.data&&
 /* 11/13: 대관 응대 입구 — 홈 매장·성장 '대관 문의' 타일(와인 퀴즈 옆) + 더보기 목록 */
 (function(){
   const h=ROUTES[''];if(h)ROUTES['']=function(v){const r=h.apply(this,arguments);const add=()=>{try{if(v.querySelector('.tile[href="#/rental"]'))return;const q=v.querySelector('.tile[href="#/quiz"]');if(q)q.insertAdjacentHTML('afterend',`<a class="tile w" href="#/rental"><b>대관<br>문의</b><small>손님 답 복사</small></a>`)}catch(e){}};add();setTimeout(add,300);return r};
-  const m=ROUTES.more;if(m)ROUTES.more=function(v){const r=m.apply(this,arguments);const add=()=>{if(v.querySelector('a.li[href="#/rental"]'))return;const g=v.querySelector('a.li[href="#/guide"],a.li[href="#/guide/01"]')||v.querySelector('a.li[href="#/avail"]');if(!g)return;const n=document.createElement('a');n.className='li';n.href='#/rental';n.innerHTML=`<div class="m"><div class="t1">대관 응대</div><div class="t2">손님 대관 질문 · 답 복사해서 보내기</div></div><span class="ar">${I('next',18)}</span>`;g.insertAdjacentElement('afterend',n)};add();setTimeout(add,400);return r};
+  const m=ROUTES.more;if(m)ROUTES.more=function(v){const r=m.apply(this,arguments);const add=()=>{if(v.querySelector('a.li[href="#/rental"]'))return;const g=v.querySelector('a.li[href="#/guide"],a.li[href="#/guide/01"]')||v.querySelector('a.li[href="#/avail"]');if(!g)return;const n=document.createElement('a');n.className='li';n.href='#/rental';n.innerHTML=`<div class="m"><div class="t1">대관 응대</div><div class="t2">손님 대관 질문 · 답 복사해서 보내기</div></div><span class="ar">${I('next',18)}</span>`;g.insertAdjacentElement('afterend',n)};const addDz=()=>{if(v.querySelector('a.li[href="#/guide/design"]'))return;const rv=v.querySelector('a.li[href="#/rental"]');if(!rv)return;const n=document.createElement('a');n.className='li';n.href='#/guide/design';n.innerHTML=`<div class="m"><div class="t1">디자인 가이드</div><div class="t2">로고 · 색 · 폰트 · 사이즈</div></div><span class="ar">${I('next',18)}</span>`;rv.insertAdjacentElement('afterend',n)};add();addDz();setTimeout(()=>{add();addDz()},400);return r};
 })();
