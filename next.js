@@ -524,7 +524,7 @@ ROUTES['']=function(v){const r=home.apply(this,arguments);try{v.querySelector('.
     if (qb && pre && !qb.value) { qb.value = pre; sessionStorage.removeItem('ask_prefill'); }
   }
   const mo = new MutationObserver(() => { const v = document.getElementById('view'); if (v) relink(v); });
-  const start = () => { const v = document.getElementById('view'); if (v) { mo.observe(v, { childList: true, subtree: true }); relink(v); } else setTimeout(start, 300); };
+  const start = () => { const v = document.getElementById('view'); mo.observe(document.body, { childList: true, subtree: true }); if (v) relink(v); }; /* 11/13: 화면 틀이 다시 그려지면 #view가 새로 생겨 노션 링크가 안 바뀌던 문제 → body 관찰 */
   start();
   window.TSB_GUIDE = { search, md, load, G };
 })();
@@ -679,3 +679,80 @@ ROUTES['']=function(v){const r=_home.apply(this,arguments);try{const x=(S.data&&
 
 /* 지원 요청: 더보기 목록에도 (대타 게시판 바로 아래) */
 (function(){const _m=ROUTES.more;if(!_m)return;ROUTES.more=function(v,a){const r=_m.apply(this,arguments);const add=()=>{const sw=v.querySelector('a.li[href="#/swap"]');if(sw&&!v.querySelector('a.li[href="#/help"]')){const n=sw.cloneNode(true);n.setAttribute('href','#/help');n.querySelector('.t1').textContent='지원 요청';n.querySelector('.t2').textContent='다른 지점 돕기 · 사람 필요할 때';sw.insertAdjacentElement('afterend',n)}};add();setTimeout(add,300);return r}})();
+
+
+/* ===== 더보기 통합 검색 (CREW-012, 차현 님 의견 Q261112-319E, 2026-11-13) =====
+   더보기 맨 위 검색창: 메뉴 이름·설명·비슷한 말 + HR 가이드(TSB_GUIDE.search)를 한 번에 찾는다. */
+(function(){
+  const _m=ROUTES.more;if(!_m)return;
+  const N=s=>String(s||'').toLowerCase().replace(/\s+/g,'');
+  const E=s=>(typeof esc==='function'?esc(s):String(s==null?'':s));
+  /* 더보기 목록에 없는 메뉴(홈 타일·신청 화면) + 비슷한 말 */
+  const EXTRA=[
+    ['#/new/연차','연차 · 반차 신청','휴가 쓰기 · 남은 연차','휴가 연차 반차 쉬는날 월차 오프'],
+    ['#/new/휴가','특별 휴가 신청','경조 · 병가 · 공가','경조 결혼 장례 병가 아파 공가 예비군 출산'],
+    ['#/apply','내 신청','신청한 것 · 결재 상태','결재 승인 상태 신청내역'],
+    ['#/exp/new','경비 신청','영수증 · 택시 · 소모품','경비 영수증 택시 교통비 카드 구매 소모품 지출 청구'],
+    ['#/sup/명함','명함 신청','점장 → 매니저 승인','명함'],
+    ['#/sup/근무복','근무복 신청','점장 → 매니저 승인','근무복 유니폼 옷 앞치마'],
+    ['#/sup/건강검진','건강검진 완료 등록','완료 날짜만 기록','건강검진 검진 보건증'],
+    ['#/schedule','근무표','이번 주 · 다음 주 · 다른 지점','근무표 스케줄 시간표 시프트 출근시간'],
+    ['#/help','지원 요청','다른 지점 돕기','지원 헬프 인력 도움 다른지점'],
+    ['#/crew','매장 이야기','손님 · 동료 한마디','매장이야기 게시판 이야기꾼'],
+    ['#/learn','러닝','교육 · 만화로 배우기','러닝 교육 공부 배우기 신입'],
+    ['#/music','TSB music','매장 음악 · 선곡','음악 노래 플레이리스트 라디오 bgm'],
+    ['#/badges','배지','Hybrid · Sommelier · Passport','배지 뱃지 badge'],
+    ['#/ask','질문함','본사에 묻기 · 답변 보기','질문 문의 건의 답변'],
+    ['#/policy','회사 정책','규칙 · 정책','정책 규칙 규정'],
+    ['#/memo','정산 메모','오늘 마감 메모','정산 마감 메모 현금 일정산'],
+    ['#/contract','내 계약서','근로계약서 읽기 · 서명','계약서 근로계약 서명'],
+    ['#/guide','HR 가이드','휴가 · 급여 · 복지 · 대관 응대','가이드 규정 복지 대관 디자인 매뉴얼'],
+    ['#/slack','슬랙 열기','회사 슬랙','슬랙 slack 메신저']
+  ];
+  /* 더보기 목록 메뉴에 붙일 비슷한 말 (주소 기준) */
+  const SYN={'#/payslip':'급여 월급 명세서 돈 임금 급여일','#/cert':'재직증명서 경력증명서 서류 증명','#/att':'출근 퇴근 출퇴근 gps 위치 지각','#/cal':'휴가 연차 누가 쉬어','#/swap':'대타 교대 근무바꾸기 바꿔','#/avail':'근무신청 휴무 희망 스케줄신청 쉬는날','#/exp':'경비 영수증 택시 지급','#/notice':'공지 매뉴얼 필독 안내','#/feedback':'의견 건의 불편 버그 제안 고쳐','#/incident':'사고 클레임 파손 다침 컴플레인','#/quiz':'와인 퀴즈 랭킹 레벨','#/kudos':'칭찬 감사 고마워','#/log':'업무일지 퇴근한줄 기록 일지','#/onb':'온보딩 입사 신입 체크','#/check/오픈':'오픈 마감 체크리스트 사진','#/schedule':'근무표 스케줄 시간표','#/console':'운영 콘솔 전지점','#/close':'근태 마감 월말','#/pay':'경비 지급 이체','#/notice/new':'공지 쓰기 작성','#/admin':'직원 관리 입사일 역할','#/help':'지원 헬프 인력'};
+  const POP=['급여명세서','연차','증명서','경비','근무표','대타'];
+  function menus(v){
+    const out=[],seen=new Set();
+    v.querySelectorAll('.list a.li[href^="#/"]').forEach(a=>{const h=a.getAttribute('href');if(seen.has(h))return;seen.add(h);out.push({h,t:(a.querySelector('.t1')||a).textContent.replace(/BETA|NEW|HQ/g,'').trim(),s:(a.querySelector('.t2')||{}).textContent||'',k:SYN[h]||''})});
+    EXTRA.forEach(x=>{if(seen.has(x[0]))return;seen.add(x[0]);out.push({h:x[0],t:x[1],s:x[2],k:x[3]})});
+    return out;
+  }
+  function find(list,q){
+    const n=N(q);if(!n)return[];
+    return list.map(m=>{const t=N(m.t),s=N(m.s),k=m.k.toLowerCase().split(/\s+/).filter(Boolean);let sc=0;
+      if(t.includes(n))sc+=t.startsWith(n)?12:9;if(s.includes(n))sc+=4;
+      k.forEach(w=>{if(w===n)sc+=8;else if(w.includes(n)||(n.length>=2&&n.includes(w)))sc+=4});
+      return{m,sc}}).filter(x=>x.sc>0).sort((a,b)=>b.sc-a.sc).slice(0,8).map(x=>x.m);
+  }
+  function snip(t,q){const p=String(t||'').replace(/[#*_`>|]/g,' ').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1').replace(/\s+/g,' ').trim();const i=p.toLowerCase().indexOf(String(q).toLowerCase().trim());if(i<0)return E(p.slice(0,70))+(p.length>70?'…':'');const st=Math.max(0,i-24);return(st?'…':'')+E(p.slice(st,i))+'<mark>'+E(p.slice(i,i+q.trim().length))+'</mark>'+E(p.slice(i+q.trim().length,i+q.trim().length+50))+'…'}
+  ROUTES.more=function(v,a){
+    const r=_m.apply(this,arguments);
+    const mount=()=>{
+      if(v.querySelector('#msq'))return;const hero=v.querySelector('section.hero');if(!hero)return;
+      hero.insertAdjacentHTML('afterend',`<div class="gd-sbox ms-box"><input class="in" id="msq" type="search" placeholder="메뉴·규정 검색  예) 급여명세서, 연차, 택시" autocomplete="off"></div>
+        <div class="gd-pop ms-pop" id="mspop">${POP.map(w=>`<button data-w="${E(w)}">${E(w)}</button>`).join('')}</div><div id="msres"></div>`);
+      const inp=v.querySelector('#msq'),res=v.querySelector('#msres'),pop=v.querySelector('#mspop');let MENU=null,tm,seq=0;
+      const rest=()=>[...v.children].filter(el=>el!==hero&&!el.classList.contains('ms-box')&&el!==res&&el!==pop);
+      const draw=()=>{
+        const q=inp.value.trim(),my=++seq;MENU=MENU||menus(v);
+        rest().forEach(el=>el.style.display=q?'none':'');pop.style.display=q?'none':'';
+        if(!q){res.innerHTML='';return}
+        const ms=find(MENU,q);
+        const mh=ms.length?`<div class="sec"><h2>메뉴 ${ms.length}</h2></div><div class="list">${ms.map(m=>`<a class="li" href="${E(m.h)}"><div class="m"><div class="t1">${E(m.t)}</div><div class="t2">${E(m.s)}</div></div><span class="ar">${I('next',18)}</span></a>`).join('')}</div>`:'';
+        const tail=`<a class="li" href="#/guide/s/${encodeURIComponent(q)}"><div class="m"><div class="t1">HR 가이드에서 '${E(q)}' 전부 보기</div><div class="t2">휴가 · 급여 · 복지 · 대관 응대 · 디자인</div></div><span class="ar">${I('next',18)}</span></a>`;
+        res.innerHTML=mh+`<div class="sec"><h2>가이드</h2></div><div class="list" id="msg"><div class="sk" style="height:50px"></div></div>`;
+        const G=window.TSB_GUIDE;
+        if(!G){v.querySelector('#msg').innerHTML=tail;return}
+        G.load().then(()=>{if(my!==seq)return;const el=v.querySelector('#msg');if(!el)return;const hs=G.search(q).slice(0,4);
+          el.innerHTML=hs.map(x=>`<a class="li gd-hit" href="#/guide/${E(x.it.id)}/${x.s.i}" data-q="${E(q)}"><div class="m"><div class="t1">${E(x.it.title)}${x.s.i?` <span class="gd-path">› ${E(x.s.h)}</span>`:''}</div><div class="t2 w">${snip(x.s.text||x.it.summary,q)}</div></div><span class="ar">${I('next',18)}</span></a>`).join('')+tail;
+          if(!ms.length&&!hs.length)el.insertAdjacentHTML('beforebegin',`<div class="blk"><div class="empty">'${E(q)}'에 맞는 메뉴를 못 찾았어요. 없는 기능이면 <a class="u" href="#/feedback">의견 보내기</a>로 알려 주세요.</div></div>`)
+        }).catch(()=>{const el=v.querySelector('#msg');if(el)el.innerHTML=tail});
+      };
+      inp.oninput=()=>{clearTimeout(tm);tm=setTimeout(draw,140)};
+      pop.onclick=ev=>{const b=ev.target.closest('button');if(!b)return;inp.value=b.dataset.w;draw()};
+      res.onclick=ev=>{const h=ev.target.closest('a.gd-hit');if(h)sessionStorage.setItem('gd_q',h.dataset.q||'')};
+    };
+    mount();setTimeout(mount,350);return r;
+  };
+})();
