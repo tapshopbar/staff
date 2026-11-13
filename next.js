@@ -347,7 +347,7 @@ ROUTES['']=function(v){const r=home.apply(this,arguments);try{v.querySelector('.
     ['최소 이용 금액', '최소 금액', '미니멈', '최소이용'], ['패키지', '가격', '얼마', '견적', '1인'], ['콜키지', '외부 와인', '와인 반입'], ['세금계산서', '계산서', '현금영수증', '증빙'],
     ['데코', '꽃', '포토존', '장식', '풍선'], ['마이크', '빔', '프로젝터', '음향', '미디어월'], ['폰트', '글꼴', '서체'], ['사이즈', '해상도', '규격', '크기'], ['색', '컬러', '색상']
   ];
-  const POP = ['연차', '육아휴직', '급여일', '증명서', '야간수당', '퇴사', '대관 가격', '예약금', '폰트'];
+  const POP = ['연차', '육아휴직', '급여일', '증명서', '야간수당', '퇴사', '경조금', '폰트'];
   const RV = '대관 응대';
   const CATS = [];
   const norm = s => String(s || '').toLowerCase().replace(/\s+/g, '');
@@ -431,14 +431,16 @@ ROUTES['']=function(v){const r=home.apply(this,arguments);try{v.querySelector('.
 
   ROUTES.guide = function (v, a) {
     const parts = String(a || '').split('/'), mode = parts[0] || '';
-    v.innerHTML = `${back(mode && mode !== 's' && mode !== 'c' ? '#/guide' : '#/more', mode && mode !== 's' && mode !== 'c' ? '가이드' : '더보기')}<div id="gdv">${loading()}</div>`;
+    if (mode === 'c' && decodeURIComponent(parts.slice(1).join('/')) === RV) { try { history.replaceState(null, '', '#/rental'); } catch (x) {} return ROUTES.rental(v); }
+    const isRv = /^rv/.test(mode);
+    v.innerHTML = `${back(isRv ? '#/rental' : (mode && mode !== 's' && mode !== 'c' ? '#/guide' : '#/more'), isRv ? '대관 응대' : (mode && mode !== 's' && mode !== 'c' ? '가이드' : '더보기'))}<div id="gdv">${loading()}</div>`;
     load().then(() => { const el = $('#gdv'); if (!el) return; if (!mode || mode === 's' || mode === 'c') list(el, mode === 's' ? parts.slice(1).join('/') : '', mode === 'c' ? parts.slice(1).join('/') : ''); else doc(el, mode, parts[1]); })
       .catch(x => { const el = $('#gdv'); if (el) el.innerHTML = `<div class="blk"><div class="empty">가이드를 불러오지 못했어요. ${e(x.message || '')}</div></div>`; });
   };
   function list(el, q, cat) {
     const its = G.items;
-    el.innerHTML = `<div class="title"><h1>가이드 <span class="gd-beta">BETA</span></h1><p>HR · 대관 응대 · 디자인을 한곳에서 찾아요. 빠진 내용은 질문하기로 물어봐 주세요.</p></div>
-      <div class="gd-sbox"><input class="in" id="gq" type="search" placeholder="예) 육아휴직, 대관 예약금, 폰트" value="${e(q)}" autocomplete="off"></div>
+    el.innerHTML = `<div class="title"><h1>HR 가이드 <span class="gd-beta">BETA</span></h1><p>휴가 · 급여 · 복지 · 규칙을 한곳에서 찾아요. 빠진 내용은 질문하기로 물어봐 주세요.</p></div>
+      <div class="gd-sbox"><input class="in" id="gq" type="search" placeholder="예) 육아휴직, 급여일, 경조금" value="${e(q)}" autocomplete="off"></div>
       <div class="gd-pop" id="gpop">${POP.map(w => `<button data-w="${e(w)}">${e(w)}</button>`).join('')}</div>
       <div id="gres"></div>`;
     const inp = $('#gq'), res = $('#gres');
@@ -447,10 +449,10 @@ ROUTES['']=function(v){const r=home.apply(this,arguments);try{v.querySelector('.
       if (!qq) {
         const c = cat && CATS.includes(cat) ? cat : '';
         const rv1 = its.find(it => it.cat === RV);
-        const banner = !c && rv1 ? `<a class="gd-rvb" href="#/guide/c/${encodeURIComponent(RV)}"><span class="k">손님 대관 질문</span><b>대관 문의, 답을 찾아 복사해서 보내요</b><span class="s">가격 · 예약금 · 환불 · 반입 · 링크 ${its.filter(it => it.cat === RV).reduce((n, it) => n + (it.qa || []).length, 0)}개</span><span class="ar">${I('next', 20)}</span></a>` : '';
-        res.innerHTML = banner + `<div class="gd-cats">${CATS.map(k => `<a href="#/guide/c/${encodeURIComponent(k)}" class="${k === c ? 'on' : ''}">${k}</a>`).join('')}</div>` +
-          CATS.filter(k => !c || k === c).map(k => { const xs = its.filter(it => (it.cat || '') === k); if (!xs.length) return ''; return `<div class="sec"><h2>${e(k)}</h2></div><div class="list">${xs.map(it => `<a class="li" href="#/guide/${e(it.id)}"><div class="m"><div class="t1">${e(it.title)}</div><div class="t2">${e(it.summary || '')}</div></div><span class="ar">${I('next', 18)}</span></a>`).join('')}</div>`; }).join('') +
-          `<p class="note" style="padding:18px var(--pad) 0">HR 인사팀 HARPER · 대관 본사 영업 · 디자인 마케팅팀${G.updated ? ' · 최종수정 ' + e(G.updated) : ''}</p>` + foot();
+        const banner = '' && rv1 ? `<a class="gd-rvb" href="#/guide/c/${encodeURIComponent(RV)}"><span class="k">손님 대관 질문</span><b>대관 문의, 답을 찾아 복사해서 보내요</b><span class="s">가격 · 예약금 · 환불 · 반입 · 링크 ${its.filter(it => it.cat === RV).reduce((n, it) => n + (it.qa || []).length, 0)}개</span><span class="ar">${I('next', 20)}</span></a>` : '';
+        res.innerHTML = banner + `<div class="gd-cats">${CATS.filter(k => k !== RV).map(k => `<a href="#/guide/c/${encodeURIComponent(k)}" class="${k === c ? 'on' : ''}">${k}</a>`).join('')}</div>` +
+          CATS.filter(k => k !== RV && (!c || k === c)).map(k => { const xs = its.filter(it => (it.cat || '') === k); if (!xs.length) return ''; return `<div class="sec"><h2>${e(k)}</h2></div><div class="list">${xs.map(it => `<a class="li" href="#/guide/${e(it.id)}"><div class="m"><div class="t1">${e(it.title)}</div><div class="t2">${e(it.summary || '')}</div></div><span class="ar">${I('next', 18)}</span></a>`).join('')}</div>`; }).join('') +
+          `<p class="note" style="padding:18px var(--pad) 0">HR 인사팀 HARPER · 디자인 마케팅팀 · 대관 응대는 더보기·홈 '대관 문의'${G.updated ? ' · 최종수정 ' + e(G.updated) : ''}</p>` + foot();
         return;
       }
       const r = search(qq);
@@ -526,6 +528,33 @@ ROUTES['']=function(v){const r=home.apply(this,arguments);try{v.querySelector('.
   const mo = new MutationObserver(() => { const v = document.getElementById('view'); if (v) relink(v); });
   const start = () => { const v = document.getElementById('view'); mo.observe(document.body, { childList: true, subtree: true }); if (v) relink(v); }; /* 11/13: 화면 틀이 다시 그려지면 #view가 새로 생겨 노션 링크가 안 바뀌던 문제 → body 관찰 */
   start();
+
+  /* 11/13: 대관 응대를 HR 가이드에서 분리 → #/rental (홈 '대관 문의' 타일 · 더보기) */
+  ROUTES.rental = function (v) {
+    v.innerHTML = `${back('#/more', '더보기')}<div id="rvv">${loading()}</div>`;
+    load().then(() => {
+      const el = $('#rvv'); if (!el) return;
+      const xs = G.items.filter(it => it.cat === RV), n = xs.reduce((k, it) => k + (it.qa || []).length, 0);
+      el.innerHTML = `<div class="title"><h1>대관 응대 <span class="gd-beta">BETA</span></h1><p>손님이 대관을 물어보면 여기서 답을 찾아 <b>복사</b>해서 카톡·문자로 보내요. 질문 ${n}개.</p></div>
+        <div class="gd-sbox"><input class="in" id="rq" type="search" placeholder="예) 예약금, 최소 금액, 와인 반입" autocomplete="off"></div>
+        <div class="gd-pop" id="rpop">${['가격', '예약금', '환불', '콜키지', '인원', '주차'].map(w => `<button data-w="${e(w)}">${e(w)}</button>`).join('')}</div>
+        <div id="rres"></div>`;
+      const inp = $('#rq'), res = $('#rres');
+      const draw = () => {
+        const q = inp.value.trim();
+        if (!q) { res.innerHTML = `<div class="list" style="margin-top:14px">${xs.map(it => `<a class="li" href="#/guide/${e(it.id)}"><div class="m"><div class="t1">${e(it.title)}</div><div class="t2">${e(it.summary || ((it.qa || []).length + '개 질문'))}</div></div><span class="ar">${I('next', 18)}</span></a>`).join('')}</div>
+          <div class="gd-foot"><b>여기 없는 질문이 오면</b><p>손님께는 "확인하고 바로 알려 드릴게요"라고 하고, 본사에 물어봐 주세요. 받은 질문은 이 목록에 추가해요.</p><a class="pill line" href="#/ask" data-gq="1">본사에 질문하기</a></div>`;
+          const g = res.querySelector('[data-gq]'); if (g) g.onclick = () => sessionStorage.setItem('ask_prefill', '[대관 질문] '); return; }
+        const r = search(q).filter(x => x.it.cat === RV);
+        res.innerHTML = r.length ? `<div class="sec"><h2>찾은 질문 ${r.length}</h2></div><div class="list">${r.map(x => `<a class="li gd-hit" href="#/guide/${e(x.it.id)}/${x.s.i}" data-q="${e(q)}"><div class="m"><div class="t1">${e(x.it.title)}${x.s.i ? ` <span class="gd-path">› ${e(x.s.h)}</span>` : ''}</div><div class="t2 w">${snippet(x.s.text || x.it.summary, q)}</div></div><span class="ar">${I('next', 18)}</span></a>`).join('')}</div>`
+          : `<div class="blk"><div class="empty">'${e(q)}'에 맞는 답을 못 찾았어요. 손님께는 "확인하고 알려 드릴게요"라고 하고 <a class="u" href="#/ask">본사에 질문하기</a>로 물어봐 주세요.</div></div>`;
+      };
+      let t; inp.oninput = () => { clearTimeout(t); t = setTimeout(draw, 140); };
+      $('#rpop').onclick = ev => { const b = ev.target.closest('button'); if (!b) return; inp.value = b.dataset.w; draw(); };
+      res.onclick = ev => { const a = ev.target.closest('a.gd-hit'); if (a) sessionStorage.setItem('gd_q', a.dataset.q || ''); };
+      draw();
+    }).catch(x => { const el = $('#rvv'); if (el) el.innerHTML = `<div class="blk"><div class="empty">불러오지 못했어요. ${e(x.message || '')}</div></div>`; });
+  };
   window.TSB_GUIDE = { search, md, load, G };
 })();
 
@@ -706,11 +735,12 @@ ROUTES['']=function(v){const r=_home.apply(this,arguments);try{const x=(S.data&&
     ['#/policy','회사 정책','규칙 · 정책','정책 규칙 규정'],
     ['#/memo','정산 메모','오늘 마감 메모','정산 마감 메모 현금 일정산'],
     ['#/contract','내 계약서','근로계약서 읽기 · 서명','계약서 근로계약 서명'],
-    ['#/guide','HR 가이드','휴가 · 급여 · 복지 · 대관 응대','가이드 규정 복지 대관 디자인 매뉴얼'],
+    ['#/guide','HR 가이드','휴가 · 급여 · 복지 · 규칙','가이드 규정 복지 디자인 매뉴얼'],
+    ['#/rental','대관 응대','손님 대관 질문 · 답 복사','대관 파티 단체 행사 예약금 렌탈 통대관'],
     ['#/slack','슬랙 열기','회사 슬랙','슬랙 slack 메신저']
   ];
   /* 더보기 목록 메뉴에 붙일 비슷한 말 (주소 기준) */
-  const SYN={'#/payslip':'급여 월급 명세서 돈 임금 급여일','#/cert':'재직증명서 경력증명서 서류 증명','#/att':'출근 퇴근 출퇴근 gps 위치 지각','#/cal':'휴가 연차 누가 쉬어','#/swap':'대타 교대 근무바꾸기 바꿔','#/avail':'근무신청 휴무 희망 스케줄신청 쉬는날','#/exp':'경비 영수증 택시 지급','#/notice':'공지 매뉴얼 필독 안내','#/feedback':'의견 건의 불편 버그 제안 고쳐','#/incident':'사고 클레임 파손 다침 컴플레인','#/quiz':'와인 퀴즈 랭킹 레벨','#/kudos':'칭찬 감사 고마워','#/log':'업무일지 퇴근한줄 기록 일지','#/onb':'온보딩 입사 신입 체크','#/check/오픈':'오픈 마감 체크리스트 사진','#/schedule':'근무표 스케줄 시간표','#/console':'운영 콘솔 전지점','#/close':'근태 마감 월말','#/pay':'경비 지급 이체','#/notice/new':'공지 쓰기 작성','#/admin':'직원 관리 입사일 역할','#/help':'지원 헬프 인력'};
+  const SYN={'#/rental':'대관 파티 단체 행사 예약금 렌탈 통대관 가격 환불 콜키지','#/guide':'가이드 규정 복지 매뉴얼 hr','#/payslip':'급여 월급 명세서 돈 임금 급여일','#/cert':'재직증명서 경력증명서 서류 증명','#/att':'출근 퇴근 출퇴근 gps 위치 지각','#/cal':'휴가 연차 누가 쉬어','#/swap':'대타 교대 근무바꾸기 바꿔','#/avail':'근무신청 휴무 희망 스케줄신청 쉬는날','#/exp':'경비 영수증 택시 지급','#/notice':'공지 매뉴얼 필독 안내','#/feedback':'의견 건의 불편 버그 제안 고쳐','#/incident':'사고 클레임 파손 다침 컴플레인','#/quiz':'와인 퀴즈 랭킹 레벨','#/kudos':'칭찬 감사 고마워','#/log':'업무일지 퇴근한줄 기록 일지','#/onb':'온보딩 입사 신입 체크','#/check/오픈':'오픈 마감 체크리스트 사진','#/schedule':'근무표 스케줄 시간표','#/console':'운영 콘솔 전지점','#/close':'근태 마감 월말','#/pay':'경비 지급 이체','#/notice/new':'공지 쓰기 작성','#/admin':'직원 관리 입사일 역할','#/help':'지원 헬프 인력'};
   const POP=['급여명세서','연차','증명서','경비','근무표','대타'];
   function menus(v){
     const out=[],seen=new Set();
@@ -755,4 +785,10 @@ ROUTES['']=function(v){const r=_home.apply(this,arguments);try{const x=(S.data&&
     };
     mount();setTimeout(mount,350);return r;
   };
+})();
+
+/* 11/13: 대관 응대 입구 — 홈 매장·성장 '대관 문의' 타일(와인 퀴즈 옆) + 더보기 목록 */
+(function(){
+  const h=ROUTES[''];if(h)ROUTES['']=function(v){const r=h.apply(this,arguments);const add=()=>{try{if(v.querySelector('.tile[href="#/rental"]'))return;const q=v.querySelector('.tile[href="#/quiz"]');if(q)q.insertAdjacentHTML('afterend',`<a class="tile w" href="#/rental"><b>대관<br>문의</b><small>손님 답 복사</small></a>`)}catch(e){}};add();setTimeout(add,300);return r};
+  const m=ROUTES.more;if(m)ROUTES.more=function(v){const r=m.apply(this,arguments);const add=()=>{if(v.querySelector('a.li[href="#/rental"]'))return;const g=v.querySelector('a.li[href="#/guide"],a.li[href="#/guide/01"]')||v.querySelector('a.li[href="#/avail"]');if(!g)return;const n=document.createElement('a');n.className='li';n.href='#/rental';n.innerHTML=`<div class="m"><div class="t1">대관 응대</div><div class="t2">손님 대관 질문 · 답 복사해서 보내기</div></div><span class="ar">${I('next',18)}</span>`;g.insertAdjacentElement('afterend',n)};add();setTimeout(add,400);return r};
 })();
