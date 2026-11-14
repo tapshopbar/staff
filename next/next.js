@@ -204,7 +204,7 @@ ROUTES.sup=function(v,type){
     for(const x of c.f){let val;
       if(x.opts){val=sel[x.k]||'';if(val==='기타'){const e=($('#sf_'+x.k+'_etc').value||'').trim();if(!e)return toast(x.l+' 기타 내용을 적어 주세요');val='기타: '+e}}
       else val=($('#sf_'+x.k).value||'').trim();
-      if(x.req&&!val)return toast(x.date?x.l+'을 골라 주세요':x.opts?x.l+'을 골라 주세요':x.l+'을 적어 주세요');
+      if(x.req&&!val){const L=x.l.replace(' (선택)',''),ch=L.charCodeAt(L.length-1),j=(ch>=0xAC00&&ch<=0xD7A3&&(ch-0xAC00)%28)?'을':'를';return toast(L+j+(x.date||x.opts?' 골라 주세요':' 적어 주세요'))}
       vals.push([x.l.replace(' (선택)',''),val])}
     const memo=($('#sf_memo').value||'').trim();
     const detail=vals.filter(x=>x[1]).map(x=>x[0]+': '+x[1]).join(' / ')+(memo?' / 메모: '+memo:'');
