@@ -170,7 +170,7 @@
   const isBoss = () => ['이사', '대표', '임원'].includes(me().role);
   const HKEY = 'tsbp_hire_pv';
   const hs = () => { try { return JSON.parse(localStorage.getItem(HKEY) || '{}'); } catch (x) { return {}; } };
-  const flow = cur => `<div class="hr-flow">${['지원서 접수', '점장 면접', '매니저 검토', '최종 승인 · 장분도 이사', '법원 허가', '계약 · 입사 준비'].map((x, i) => `<div class="${i === 3 ? 'me' : i === 4 ? 'ct' : ''}" ${i === cur ? 'style="outline:2px solid var(--yellow)"' : ''}>${x}</div>`).join('')}</div>`;
+  const flow = cur => `<div class="hr-flow">${['지원서 접수', '점장 면접', '매니저 검토', '최종 승인 · TOM', '법원 허가', '계약 · 입사 준비'].map((x, i) => `<div class="${i === 3 ? 'me' : i === 4 ? 'ct' : ''}" ${i === cur ? 'style="outline:2px solid var(--yellow)"' : ''}>${x}</div>`).join('')}</div>`;
   const SIL = '<svg viewBox="0 0 100 100" width="100%" height="100%"><circle cx="50" cy="38" r="18" fill="rgba(255,255,255,.85)"/><path d="M16 100c2-22 16-34 34-34s32 12 34 34z" fill="rgba(255,255,255,.85)"/></svg>';
   const av = c => `<div class="fs-av" style="align-items:flex-end">${c.photo ? `<img src="${c.photo}" alt="">` : SIL}</div>`;
 

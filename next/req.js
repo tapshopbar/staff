@@ -86,7 +86,7 @@ ROUTES.request=async function(v,arg){
    ${R.ready===false?soon():''}
    <a class="rqmine" href="#/myreq"><div><b>내 요청</b><span>${open?`진행 중 ${open}건 · 번호별 진행 상황`:'보낸 요청과 신청을 한곳에서'}</span></div><i>${I('next',18)}</i></a>
    ${c.groups.map(g=>`<div class="sec"><h2>${esc(g.title)}</h2></div><div class="rqg">${g.items.map(it=>`<a class="rqi ${it.mode==='link'?'lk':''}" href="${esc(hrefOf(it))}"><span class="rqic">${ico(it)}</span><span class="rqt"><b>${esc(it.title)}</b><small>${esc(it.desc||'')}</small>${it.examples&&it.examples.length?`<em>예) ${esc(it.examples[0].replace(/^예\)\s*/,''))}</em>`:''}</span><span class="rqgo">${it.mode==='link'?'바로가기':(it.team?esc(it.team):'')}</span></a>`).join('')}</div>`).join('')}
-   <p class="note rqfoot">급한 건(화재 · 누수 · 정전 · 가스 냄새)은 먼저 점장님과 본사에 전화하고, 그다음 요청을 남겨 주세요.</p>`;
+   <p class="note rqfoot">급한 건(화재 · 누수 · 정전 · 가스 냄새)은 먼저 점장님과 서포트센터에 전화하고, 그다음 요청을 남겨 주세요.</p>`;
 };
 /* ── 요청 양식 ── */
 async function reqNew(v,kind){kind=decodeURIComponent(kind);
@@ -103,7 +103,7 @@ async function reqNew(v,kind){kind=decodeURIComponent(kind);
     if(f.type==='money')return lab+`<input class="in" inputmode="numeric" id="${id}" placeholder="${esc(f.placeholder||'숫자만')}">`;
     return lab+`<input class="in" id="${id}" placeholder="${esc(f.placeholder||'')}">`};
   const hasPhoto=(it.fields||[]).some(f=>f.type==='photo');
-  v.innerHTML=`${back('#/request','요청하기')}<div class="title"><div class="rqhd"><span class="rqic big">${ico(it,26)}</span><div><h1>${esc(it.title)}</h1><p>담당 ${esc(it.team||'본사')} · ${esc(typeof brLabel==='function'?brLabel(me.branch):me.branch)}</p></div></div></div>
+  v.innerHTML=`${back('#/request','요청하기')}<div class="title"><div class="rqhd"><span class="rqic big">${ico(it,26)}</span><div><h1>${esc(it.title)}</h1><p>담당 ${esc(it.team||'서포트센터')} · ${esc(typeof brLabel==='function'?brLabel(me.branch):me.branch)}</p></div></div></div>
    ${R.ready===false?soon():''}
    <div class="form">
     <label class="f">제목 <em>(한 줄)</em></label><input class="in" id="rf__title" placeholder="${esc(it.examples&&it.examples[0]?'예) '+it.examples[0].replace(/^예\)\s*/,''):'예) ['+me.branch+'] 무엇이 + 어떻게')}">
@@ -127,7 +127,7 @@ async function reqNew(v,kind){kind=decodeURIComponent(kind);
 }
 function done(v,r,it,title){
   v.innerHTML=`<div class="rqdone">${dots}<div class="k">접수 완료</div><div class="no">${esc(r.id)}</div><p class="tt">${esc(title)}</p>
-   <dl><dt>담당</dt><dd>${esc(r.team||it.team||'본사')}</dd><dt>첫 답</dt><dd>${esc(r.dueText||dueK(r.due)||'다음 영업일 18시')}까지</dd></dl>
+   <dl><dt>담당</dt><dd>${esc(r.team||it.team||'서포트센터')}</dd><dt>첫 답</dt><dd>${esc(r.dueText||dueK(r.due)||'다음 영업일 18시')}까지</dd></dl>
    <div class="slk"><b>알림은 Slack으로 와요</b><span>담당이 정해지고 상태가 바뀔 때마다 TSB CREW가 DM을 보내요. 누르면 이 화면으로 와요.</span></div></div>
    <div class="btnrow"><a class="pill line" href="#/">홈으로</a><a class="pill rqbtn" href="#/ticket/${encodeURIComponent(r.id)}">진행 상황 보기</a></div>`;
   window.scrollTo(0,0);

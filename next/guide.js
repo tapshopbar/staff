@@ -120,7 +120,7 @@
         const banner = !c && rv1 ? `<a class="gd-rvb" href="#/guide/c/${encodeURIComponent(RV)}"><span class="k">손님 대관 질문</span><b>대관 문의, 답을 찾아 복사해서 보내요</b><span class="s">가격 · 예약금 · 환불 · 반입 · 링크 ${its.filter(it => it.cat === RV).reduce((n, it) => n + (it.qa || []).length, 0)}개</span><span class="ar">${I('next', 20)}</span></a>` : '';
         res.innerHTML = banner + `<div class="gd-cats">${CATS.map(k => `<a href="#/guide/c/${encodeURIComponent(k)}" class="${k === c ? 'on' : ''}">${k}</a>`).join('')}</div>` +
           CATS.filter(k => !c || k === c).map(k => { const xs = its.filter(it => (it.cat || '') === k); if (!xs.length) return ''; return `<div class="sec"><h2>${e(k)}</h2></div><div class="list">${xs.map(it => `<a class="li" href="#/guide/${e(it.id)}"><div class="m"><div class="t1">${e(it.title)}</div><div class="t2">${e(it.summary || '')}</div></div><span class="ar">${I('next', 18)}</span></a>`).join('')}</div>`; }).join('') +
-          `<p class="note" style="padding:18px var(--pad) 0">HR 인사팀 HARPER · 대관 본사 영업 · 디자인 마케팅팀${G.updated ? ' · 최종수정 ' + e(G.updated) : ''}</p>` + foot();
+          `<p class="note" style="padding:18px var(--pad) 0">HR 인사팀 HARPER · 대관 서포트센터 영업 · 디자인 마케팅팀${G.updated ? ' · 최종수정 ' + e(G.updated) : ''}</p>` + foot();
         return;
       }
       const r = search(qq);
@@ -167,8 +167,8 @@
           <div class="gdq-act"><button class="pill wine" data-cp="${k}">복사</button>${navigator.share ? `<button class="pill line" data-sh="${k}">보내기</button>` : ''}</div></div>
         ${x.note ? `<div class="gdq-note"><span class="gdq-lab2">직원만</span>${autolink(x.note)}</div>` : ''}
       </section>`).join('')}</article>
-      <p class="note" style="padding:14px var(--pad) 0">담당 ${e(it.owner || '본사')} · 최종수정 ${e(it.updated || G.updated || '')} · 새 질문은 계속 추가해요</p>
-      <div class="gd-foot"><b>여기 없는 질문이 오면</b><p>손님께는 "확인하고 바로 알려 드릴게요"라고 하고, 본사에 물어봐 주세요. 받은 질문은 이 목록에 추가해요.</p><a class="pill line" href="#/ask" data-gq="1">본사에 질문하기</a></div>`;
+      <p class="note" style="padding:14px var(--pad) 0">담당 ${e(it.owner || '서포트센터')} · 최종수정 ${e(it.updated || G.updated || '')} · 새 질문은 계속 추가해요</p>
+      <div class="gd-foot"><b>여기 없는 질문이 오면</b><p>손님께는 "확인하고 바로 알려 드릴게요"라고 하고, 서포트센터에 물어봐 주세요. 받은 질문은 이 목록에 추가해요.</p><a class="pill line" href="#/ask" data-gq="1">서포트센터에 질문하기</a></div>`;
     el.querySelector('.gdq-doc').onclick = ev => {
       const c = ev.target.closest('[data-cp]'), s2 = ev.target.closest('[data-sh]');
       if (c) { copyText(it.qa[+c.dataset.cp].a); c.textContent = '복사됨'; setTimeout(() => { c.textContent = '복사'; }, 1600); }
