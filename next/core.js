@@ -40,7 +40,8 @@ const pd = s=>{const [y,m,d]=String(s).split('-').map(Number);return new Date(y,
 const fmtDay = s=>{if(!s)return'';const dt=pd(s);return `${dt.getMonth()+1}.${dt.getDate()} (${WD[dt.getDay()]})`};
 const period = r=> r.start===r.end||!r.end ? fmtDay(r.start)+(r.half?` ${r.half}`:'') : `${fmtDay(r.start)} – ${fmtDay(r.end)}`;
 const won = n=>(Number(n)||0).toLocaleString('ko-KR')+'원';
-const ava = (name,role,size)=>name==='서포트센터'?`<div class="ava sc" style="background:#141B33;font-size:${size?Math.max(9,Math.round(size*.3)):11}px;letter-spacing:.04em;${size?`width:${size}px;height:${size}px`:''}">TSB</div>`:`<div class="ava" style="background:${ROLECOL[role]||'#C99A9E'};${size?`width:${size}px;height:${size}px`:''}">${esc((name||'?').slice(-2))}</div>`;
+const avT=n=>{n=String(n||'?').trim();if(/^[A-Za-z][A-Za-z .'-]*$/.test(n)){const l=n.replace(/[^A-Za-z]/g,'');return l.length<=3?l.toUpperCase():l.slice(0,2).toUpperCase()}return n.slice(-2)};
+const ava = (name,role,size)=>name==='서포트센터'?`<div class="ava sc" style="background:#141B33;font-size:${size?Math.max(9,Math.round(size*.3)):11}px;letter-spacing:.04em;${size?`width:${size}px;height:${size}px`:''}">TSB</div>`:`<div class="ava" style="background:${ROLECOL[role]||'#C99A9E'};${size?`width:${size}px;height:${size}px`:''}${avT(name).length>2?`;font-size:${size?Math.max(9,Math.round(size*.3)):11}px;letter-spacing:.04em`:''}">${esc(avT(name))}</div>`;
 const chip = (st,label)=>`<span class="chip c-${esc(st)}">${esc(label||st)}</span>`;
 const monday = d=>{const x=new Date(d);const k=(x.getDay()+6)%7;x.setDate(x.getDate()-k);return ymd(x)};
 const addD = (s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return ymd(d)};
