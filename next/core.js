@@ -40,7 +40,7 @@ const pd = s=>{const [y,m,d]=String(s).split('-').map(Number);return new Date(y,
 const fmtDay = s=>{if(!s)return'';const dt=pd(s);return `${dt.getMonth()+1}.${dt.getDate()} (${WD[dt.getDay()]})`};
 const period = r=> r.start===r.end||!r.end ? fmtDay(r.start)+(r.half?` ${r.half}`:'') : `${fmtDay(r.start)} – ${fmtDay(r.end)}`;
 const won = n=>(Number(n)||0).toLocaleString('ko-KR')+'원';
-const ava = (name,role,size)=>`<div class="ava" style="background:${ROLECOL[role]||'#C99A9E'};${size?`width:${size}px;height:${size}px`:''}">${esc((name||'?').slice(-2))}</div>`;
+const ava = (name,role,size)=>name==='서포트센터'?`<div class="ava sc" style="background:#141B33;font-size:${size?Math.max(9,Math.round(size*.3)):11}px;letter-spacing:.04em;${size?`width:${size}px;height:${size}px`:''}">TSB</div>`:`<div class="ava" style="background:${ROLECOL[role]||'#C99A9E'};${size?`width:${size}px;height:${size}px`:''}">${esc((name||'?').slice(-2))}</div>`;
 const chip = (st,label)=>`<span class="chip c-${esc(st)}">${esc(label||st)}</span>`;
 const monday = d=>{const x=new Date(d);const k=(x.getDay()+6)%7;x.setDate(x.getDate()-k);return ymd(x)};
 const addD = (s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return ymd(d)};
@@ -402,7 +402,7 @@ ROUTES.new=function(v,g){
 function lineHTML(owner,steps,report,cur){
   let h=`<div class="line"><div class="ln done">${ava(owner.name,owner.role)}<div class="nm">${esc(owner.name)}</div><div class="rl">신청</div></div>`;
   steps.forEach((s,i)=>{const cls=s.status==='승인'?'done':s.status==='반려'?'rej':i===cur?'cur':'';
-    h+=`<div class="arrow"></div><div class="ln ${cls}">${ava(s.name,s.role)}<div class="nm">${esc(s.name)}</div><div class="rl">${esc(s.role)}</div>${s.status!=='대기'||i===cur?`<div class="st" style="color:${s.status==='승인'?'var(--ok)':s.status==='반려'?'var(--bad)':'var(--warn)'}">${s.status==='대기'?'결재중':s.status}</div>`:''}</div>`});
+    h+=`<div class="arrow"></div><div class="ln ${cls}">${ava(s.name,s.role)}<div class="nm">${esc(s.name)}</div><div class="rl">${s.name==='서포트센터'?'':esc(s.role)}</div>${s.status!=='대기'||i===cur?`<div class="st" style="color:${s.status==='승인'?'var(--ok)':s.status==='반려'?'var(--bad)':'var(--warn)'}">${s.status==='대기'?'결재중':s.status}</div>`:''}</div>`});
   (report||[]).forEach(p=>{h+=`<div class="arrow" style="background:repeating-linear-gradient(90deg,var(--ink) 0 3px,transparent 3px 6px)"></div><div class="ln rep">${ava(p.name,p.role)}<div class="nm">${esc(p.name)}</div><div class="rl">보고</div></div>`});
   return h+'</div>';
 }
@@ -413,7 +413,7 @@ ROUTES.req=async function(v,id){
   v.innerHTML=`${back()}<div class="title"><div style="display:flex;justify-content:space-between;align-items:center">${chip(r.status,r.status==='진행중'?stepLabel(r):r.status)}<span class="note" style="padding:0">${esc(r.id)}</span></div>
    <h1 style="margin-top:12px">${esc(r.type)} ${r.group==='지원'?'':`<span style="color:var(--mute)">${r.days}일</span>`}</h1><p>${r.group==='지원'?(typeof SUP_NOTE!=='undefined'&&r.type!=='건강검진'?SUP_NOTE:''):period(r)}</p></div>
    <div class="form"><label class="f">결재선</label>${lineHTML({name:r.name,role:r.email===S.data.me.email?S.data.me.role:'직원'},r.steps,r.report,r.status==='진행중'?r.stepIdx:-1)}
-   ${r.notify.length?`<p class="note" style="padding:4px 0">알림: ${r.notify.map(n=>esc(n.name)+' '+esc(n.role)).join(', ')}</p>`:''}
+   ${r.notify.length?`<p class="note" style="padding:4px 0">알림: ${r.notify.map(n=>esc(n.name)+(n.name==='서포트센터'?'':' '+esc(n.role))).join(', ')}</p>`:''}
    <dl class="kv" style="margin-top:18px"><dt>신청자</dt><dd>${esc(r.name)} · ${esc(brLabel(r.branch))}</dd><dt>신청일</dt><dd>${esc(String(r.at).slice(0,16))}</dd><dt>사유</dt><dd>${esc(r.reason||'-')}</dd>
      ${r.proof?`<dt>증빙</dt><dd><a class="u" href="${esc(r.proof)}" target="_blank" rel="noopener">열기</a></dd>`:''}
      ${r.balance&&r.balance.known?`<dt>잔여 연차</dt><dd>${r.balance.remain}일 <span style="color:var(--mute);font-weight:600">(발생 ${r.balance.granted} · 사용 ${r.balance.used})</span></dd>`:''}</dl>
