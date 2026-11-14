@@ -175,21 +175,37 @@ ROUTES.music=function(v){const me=(S.data&&S.data.me)||{};
 /* ── 지원 신청: 명함 · 근무복 · 건강검진 완료 (2026-11-10) ── */
 const SUP_NOTE='회사 비용이 나가는 신청이라 승인 후 발주까지 2~3주 걸릴 수 있어요.';
 const SUP={
- '명함':{d:'영업·대관 미팅이 잦은 분께 먼저 만들어 드려요.',f:[['en','영문 이름','예) Minji Kim'],['ti','명함에 넣을 직함','예) 청계점 점장 / Store Manager'],['ph','명함에 넣을 연락처','회사 메일만 넣으려면 비워 두세요'],['qt','수량','기본 1통(100장)']]},
- '근무복':{d:'신규 입사, 교체(낡음·사이즈 변경), 분실 때 신청해요.',f:[['it','품목','예) 앞치마, 셔츠, 조리복'],['sz','사이즈 (필수)','예) M / 95 · 앞치마처럼 사이즈 없으면 프리'],['qt','수량','예) 1'],['why','사유','신규 / 교체 / 분실']]},
- '건강검진':{d:'국가건강검진을 받았다면 완료 날짜만 알려 주세요. 회사는 검진 결과를 받지 않아요. 결과지는 올리지 마세요.',f:[['dt','검진 받은 날','예) 2026-11-08',1],['org','검진 기관 (선택)','예) OO병원'],['kind','종류','일반 / 특수 / 기타']]}
+ '명함':{d:'영업·대관 미팅이 잦은 분께 먼저 만들어 드려요.',f:[
+   {k:'en',l:'영문 이름',ph:'예) Minji Kim',req:1},
+   {k:'ti',l:'명함에 넣을 직함',ph:'예) 청계점 점장 / Store Manager',req:1},
+   {k:'ph',l:'명함에 넣을 연락처',ph:'회사 메일만 넣으려면 비워 두세요'},
+   {k:'qt',l:'수량',opts:['1통 (100장)','2통 (200장)'],req:1}]},
+ '근무복':{d:'신규 입사, 교체, 사이즈 변경, 분실 때 신청해요.',f:[
+   {k:'it',l:'품목',opts:['앞치마','셔츠','조리복','모자','기타'],req:1},
+   {k:'sz',l:'사이즈',opts:['S','M','L','XL','XXL','FREE'],req:1,hint:'앞치마·모자처럼 사이즈가 없으면 FREE'},
+   {k:'qt',l:'수량',opts:['1','2','3','4','5'],req:1},
+   {k:'why',l:'사유',opts:['신규 입사','교체 (낡음)','사이즈 변경','분실','기타'],req:1}]},
+ '건강검진':{d:'국가건강검진을 받았다면 완료 날짜만 알려 주세요. 회사는 검진 결과를 받지 않아요. 결과지는 올리지 마세요.',f:[
+   {k:'dt',l:'검진 받은 날',date:1,req:1},
+   {k:'kind',l:'종류',opts:['일반건강검진','특수건강검진','종합검진 (개인)','기타'],req:1},
+   {k:'org',l:'검진 기관 (선택)',ph:'예) OO병원'}]}
 };
 ROUTES.sup=function(v,type){
-  const t=SUP[type]?type:'명함', c=SUP[t];
+  const t=SUP[type]?type:'명함', c=SUP[t], sel={};
+  const fld=x=>x.opts?`<label class="f">${esc(x.l)}${x.req?'':' <em>(선택)</em>'}</label>${x.hint?`<p class="note" style="padding:0 0 6px">${esc(x.hint)}</p>`:''}<div class="optc" data-k="${x.k}">${x.opts.map(o=>`<button type="button" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>${x.opts.includes('기타')?`<input class="in" id="sf_${x.k}_etc" placeholder="기타 내용을 적어 주세요" style="display:none;margin-top:8px">`:''}`
+    :`<label class="f">${esc(x.l)}</label><input class="in" id="sf_${x.k}" ${x.date?'type="date"':''} placeholder="${esc(x.ph||'')}">`;
   v.innerHTML=`${back('#/apply','신청')}<div class="title"><span class="new">${t==='건강검진'?'기록':'NEW'}</span><h1 style="margin-top:10px">${t==='건강검진'?'건강검진 완료 등록':t+' 신청'}</h1><p>${esc(c.d)}</p>${t!=='건강검진'?`<div class="supnote">${SUP_NOTE}<br>점장님 → 박한울 매니저 순서로 승인돼요.</div>`:''}</div>
-   <div class="form">${c.f.map(([k,l,ph,dt])=>`<label class="f">${esc(l)}</label><input class="in" id="sf_${k}" ${dt?'type="date"':''} placeholder="${esc(ph)}">`).join('')}
+   <div class="form">${c.f.map(fld).join('')}
    <label class="f">메모 <em>(선택)</em></label><textarea class="in" id="sf_memo" placeholder="더 알려 줄 것이 있으면 적어 주세요"></textarea></div>
    <div class="btnrow"><button class="pill wine" id="sb">${t==='건강검진'?'완료 등록하기':'신청하기'}</button></div>`;
+  v.querySelectorAll('.optc').forEach(g=>g.querySelectorAll('button').forEach(b=>b.onclick=()=>{g.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');sel[g.dataset.k]=b.dataset.v;const e=$('#sf_'+g.dataset.k+'_etc');if(e){e.style.display=b.dataset.v==='기타'?'':'none';if(b.dataset.v==='기타')e.focus()}}));
   $('#sb').onclick=async()=>{
-    const vals=c.f.map(([k,l])=>[l,($('#sf_'+k).value||'').trim()]);
-    if(t==='건강검진'&&!vals[0][1])return toast('검진 받은 날을 골라 주세요');
-    if(t==='근무복'&&!vals[0][1])return toast('품목을 적어 주세요');
-    if(t==='근무복'&&!vals[1][1])return toast('사이즈를 적어 주세요. 사이즈가 없는 품목은 프리라고 적어 주세요');
+    const vals=[];
+    for(const x of c.f){let val;
+      if(x.opts){val=sel[x.k]||'';if(val==='기타'){const e=($('#sf_'+x.k+'_etc').value||'').trim();if(!e)return toast(x.l+' 기타 내용을 적어 주세요');val='기타: '+e}}
+      else val=($('#sf_'+x.k).value||'').trim();
+      if(x.req&&!val)return toast(x.date?x.l+'을 골라 주세요':x.opts?x.l+'을 골라 주세요':x.l+'을 적어 주세요');
+      vals.push([x.l.replace(' (선택)',''),val])}
     const memo=($('#sf_memo').value||'').trim();
     const detail=vals.filter(x=>x[1]).map(x=>x[0]+': '+x[1]).join(' / ')+(memo?' / 메모: '+memo:'');
     const sb=$('#sb');sb.disabled=true;sb.textContent='보내는 중…';
