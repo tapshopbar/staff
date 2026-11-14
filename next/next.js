@@ -19,12 +19,12 @@ ROUTES.policy=function(v){v.innerHTML=`${back('#/')}<div class="title"><h1>회�
    <li>퇴사하는 날 회사 계정과 앱 접속이 닫힙니다. 필요한 파일은 퇴사 1주 전까지 공유 폴더로 옮겨 주세요.</li>
    <li>외부 협력사에는 회사 계정을 만들지 않습니다. 필요한 파일만 공유합니다.</li></ul>
   <h3>개인경비 회사 지출 기준</h3><ul>
-   <li>11/1 결제분부터 개인경비 청구로 받아요. 10월까지 쓴 비용은 기존 개인지출 시트로 한울 매니저에게 내 주세요.</li>
+   <li>11/1 결제분부터 개인경비 청구로 받아요. 10월까지 쓴 비용은 기존 개인지출 시트로 서포트센터에 내 주세요.</li>
    <li>개인카드로 결제해도 되는 곳: 쿠팡 · 네이버 · 소금집. 결제 전에 수쉐프방에 거래처 · 금액을 먼저 올려 주세요.</li>
    <li>한 번에 10만원 미만으로 나눠 결제해 주세요.</li>
    <li>마감 · 업무 이동 택시비는 1회 3만원까지예요 (카카오T 이용내역 캡처 첨부).</li>
    <li>CJ프레시웨이 · 커피 리브레 · 미트프렌즈 · 닭리닭매 · 에디션덴마크는 서포트센터가 계좌이체로 결제해요. 개인카드로 결제하지 말고 서포트센터에 발주 요청해 주세요.</li></ul>
-  <h3>휴가</h3><ul><li>연차 · 휴가는 점장 승인으로 확정돼요. 점장님이 없는 서포트센터와 점장님 본인은 매니저가 승인해요.</li><li>확정된 휴가 날짜를 바꾸려면 내 요청에서 [날짜 바꾸기]를 눌러 주세요. 새 날짜가 승인되면 원래 신청은 자동으로 취소돼요.</li></ul>
+  <h3>휴가</h3><ul><li>연차 · 휴가는 점장 승인으로 확정돼요. 점장님이 없는 경우와 점장님 본인은 서포트센터가 승인해요.</li><li>확정된 휴가 날짜를 바꾸려면 내 요청에서 [날짜 바꾸기]를 눌러 주세요. 새 날짜가 승인되면 원래 신청은 자동으로 취소돼요.</li></ul>
   <a class="pill line full" style="margin-top:24px" href="https://www.notion.so/34ccdbb0aa9280b99452f801728669c6" target="_blank" rel="noopener">Notion에서 전체 보기</a>
  </div>`};
 const ASK_KINDS=['질문','제안','불편','칭찬'];
@@ -194,7 +194,7 @@ ROUTES.sup=function(v,type){
   const t=SUP[type]?type:'명함', c=SUP[t], sel={};
   const fld=x=>x.opts?`<label class="f">${esc(x.l)}${x.req?'':' <em>(선택)</em>'}</label>${x.hint?`<p class="note" style="padding:0 0 6px">${esc(x.hint)}</p>`:''}<div class="optc" data-k="${x.k}">${x.opts.map(o=>`<button type="button" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>${x.opts.includes('기타')?`<input class="in" id="sf_${x.k}_etc" placeholder="기타 내용을 적어 주세요" style="display:none;margin-top:8px">`:''}`
     :`<label class="f">${esc(x.l)}</label><input class="in" id="sf_${x.k}" ${x.date?'type="date"':''} placeholder="${esc(x.ph||'')}">`;
-  v.innerHTML=`${back('#/apply','신청')}<div class="title"><span class="new">${t==='건강검진'?'기록':'NEW'}</span><h1 style="margin-top:10px">${t==='건강검진'?'건강검진 완료 등록':t+' 신청'}</h1><p>${esc(c.d)}</p>${t!=='건강검진'?`<div class="supnote">${SUP_NOTE}<br>점장님 → 박한울 매니저 순서로 승인돼요.</div>`:''}</div>
+  v.innerHTML=`${back('#/apply','신청')}<div class="title"><span class="new">${t==='건강검진'?'기록':'NEW'}</span><h1 style="margin-top:10px">${t==='건강검진'?'건강검진 완료 등록':t+' 신청'}</h1><p>${esc(c.d)}</p>${t!=='건강검진'?`<div class="supnote">${SUP_NOTE}<br>점장님이 먼저 확인하고, 서포트센터가 승인해서 알려 드려요.</div>`:''}</div>
    <div class="form">${c.f.map(fld).join('')}
    <label class="f">메모 <em>(선택)</em></label><textarea class="in" id="sf_memo" placeholder="더 알려 줄 것이 있으면 적어 주세요"></textarea></div>
    <div class="btnrow"><button class="pill wine" id="sb">${t==='건강검진'?'완료 등록하기':'신청하기'}</button></div>`;
@@ -614,7 +614,7 @@ ROUTES.help=async function(v,arg){
    ${j.todo.length?`<div class="sec"><h2>확인할 것 <small class="hn">${j.todo.length}</small></h2></div><div class="hl">${j.todo.map(t=>todoCard(t)).join('')}</div>`:''}
    <div class="sec"><h2>모집 중</h2></div><div class="hl">${open.map(card).join('')||'<div class="empty">지금은 지원 요청이 없어요</div>'}</div>
    ${done.length?`<div class="sec"><h2>마감 · 지난 요청</h2></div><div class="hl dim">${done.map(card).join('')}</div>`:''}
-   <p class="note" style="padding:18px var(--pad) 0">결재 순서: 홀 직원 → 점장 · 주방 직원(Hybrid는 소속 기준) → 수쉐프 → 점장 · 수쉐프 → 점장 · 점장 본인은 결재 없이 매니저에게 알림. 12시간 답이 없으면 다시 알리고, 24시간이면 다음 사람에게 넘어가요.</p><p class="note" style="padding:8px var(--pad) 40px">같은 사람이 같은 시간에 두 곳에 들어가지 않게 막아요. 다른 지점 근무·진행 중인 지원·휴가와 겹치거나 주 52시간을 넘으면 신청이 안 돼요.</p>`;
+   <p class="note" style="padding:18px var(--pad) 0">결재 순서: 홀 직원 → 점장 · 주방 직원(Hybrid는 소속 기준) → 수쉐프 → 점장 · 수쉐프 → 점장 · 점장 본인은 결재 없이 서포트센터에 알림. 12시간 답이 없으면 다시 알리고, 24시간이면 다음 사람에게 넘어가요.</p><p class="note" style="padding:8px var(--pad) 40px">같은 사람이 같은 시간에 두 곳에 들어가지 않게 막아요. 다른 지점 근무·진행 중인 지원·휴가와 겹치거나 주 52시간을 넘으면 신청이 안 돼요.</p>`;
   const R=id=>j.items.find(x=>x.id===id)||(j.todo.find(t=>t.req.id===id)||{}).req;
   v.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>applySheet(R(b.dataset.go),null,v));
   v.querySelectorAll('[data-send]').forEach(b=>b.onclick=()=>sendSheet(R(b.dataset.send),j,v));
@@ -679,7 +679,7 @@ function sendSheet(r,j,v){
 async function helpNew(v){
   v.innerHTML=`${back('#/help','지원 요청')}<div class="title"><h1>지원 요청 올리기</h1></div>${loading()}`;
   let j;try{j=await api('help.list')}catch(e){return}
-  if(!j.canCreate.length){v.innerHTML=`${back('#/help','지원 요청')}<div class="title"><h1>지원 요청 올리기</h1><p>요청은 점장님·매니저가 올려요. 점장님께 말씀해 주세요.</p></div>`;return}
+  if(!j.canCreate.length){v.innerHTML=`${back('#/help','지원 요청')}<div class="title"><h1>지원 요청 올리기</h1><p>요청은 점장님·서포트센터가 올려요. 점장님께 말씀해 주세요.</p></div>`;return}
   const tmr=addD(ymd(new Date()),1);
   let lines=[{date:tmr,start:'18:00',end:'23:00',part:'홀',count:1}];
   const T=[];for(let h=6;h<30;h++)for(const mm of [0,30])T.push(fromM(h*60+mm));
@@ -741,8 +741,8 @@ ROUTES['']=function(v){const r=_home.apply(this,arguments);try{const x=(S.data&&
     ['#/new/휴가','특별 휴가 신청','경조 · 병가 · 공가','경조 결혼 장례 병가 아파 공가 예비군 출산'],
     ['#/myreq','내 요청','요청 · 휴가 신청 · 질문 진행 상황','내신청 신청 결재 승인 상태 신청내역 요청 진행'],
     ['#/exp/new','경비 신청','영수증 · 택시 · 소모품','경비 영수증 택시 교통비 카드 구매 소모품 지출 청구'],
-    ['#/sup/명함','명함 신청','점장 → 매니저 승인','명함'],
-    ['#/sup/근무복','근무복 신청','점장 → 매니저 승인','근무복 유니폼 옷 앞치마'],
+    ['#/sup/명함','명함 신청','점장 확인 → 서포트센터 승인','명함'],
+    ['#/sup/근무복','근무복 신청','점장 확인 → 서포트센터 승인','근무복 유니폼 옷 앞치마'],
     ['#/sup/건강검진','건강검진 완료 등록','완료 날짜만 기록','건강검진 검진 보건증'],
     ['#/schedule','근무표','이번 주 · 다음 주 · 다른 지점','근무표 스케줄 시간표 시프트 출근시간'],
     ['#/help','지원 요청','다른 지점 돕기','지원 헬프 인력 도움 다른지점'],
@@ -906,8 +906,8 @@ const FALLBACK={groups:[
  {key:'hr',title:'인사 · 서류',items:[
   {key:'pay',icon:'user',title:'급여 · 4대보험 · 퇴직 문의',desc:'인사팀이 직접 답해요',examples:['10월 급여 공제 내역 문의'],mode:'ticket',team:'인사팀',fields:[T('what','궁금한 것','textarea','',{req:1})]},
   {key:'cert',icon:'doc',title:'재직 · 경력증명서',desc:'PDF로 바로 발급',mode:'link',link:'#/cert'},
-  {key:'bcard',icon:'card',title:'명함 신청',desc:'점장 → 매니저 승인',mode:'link',link:'#/sup/명함'},
-  {key:'uniform',icon:'shirt',title:'근무복 신청',desc:'점장 → 매니저 승인',mode:'link',link:'#/sup/근무복'},
+  {key:'bcard',icon:'card',title:'명함 신청',desc:'점장 확인 → 서포트센터 승인',mode:'link',link:'#/sup/명함'},
+  {key:'uniform',icon:'shirt',title:'근무복 신청',desc:'점장 확인 → 서포트센터 승인',mode:'link',link:'#/sup/근무복'},
   {key:'checkup',icon:'heart',title:'건강검진 완료 등록',desc:'날짜만 기록해요',mode:'link',link:'#/sup/건강검진'}]},
  {key:'money',title:'돈',items:[
   {key:'expense',icon:'receipt',title:'개인경비 청구',desc:'영수증 찍고 1분이면 끝',mode:'link',link:'#/exp/new'},
@@ -1116,14 +1116,14 @@ const _mark=markNav;markNav=function(){_mark();const k=location.hash.replace(/^#
 })();
 /* 화면에 '본사' 대신 '서포트센터' (API 데이터 포함, 2026-11-14 코치님). 입력값·전송값은 그대로 */
 (function(){const RE=/본사/g, SKIP=/^(SCRIPT|STYLE|TEXTAREA|INPUT)$/;
-  const fixT=n=>{if(n.nodeValue&&n.nodeValue.indexOf('본사')>=0&&!(n.parentNode&&SKIP.test(n.parentNode.nodeName)))n.nodeValue=n.nodeValue.replace(RE,'서포트센터')};
+  const MG=/(?:박한울|한울)\s?매니저(님)?(에게|께서|께|이|가|을|를|은|는|과|와|의)?/g;const mgr=(m,nim,p)=>'서포트센터'+({'에게':'에','께':'에','께서':'에서','이':'가','가':'가','을':'를','를':'를','은':'는','는':'는','과':'와','와':'와','의':'의'}[p]||'');const noMg=()=>/^#\/(kudos|admin)/.test(location.hash);const fixT=n=>{const v=n.nodeValue;if(!v||(n.parentNode&&SKIP.test(n.parentNode.nodeName)))return;let o=v;if(o.indexOf('본사')>=0)o=o.replace(RE,'서포트센터');if(o.indexOf('매니저')>=0&&!noMg())o=o.replace(MG,mgr);if(o!==v)n.nodeValue=o};
   const fix=n=>{if(n.nodeType===3)return fixT(n);if(n.nodeType!==1||SKIP.test(n.nodeName))return;
     const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT);let t;while((t=w.nextNode()))fixT(t);
     [n,...n.querySelectorAll('[placeholder*="본사"],[title*="본사"],[aria-label*="본사"]')].forEach(e=>['placeholder','title','aria-label'].forEach(k=>{const val=e.getAttribute&&e.getAttribute(k);if(val&&val.indexOf('본사')>=0)e.setAttribute(k,val.replace(RE,'서포트센터'))}))};
   const mo=new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')fixT(m.target);else m.addedNodes.forEach(fix)}});
   const go=()=>{fix(document.body);mo.observe(document.body,{childList:true,subtree:true,characterData:true})};
   document.body?go():document.addEventListener('DOMContentLoaded',go);
-  const _t=window.toast;if(typeof _t==='function')window.toast=function(m,ms){return _t(String(m).replace(RE,'서포트센터'),ms)};
+  const _t=window.toast;if(typeof _t==='function')window.toast=function(m,ms){return _t(String(m).replace(RE,'서포트센터').replace(MG,mgr),ms)};
 })();
 
 

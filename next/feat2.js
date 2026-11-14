@@ -55,7 +55,7 @@ ROUTES.incident=async function(v,id){
   if(id)return incDetail(v,id);
   v.innerHTML=`<div class="title"><h1>사고 · 클레임</h1></div>${loading()}`;
   const j=await api('inc.list');
-  v.innerHTML=`${back()}<div class="title"><h1>사고 · 클레임</h1><p>작은 일이라도 바로 남겨 주세요. 점장 · 박한울 매니저 · 서포트센터 팀장에게 바로 가고, 긴급하면 대표님께도 가요.</p></div>
+  v.innerHTML=`${back()}<div class="title"><h1>사고 · 클레임</h1><p>작은 일이라도 바로 남겨 주세요. 점장님과 서포트센터에 바로 가고, 긴급하면 대표님께도 가요.</p></div>
    <div class="btnrow"><a class="pill wine" href="#/incident/new">보고하기</a></div>
    <div class="list">${j.items.map(i=>`<a class="li" href="#/incident/${i.id}"><div class="m"><div class="t1">${esc(i.type)} <span style="color:var(--mute);font-weight:600;font-size:13px">${esc(brLabel(i.branch))} · ${esc(i.name)}</span></div><div class="t2">${esc(String(i.at).slice(5,16))} · ${esc(i.body)}</div></div>${i.severity==='긴급'||i.severity==='높음'?chip('반려',i.severity):''}${chip(i.status==='완료'?'승인완료':i.status==='처리중'?'진행중':'신청',i.status)}</a>`).join('')||'<div class="empty">보고된 사고가 없어요</div>'}</div>`;
 };

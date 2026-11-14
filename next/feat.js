@@ -193,7 +193,7 @@ ROUTES.payslip=async function(v){
 ROUTES.cert=async function(v){
   v.innerHTML=loading();
   const j=await api('cert.list');
-  v.innerHTML=`${back()}<div class="title"><h1>증명서</h1><p>신청하면 박한울 매니저가 확인 후 바로 PDF로 발급돼요.</p></div>
+  v.innerHTML=`${back()}<div class="title"><h1>증명서</h1><p>신청하면 서포트센터가 확인 후 바로 PDF로 발급돼요.</p></div>
    <div class="form"><div class="two"><div><label class="f">종류</label><select class="in" id="kd"><option>재직증명서</option><option>경력증명서</option></select></div><div><label class="f">부수</label><input class="in" id="cp" inputmode="numeric" value="1"></div></div>
    <div class="two"><div><label class="f">용도</label><input class="in" id="pp" placeholder="예) 은행 제출"></div><div><label class="f">제출처</label><input class="in" id="to" placeholder="예) 국민은행"></div></div></div>
    <div class="btnrow"><button class="pill wine" id="sb">발급 신청</button></div>
@@ -222,7 +222,7 @@ ROUTES.close=async function(v,arg){
   let j;try{j=await api('close.preview',{month,branch})}catch(e){v.innerHTML=`<div class="title"><h1>근태 마감</h1><p>${esc(e.message)}</p></div>`;return}
   const isHQ=d.x&&d.x.isHQ, issues=j.rows.reduce((a,r)=>a+r.issues.filter(i=>i.type!=='지각').length,0);
   const months=[0,1,2].map(k=>ymd(new Date(now.getFullYear(),now.getMonth()-k,1)).slice(0,7));
-  v.innerHTML=`${back('#/more','더보기')}<div class="title"><h1>근태 마감</h1><p>스케줄과 실제 출퇴근을 비교해서 이슈를 보여줘요. 점장 확정 → 매니저 최종 마감 → 급여 시트 생성.</p></div>
+  v.innerHTML=`${back('#/more','더보기')}<div class="title"><h1>근태 마감</h1><p>스케줄과 실제 출퇴근을 비교해서 이슈를 보여줘요. 점장 확정 → 서포트센터 최종 마감 → 급여 시트 생성.</p></div>
    <div class="form"><div class="two"><div><label class="f">월</label><select class="in" id="mo">${months.map(m=>`<option ${m===month?'selected':''}>${m}</option>`).join('')}</select></div><div><label class="f">지점</label>${isHQ?`<select class="in" id="br">${BR.map(b=>`<option ${b===branch?'selected':''}>${b}</option>`).join('')}</select>`:`<div style="font-weight:800;padding:11px 0">${esc(branch)}</div>`}</div></div></div>
    <div class="kpis" style="margin-top:16px"><div class="kpi ${j.status.status==='마감'?'':'w'}"><b style="font-size:24px">${esc(j.status.status)}</b><span>${j.status.by?esc(j.status.by)+' 확정':'상태'}</span></div><div class="kpi ${issues?'y':'g'}"><b>${issues}</b><span>확인할 이슈</span></div><div class="kpi g"><b>${j.rows.reduce((a,r)=>a+r.paidHours,0).toFixed(0)}h</b><span>급여 인정 시간</span></div></div>
    <div class="tblw" style="margin-top:14px"><table class="tbl"><thead><tr><th>이름</th><th>예정</th><th>실근무</th><th>휴게</th><th>인정</th><th>휴가</th><th>지각</th><th>결근?</th></tr></thead><tbody>
@@ -238,7 +238,7 @@ ROUTES.close=async function(v,arg){
      <div class="two"><div><label class="f">출근</label><input class="in" type="time" id="fi" value="${esc((i.in||'').slice(0,5))}"></div><div><label class="f">퇴근</label><input class="in" type="time" id="fo" value="${esc((i.out||'').slice(0,5))}"></div></div>
      <label class="f">수정 사유 <em>(기록에 남아요)</em></label><input class="in" id="fn2" placeholder="예) 폰 배터리 방전, CCTV 확인"><button class="pill wine full" style="margin-top:18px" id="ok">저장</button>`,m=>{
       m.querySelector('#ok').onclick=async e=>{busy(e.currentTarget,true);try{await api('close.fix',{row:i.row,email:i.email,date:i.date,in:m.querySelector('#fi').value,out:m.querySelector('#fo').value,note:m.querySelector('#fn2').value});m.remove();toast('수정했어요');ROUTES.close(v,arg)}catch(er){toast(er.message);busy(e.currentTarget,false)}}})});
-  if($('#cf'))$('#cf').onclick=async e=>{if(issues&&!confirm(`이슈 ${issues}건이 남아 있어요. 그래도 확정할까요?`))return;busy(e.currentTarget,true);try{await api('close.confirm',{month,branch});toast('확정했어요. 매니저에게 알렸어요');ROUTES.close(v,arg)}catch(er){toast(er.message);busy(e.currentTarget,false)}};
+  if($('#cf'))$('#cf').onclick=async e=>{if(issues&&!confirm(`이슈 ${issues}건이 남아 있어요. 그래도 확정할까요?`))return;busy(e.currentTarget,true);try{await api('close.confirm',{month,branch});toast('확정했어요. 서포트센터에 알렸어요');ROUTES.close(v,arg)}catch(er){toast(er.message);busy(e.currentTarget,false)}};
   if($('#fn'))$('#fn').onclick=async e=>{if(!confirm(`${month} 전 지점 근태를 마감할까요?`))return;busy(e.currentTarget,true);try{const r=await api('close.finalize',{month});toast(`마감 완료 · "${r.sheet}" 탭에 ${r.rows}명`,4000);ROUTES.close(v,arg)}catch(er){toast(er.message);busy(e.currentTarget,false)}};
 };
 /* ── 본사 콘솔 ── */
