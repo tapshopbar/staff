@@ -1,0 +1,176 @@
+/* ═══ 발주 탭 (BETA 연습 모드, 2026-11-16) · 되돌리기: index.html에서 order.css/order.js 두 줄 지우고 ?v 올리기 ═══ */
+/* 아래 메뉴 5칸: 홈 · 스케줄 · ＋요청 · 발주 · 결재 / 더보기는 헤더 ☰ */
+.nav a .onew{position:absolute;top:0;right:calc(50% - 25px);background:var(--yellow);color:var(--ink);font-size:8.5px;font-weight:900;border-radius:99px;padding:1px 4px;letter-spacing:.04em;line-height:1.3}
+.hdr .ic.omore{position:relative}
+.hdr .ic.omore.on{color:var(--season-main,#0F2A20)}
+.hdr.dark .ic.omore.on{color:var(--yellow)}
+.ocm{position:fixed;z-index:80;background:var(--ink);color:#fff;font-size:13px;font-weight:700;border-radius:12px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.25);max-width:220px;line-height:1.45;cursor:pointer}
+.ocm:before{content:"";position:absolute;top:-6px;right:16px;border:6px solid transparent;border-top:0;border-bottom-color:var(--ink)}
+.ocm b{color:var(--yellow)}
+
+/* 넓은 화면: 발주에서만 앱 폭을 넓힘 (다른 화면은 그대로) */
+body.ordw .app{max-width:1280px}
+body.ordw .nav{max-width:1280px}
+
+.ord{padding:0 16px 24px}
+.oprac{margin:4px 0 12px;background:#FFF4CC;color:#5E4500;border-radius:14px;padding:10px 14px;font-size:13px;font-weight:700;line-height:1.5;display:flex;gap:8px;align-items:flex-start}
+.oprac i{font-style:normal;background:var(--ink);color:var(--yellow);font-size:10.5px;font-weight:900;border-radius:6px;padding:2px 6px;letter-spacing:.06em;white-space:nowrap;margin-top:1px}
+.otop{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin:6px 0 12px}
+.otop h1{font-size:26px;font-weight:800;letter-spacing:-.04em}
+.otop .ow{font-size:13px;color:var(--mute);font-weight:700;margin-top:2px}
+.ostores{display:flex;gap:6px;flex-wrap:wrap}
+.ostores button,.orole button{height:36px;padding:0 13px;border-radius:99px;border:1.5px solid var(--line);background:#fff;font-weight:800;font-size:13px;color:#5A5353}
+.ostores button.on,.orole button.on{background:var(--season-main,#0F2A20);border-color:var(--season-main,#0F2A20);color:#fff}
+.orole{display:flex;gap:6px;align-items:center;margin-bottom:12px;font-size:12px;color:var(--mute);font-weight:700;flex-wrap:wrap}
+.ocard{background:#fff;border:1px solid #EFEAE6;border-radius:20px;padding:18px;margin-bottom:12px}
+.ocard.pine{background:linear-gradient(135deg,var(--season-2,#1B4433) 0%,var(--season-main,#0F2A20) 60%,#081A13 100%);color:#fff;border:0}
+.oh{font-size:16px;font-weight:800;letter-spacing:-.02em;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.oh small{font-size:12px;color:var(--mute);font-weight:700}
+.ocard.pine .oh small,.ocard.pine .osub{color:rgba(255,255,255,.72)}
+.osub{font-size:13px;color:var(--mute);font-weight:600;line-height:1.5}
+.obig{font-size:22px;font-weight:800;letter-spacing:-.035em;line-height:1.3;margin:6px 0 4px}
+.obtn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 20px;border-radius:99px;font-weight:800;font-size:15.5px;background:var(--season-main,#0F2A20);color:#fff;width:100%;border:0;cursor:pointer}
+.obtn.y{background:var(--yellow);color:var(--ink)}
+.obtn.w{background:#fff;color:var(--season-main,#0F2A20)}
+.obtn.line{background:transparent;border:1.5px solid currentColor;color:var(--ink)}
+.obtn.sm{min-height:44px;font-size:14px;width:auto;padding:0 16px}
+.obtn:focus-visible,.oq:focus-visible,.ost button:focus-visible,.oadd:focus-visible,.oseg button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+/* 예산 */
+.obg{margin-top:12px}
+.obg .r{display:flex;justify-content:space-between;font-size:13.5px;font-weight:800;margin-bottom:6px}
+.obar{height:10px;border-radius:99px;background:#F1EEEB;position:relative}
+.obar i{display:block;height:100%;border-radius:99px;background:var(--season-main,#0F2A20);max-width:100%;transition:width .2s}
+.obar.tol i{background:var(--yellow)}.obar.over i{background:#C2283A}
+.obar em{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.3}
+.obn{font-size:12px;font-weight:700;color:var(--mute);margin-top:5px}
+.obn.ok{color:#1F7A52}.obn.tol{color:#8A5A00}.obn.over{color:#C2283A}
+.ochips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.ochip{font-size:12px;font-weight:800;padding:6px 10px;border-radius:99px;background:#F4F1EE;color:#4A4444;white-space:nowrap}
+.ochip.hot{background:#FDECEC;color:#C2283A}
+/* 목록 */
+.oseg{display:flex;background:#F4F1EE;border-radius:99px;padding:4px;margin-bottom:12px}
+.oseg button{flex:1;height:40px;border-radius:99px;font-size:14px;font-weight:800;color:var(--mute);border:0;background:none;cursor:pointer}
+.oseg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.osearch{width:100%;height:46px;border-radius:14px;border:1.5px solid var(--line);padding:0 14px;font-size:15px;background:#fff;margin-bottom:6px}
+.ofil{display:flex;gap:6px;margin:6px 0 4px;flex-wrap:wrap}
+.ofil button{height:34px;padding:0 12px;border-radius:99px;border:1.5px solid var(--line);background:#fff;font-size:12.5px;font-weight:800;color:#5A5353;cursor:pointer}
+.ofil button.on{border-color:var(--ink);color:var(--ink)}
+.oth{display:none}
+.oit{display:flex;gap:10px;align-items:center;padding:12px 0;border-top:1px solid #F2EFEC}
+.oit:first-child{border-top:0}
+.oit .g{flex:1;min-width:0}
+.oit .n{font-size:15px;font-weight:700;line-height:1.35}
+.oit .d{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px;font-size:12px;color:var(--mute);font-weight:600}
+.otg{font-size:11px;font-weight:800;border-radius:6px;padding:2px 6px;background:#F4F1EE;color:#5A5353}
+.otg.tap{background:var(--ink);color:#fff}
+.ou{color:var(--season-main,#0F2A20);font-weight:800}
+.oit .c-sup,.oit .c-spec,.oit .c-us{display:none}
+.oadd{min-height:44px;min-width:66px;border-radius:99px;border:1.5px solid var(--season-main,#0F2A20);color:var(--season-main,#0F2A20);font-weight:800;font-size:14px;background:#fff;cursor:pointer}
+.ost{display:flex;align-items:center;border-radius:99px;background:var(--season-tint,#EAF2EE);height:44px;flex:none}
+.ost button{width:44px;height:44px;font-size:20px;font-weight:800;color:var(--season-main,#0F2A20);border:0;background:none;cursor:pointer}
+.oq{width:40px;height:36px;border:0;background:transparent;text-align:center;font-weight:800;font-size:15px;border-radius:8px;-moz-appearance:textfield}
+.oq::-webkit-outer-spin-button,.oq::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.oq:focus{background:#fff}
+.oit.z .ost{display:none}
+.oit:not(.z) .oadd{display:none}
+.omore2{text-align:center;padding:12px 0;font-size:13px;color:var(--mute);font-weight:700}
+.oempty{text-align:center;padding:24px 0;color:var(--mute);font-size:14px;font-weight:600;line-height:1.6}
+/* 담은 것 */
+.ocart .ogl{font-size:12.5px;font-weight:800;color:var(--mute);margin:14px 0 2px}
+.ocart .oln{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-top:1px solid #F2EFEC;font-size:14px}
+.ocart .oln .ost{height:36px}.ocart .oln .ost button{width:34px;height:36px;font-size:17px}.ocart .oln .oq{width:34px;height:30px;font-size:14px}
+.olbl{font-size:13px;font-weight:800;margin:14px 0 6px}
+.ofield{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:11px 13px;font-size:15px;background:#fff}
+textarea.ofield{min-height:56px;resize:vertical}
+.onote{border-radius:14px;padding:11px 13px;font-size:13px;line-height:1.55;font-weight:600;margin-top:10px}
+.onote.y{background:#FFF7DD;color:#5E4500}.onote.r{background:#FDECEC;color:#8B0A2A}.onote.g{background:var(--season-tint,#EAF2EE);color:var(--season-main,#0F2A20)}
+.ocard.pine .onote{background:rgba(255,255,255,.12);color:#fff}
+.ocartbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + var(--safe-b,0px));width:calc(100% - 24px);max-width:536px;z-index:39;background:var(--season-main,#0F2A20);color:#fff;border-radius:20px;padding:10px 10px 10px 18px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 26px rgba(15,42,32,.35);cursor:pointer;border:0;text-align:left}
+.ocartbar.tol{background:#6B4E00}.ocartbar.over{background:#C2283A}
+.ocartbar .t{font-size:12px;opacity:.85;font-weight:700}.ocartbar .v{font-size:15.5px;font-weight:800}
+.ocartbar .go{background:#fff;color:var(--ink);min-height:44px;padding:0 16px;border-radius:99px;font-weight:800;font-size:14px;display:flex;align-items:center}
+.ord.hasbar{padding-bottom:84px}
+/* 진행 단계 */
+.osteps{display:flex;gap:4px;margin:14px 0 6px}
+.osteps div{flex:1;text-align:center;font-size:11px;font-weight:800;color:#B3ACAC;line-height:1.3}
+.osteps div i{display:block;height:6px;border-radius:99px;background:#EEEAE7;margin-bottom:6px}
+.osteps div.d{color:var(--season-main,#0F2A20)}.osteps div.d i{background:var(--season-main,#0F2A20)}
+.osteps div.c{color:var(--ink)}.osteps div.c i{background:var(--yellow)}
+.ocard.pine .osteps div{color:rgba(255,255,255,.45)}.ocard.pine .osteps div i{background:rgba(255,255,255,.18)}
+.ocard.pine .osteps div.d{color:#fff}.ocard.pine .osteps div.d i{background:#fff}
+.ocard.pine .osteps div.c{color:var(--yellow)}.ocard.pine .osteps div.c i{background:var(--yellow)}
+.osup{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid #F2EFEC}
+.osup:first-of-type{border-top:0}
+.osup .g{flex:1;min-width:0}.osup .n{font-weight:800;font-size:15px}.osup .d{font-size:12.5px;color:var(--mute);font-weight:600;margin-top:2px}
+.ost2{font-size:12px;font-weight:800;border-radius:99px;padding:5px 10px;white-space:nowrap}
+.ost2.s1,.ost2.s0{background:#F4F1EE;color:#5A5353}.ost2.s2{background:#EAF1FF;color:#0B3E99}.ost2.s3{background:#FFF4CC;color:#6B4E00}.ost2.s5{background:var(--season-main,#0F2A20);color:#fff}
+.odone{width:60px;height:60px;border-radius:50%;background:var(--season-tint,#EAF2EE);color:var(--season-main,#0F2A20);display:grid;place-items:center;margin:6px auto 10px;font-size:30px;font-weight:900}
+.oc{text-align:center}
+.orx{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid #F2EFEC;cursor:pointer;width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;font-size:14.5px;font-weight:700}
+.orx .ck{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:14px;background:var(--season-tint,#EAF2EE);color:var(--season-main,#0F2A20);flex:none}
+.orx.bad .ck{background:#FDECEC;color:#C2283A}
+.ors{display:flex;gap:6px;flex-wrap:wrap;margin:-2px 0 8px 38px}
+.ors button{min-height:36px;padding:0 12px;border-radius:99px;border:1.5px solid var(--line);font-size:12.5px;font-weight:800;background:#fff;cursor:pointer}
+.ors button.on{border-color:#C2283A;color:#C2283A;background:#FFF5F5}
+/* 시트 */
+.omask{position:fixed;inset:0;background:rgba(14,14,14,.45);z-index:90;display:flex;align-items:flex-end;justify-content:center}
+.osheet{background:var(--cream,#FFFDFC);width:100%;max-width:560px;border-radius:24px 24px 0 0;max-height:88vh;display:flex;flex-direction:column}
+.osheet .grab{width:40px;height:5px;border-radius:99px;background:#D9D4D0;margin:10px auto 2px}
+.osb{overflow:auto;padding:8px 20px 10px}
+.osf{padding:12px 20px calc(16px + var(--safe-b,0px));border-top:1px solid #EEE9E6;display:flex;gap:8px}
+.otoast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(160px + var(--safe-b,0px));background:var(--ink);color:#fff;border-radius:99px;padding:11px 8px 11px 18px;font-size:14px;font-weight:700;z-index:95;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.otoast button{color:var(--yellow);font-weight:800;padding:6px 10px;border:0;background:none;cursor:pointer;min-height:36px}
+.okbd{display:none}
+.ocart{display:none}
+
+/* ── iPad (768~1099): 왼쪽 품목, 오른쪽 담은 것 항상 보임 ── */
+@media (min-width:768px){
+  body.ordw .app{max-width:1100px}
+  body.ordw .nav{max-width:1100px}
+  .ord{padding:0 24px 24px}
+  .ogrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+  .oleft{grid-column:1;grid-row:1}
+  .omain{grid-column:1;grid-row:2}
+  .ocart{display:flex;flex-direction:column;grid-column:2;grid-row:1 / span 2;position:sticky;top:76px;max-height:calc(100vh - 176px);overflow:hidden;margin-bottom:0}
+  .ocart>.ocb{display:flex;flex-direction:column;min-height:0;flex:1}
+  .ocart .onar{display:none}
+  .ocart .ocfoot .olbl{margin-top:10px}
+  .ocart .ocitems{overflow:auto;flex:1;min-height:150px;margin:0 -4px;padding:0 4px}
+  .ocart .ocfoot{border-top:1.5px solid #EEE9E6;margin-top:8px;padding-top:4px;flex:none}
+  .ocart .ocfoot textarea.ofield{min-height:44px}
+  .oleft .ocard.bud{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .oleft .ocard.bud .oh{grid-column:1 / -1}
+  .oleft .ocard.bud .obg{margin-top:0}
+  .ocartbar{display:none}
+  .ord.hasbar{padding-bottom:24px}
+  .oit.z .ost{display:flex}
+  .oit .oadd{display:none}
+  .oit.z .ost{background:#F6F3F0}
+  .otoast{bottom:calc(90px + var(--safe-b,0px))}
+  .okbd{display:block;font-size:12px;color:var(--mute);font-weight:600;margin-top:10px;line-height:1.5}
+  .omask{align-items:center}
+  .osheet{border-radius:24px;max-height:80vh}
+}
+/* ── 넓은 iPad 가로 · 작은 PC (1100~): 품목을 표처럼 (품목+규격 | 거래처 | 평소 | 수량) ── */
+@media (min-width:1100px){
+  body.ordw .app{max-width:1440px}
+  body.ordw .nav{max-width:1440px}
+  .ogrid{grid-template-columns:minmax(0,1fr) 360px}
+  .oth{display:grid;grid-template-columns:minmax(0,1fr) 110px 60px 132px;gap:10px;font-size:12px;color:var(--mute);font-weight:800;padding:4px 0 8px;border-bottom:1.5px solid var(--ink)}
+  .oit{display:grid;grid-template-columns:minmax(0,1fr) 110px 60px 132px;gap:10px;padding:9px 0}
+  .oit .c-sup,.oit .c-us{display:block;font-size:13px;font-weight:600;color:#4A4444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .oit .c-us{font-weight:800;color:var(--season-main,#0F2A20);text-align:right}
+  .oit .d .h-sup,.oit .d .ou{display:none}
+  .oit .n{font-size:14.5px}
+  .oit .ost{justify-self:end}
+}
+/* ── PC (1280~): 3단 (왼쪽 예산·마감 | 가운데 품목 표 | 오른쪽 담은 것) ── */
+@media (min-width:1280px){
+  .ogrid{grid-template-columns:260px minmax(0,1fr) 360px}
+  .oleft{grid-column:1;grid-row:1}
+  .omain{grid-column:2;grid-row:1}
+  .ocart{grid-column:3;grid-row:1}
+  .oleft .ocard.bud{display:block}
+  .oleft .ocard.bud .obg{margin-top:12px}
+  .oleft .osteps div{font-size:10px;letter-spacing:-.05em}
+}
