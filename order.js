@@ -116,7 +116,7 @@ function page(){
      <div class="oseg" role="tablist">${cats().map(c=>`<button role="tab" aria-selected="${UI.cat===c.id}" data-cat="${c.id}" class="${UI.cat===c.id?'on':''}">${c.nm}</button>`).join('')}</div>
      <input class="osearch" id="oq" type="search" placeholder="${CATS.find(c=>c.id===UI.cat).nm} 검색 (이름 · 거래처)" value="${e(UI.q)}" autocomplete="off">
      <div class="ofil"><button data-fil="usual" class="${UI.fil==='usual'?'on':''}">우리 지점 평소 품목</button><button data-fil="all" class="${UI.fil==='all'?'on':''}">전체</button></div>
-     <div class="oth"><span>품목 · 규격</span><span>거래처</span><span style="text-align:right">평소</span><span style="text-align:right">수량</span></div>
+     <div class="ohd"><span>품목 · 규격</span><span>거래처</span><span style="text-align:right">평소</span><span style="text-align:right">수량</span></div>
      <div id="olist">${listHTML()}</div>
      ${UI.cat!=='w'?`<button class="obtn line" data-act="custom" style="margin-top:12px;min-height:46px;font-size:14px">＋ 목록에 없는 것 담기</button>`:`<div class="osub" style="margin-top:10px">와인은 목록에 있는 것만 담을 수 있어요 (주류 거래 규정).</div>`}
      <div class="okbd">PC 키보드: <b>/</b> 검색 · 숫자 칸에 바로 입력 · <b>Enter</b> 다음 품목 · <b>Tab</b> 이동 · <b>Esc</b> 닫기</div>

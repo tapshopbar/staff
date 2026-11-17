@@ -1,3 +1,4 @@
+/* 11/17: .oth → .ohd (근무 신청 달력 .acd.oth 를 숨기던 충돌 수정) */
 /* ═══ 발주 탭 (BETA 연습 모드, 2026-11-16) · 되돌리기: index.html에서 order.css/order.js 두 줄 지우고 ?v 올리기 ═══ */
 /* 아래 메뉴 5칸: 홈 · 스케줄 · ＋요청 · 발주 · 결재 / 더보기는 헤더 ☰ */
 .nav a .onew{position:absolute;top:0;right:calc(50% - 25px);background:var(--yellow);color:var(--ink);font-size:8.5px;font-weight:900;border-radius:99px;padding:1px 4px;letter-spacing:.04em;line-height:1.3}
@@ -57,7 +58,7 @@ body.ordw .nav{max-width:1280px}
 .ofil{display:flex;gap:6px;margin:6px 0 4px;flex-wrap:wrap}
 .ofil button{height:34px;padding:0 12px;border-radius:99px;border:1.5px solid var(--line);background:#fff;font-size:12.5px;font-weight:800;color:#5A5353;cursor:pointer}
 .ofil button.on{border-color:var(--ink);color:var(--ink)}
-.oth{display:none}
+.ohd{display:none}
 .oit{display:flex;gap:10px;align-items:center;padding:12px 0;border-top:1px solid #F2EFEC}
 .oit:first-child{border-top:0}
 .oit .g{flex:1;min-width:0}
@@ -158,7 +159,7 @@ textarea.ofield{min-height:56px;resize:vertical}
   body.ordw .app{max-width:1440px}
   body.ordw .nav{max-width:1440px}
   .ogrid{grid-template-columns:minmax(0,1fr) 360px}
-  .oth{display:grid;grid-template-columns:minmax(0,1fr) 110px 60px 132px;gap:10px;font-size:12px;color:var(--mute);font-weight:800;padding:4px 0 8px;border-bottom:1.5px solid var(--ink)}
+  .ohd{display:grid;grid-template-columns:minmax(0,1fr) 110px 60px 132px;gap:10px;font-size:12px;color:var(--mute);font-weight:800;padding:4px 0 8px;border-bottom:1.5px solid var(--ink)}
   .oit{display:grid;grid-template-columns:minmax(0,1fr) 110px 60px 132px;gap:10px;padding:9px 0}
   .oit .c-sup,.oit .c-us{display:block;font-size:13px;font-weight:600;color:#4A4444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .oit .c-us{font-weight:800;color:var(--season-main,#0F2A20);text-align:right}
