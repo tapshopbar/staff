@@ -1,0 +1,39 @@
+/* ═══ crew1117.css · 11/17 직원 의견 반영 · 되돌리기: index.html 에서 이 줄 지우기 ═══ */
+/* 1) 근무 신청 달력: 지난달·다음달 칸 다시 보이기 (발주 탭 .oth 와 이름이 겹쳐 숨겨지던 문제) */
+.acg .acd.oth{display:flex}
+.acg .acd.oth .n{font-size:11.5px;font-weight:700;color:var(--mute)}
+.acg .acd:nth-child(7n-1):not(.oth):not(.dis) .n{color:#2B5BD7}
+.acg .acd:nth-child(7n):not(.oth):not(.dis) .n{color:var(--bad)}
+.acg .acd.tdy .n{color:#fff !important}
+/* 2) 아래 메뉴: transform 대신 margin 가운데 정렬 (iOS 스크롤·키보드 때 떠오름 방지), 키보드가 열리면 숨김 */
+.nav{left:0;right:0;margin:0 auto;transform:none;-webkit-transform:none;will-change:auto}
+body.kb .nav,body.kbv .nav{display:none}
+body.kb .app,body.kbv .app{padding-bottom:24px}
+body.kb .acp.on,body.kbv .acp.on{bottom:0}
+/* 3) 정산 메모 고치기 */
+.mrow{position:relative;padding-right:64px}
+.medit{position:absolute;right:0;top:12px;font-size:12.5px;font-weight:800;color:var(--ink);border:1.5px solid var(--line);border-radius:99px;padding:5px 11px;background:#fff}
+.medit:active{background:var(--grey)}
+/* 4) 내 근무 · 연차 */
+.lvc{margin:6px var(--pad) 14px;padding:18px 18px 16px;background:#fff;border:1.5px solid var(--line);border-radius:18px}
+.lvh{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;color:var(--mute);letter-spacing:.02em}
+.lvgo{display:inline-flex;align-items:center;gap:2px;color:var(--ink);font-size:13px;font-weight:800}
+.lvb{margin:6px 0 4px;display:flex;align-items:baseline;gap:4px}
+.lvb b{font-size:44px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.lvb em{font-style:normal;font-size:18px;font-weight:800}
+.lvs{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--mute);font-weight:600}
+.lvs b{color:var(--ink);font-weight:800}
+.lvn{font-size:12px;color:var(--mute);margin-top:8px;line-height:1.5;word-break:keep-all}
+.atsum{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px var(--pad) 0}
+.atsum div{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px}
+.atsum span{display:block;font-size:12px;font-weight:700;color:var(--mute)}
+.atsum b{font-size:24px;font-weight:800;letter-spacing:-.03em}
+.atsum em{font-style:normal;font-size:13px;margin-left:2px}
+.atlv{display:flex;flex-wrap:wrap;gap:6px;margin:10px var(--pad) 0}
+.atlv span{font-size:12px;font-weight:700;background:var(--grey);border-radius:99px;padding:5px 10px}
+.lvstrip{display:flex;align-items:center;gap:10px;margin:10px var(--pad) 0;padding:13px 16px;background:#fff;border:1.5px solid var(--line);border-radius:16px;color:var(--ink)}
+.lvstrip span{flex:1;display:flex;flex-direction:column;gap:1px}
+.lvstrip span+span{border-left:1.5px solid var(--line);padding-left:14px}
+.lvstrip i{font-style:normal;font-size:11.5px;font-weight:700;color:var(--mute)}
+.lvstrip b{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.sheet .mr2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
