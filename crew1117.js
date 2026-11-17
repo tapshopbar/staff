@@ -3,7 +3,7 @@
    2) 아래 메뉴: 휴대폰에서 스크롤·키보드 때 떠오르던 문제, 글 쓸 때 입력창 가림 (윤홍민 님 CREW-020)
    3) 정산 메모 고치기·지우기 (이수용 님 Q261117-85D7) — 아래 정산 메모 블록
    4) 내 근무 · 연차: 남은 연차 + 이번 달 근무시간 (차현 님 CREW-022), 홈에 한 줄
-   5) 화면의 실명 '장분도' → 서도민
+   5) 화면의 실명 '장분도'·옛 표기 → 서포트센터
    되돌리기: index.html 에서 crew1117.css / crew1117.js 두 줄 지우기 */
 
 /* ── 1) 근무 신청 달력: 다른 달 날짜는 'M/D' ── */
@@ -67,11 +67,12 @@
 })();
 
 
-/* ── 5) 화면에 실명 '장분도' 대신 서도민 (11/17 코치님: 이름은 빼고 서포트센터, 꼭 필요하면 TOM 한글 이름) ──
-   서버는 직원 화면을 표시이름으로 바꿔 보내고, 여기서는 본인 화면·남은 글자까지 화면에서만 바꾼다(입력값·저장값은 그대로) */
+/* ── 5) 화면에 실명·옛 표기 대신 서포트센터 (11/17 코치님 "장분도라는 이름은 다 빼죠" → 밤 "TOM 한글 이름도 빼고 전부 서포트센터") ──
+   서버는 직원 화면을 표시이름(서포트센터)으로 바꿔 보내고, 여기서는 본인 화면·남은 글자까지 화면에서만 바꾼다(입력값·저장값은 그대로) */
 (function(){
-  const RE=/장분도(\s?(이사|팀장))?/g,SKIP=/^(SCRIPT|STYLE|TEXTAREA|INPUT|OPTION)$/;
-  const fx=n=>{const v=n.nodeValue;if(!v||v.indexOf('장분도')<0||(n.parentNode&&SKIP.test(n.parentNode.nodeName)))return;n.nodeValue=v.replace(RE,'서도민')};
+  const HIT=/장분도|\uC11C\uB3C4\uBBFC/,P={'이':'가','을':'를','은':'는','과':'와'},SKIP=/^(SCRIPT|STYLE|TEXTAREA|INPUT|OPTION)$/;
+  const RE=/(?:장분도|\uC11C\uB3C4\uBBFC)(?:\s?(?:이사|팀장))?님?(?:(이|을|은|과)(?![가-힣]))?/g;
+  const fx=n=>{const v=n.nodeValue;if(!v||!HIT.test(v)||(n.parentNode&&SKIP.test(n.parentNode.nodeName)))return;n.nodeValue=v.replace(RE,(m,p)=>'서포트센터'+(P[p]||''))};
   const walk=n=>{if(n.nodeType===3)return fx(n);if(n.nodeType!==1||SKIP.test(n.nodeName))return;const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT);let t;while((t=w.nextNode()))fx(t)};
   const go=()=>{walk(document.body);new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')fx(m.target);else m.addedNodes.forEach(walk)}}).observe(document.body,{childList:true,subtree:true,characterData:true})};
   if(document.body)go();else addEventListener('DOMContentLoaded',go);
