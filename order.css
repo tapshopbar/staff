@@ -212,3 +212,55 @@ textarea.ofield{min-height:56px;resize:vertical}
 .wxs2{margin-top:6px;min-height:42px!important;font-size:14px}
 .wxacts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 .wxacts .obtn{min-height:40px;font-size:13.5px}.obtn:disabled{background:#D9D5D2!important;color:#fff!important;border-color:#D9D5D2!important;cursor:not-allowed}
+
+/* ── 2026-11-18 서버 연결 · 입고 사진 · v2 가격 (TOM) ── */
+.obeta{margin:4px 0 12px;background:#fff;border:1px solid #ECE8E5;color:#4A4444;border-radius:14px;padding:10px 14px;font-size:13px;font-weight:600;line-height:1.5;display:flex;gap:8px;align-items:flex-start}
+.obeta i{font-style:normal;background:#EAF1FF;color:#156DFF;font-size:10.5px;font-weight:900;border-radius:6px;padding:2px 6px;letter-spacing:.06em;white-space:nowrap;margin-top:1px}
+.obar2{display:flex;align-items:center;gap:10px;margin:2px 0 12px}
+.omode{display:inline-flex;background:#F2EFEC;border-radius:99px;padding:3px;gap:2px}
+.omode button{border:0;background:none;font:inherit;font-size:14px;font-weight:800;color:#5A5353;min-height:38px;padding:0 16px;border-radius:99px;cursor:pointer}
+.omode button.on{background:#fff;color:var(--ink,#0E0E0E);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.omode button b{display:inline-block;min-width:18px;height:18px;line-height:18px;border-radius:99px;background:#156DFF;color:#fff;font-size:11px;margin-left:4px;text-align:center;padding:0 5px}
+.oadm{margin-left:auto;font-size:13px;font-weight:800;color:#156DFF;text-decoration:none;border:1.5px solid #CFE0FF;border-radius:99px;padding:8px 14px;white-space:nowrap}
+.olink{border:0;background:none;color:#156DFF;font:inherit;font-size:13px;font-weight:800;cursor:pointer;padding:4px 0}
+.oerr{display:block;margin-top:4px;font-size:11.5px;opacity:.7;font-weight:600;word-break:break-all}
+.ov2n{font-size:12px;color:var(--mute,#7A7373);font-weight:600;line-height:1.5;background:#F7F9FF;border-radius:10px;padding:8px 10px;margin:8px 0 2px}
+.ov2n b{color:#B86500}
+.opx{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:5px;font-size:12.5px;font-weight:700;color:#3A3535;font-variant-numeric:tabular-nums;align-items:center}
+.opx small{font-size:11px;color:var(--mute,#7A7373);font-weight:600}
+.opx .lo{color:#B86500}
+.oblr{margin-top:4px;font-size:12px;color:#C2283A;font-weight:700}
+.oblk{font-size:12.5px;font-weight:800;color:#9A9393;background:#F4F1EE;border-radius:99px;padding:10px 12px;white-space:nowrap}
+.oit.blk .n{color:#9A9393}
+.oit.blk .ost{display:none!important}
+.ocart .oln small.ocp,.ocb .oln small.ocp{display:block;font-size:11.5px;color:var(--mute,#7A7373);font-weight:600;margin-top:1px;font-variant-numeric:tabular-nums}
+.ocp b{color:#B86500}
+.otot{margin-top:12px;border:1px solid #ECE8E5;border-radius:14px;padding:10px 12px;background:#FCFBFA}
+.otot .oth{font-size:13.5px;font-weight:800;margin-bottom:4px;display:flex;justify-content:space-between}
+.otot .oth small{font-size:11.5px;color:var(--mute,#7A7373);font-weight:700}
+.otot .r{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:#4A4444;font-weight:600}
+.otot .r b{font-variant-numeric:tabular-nums;color:var(--ink,#0E0E0E)}
+.opo{border-top:1px solid #F2EFEC;padding-bottom:10px}
+.opo:first-of-type{border-top:0}
+.opo .osup{border-top:0;padding-bottom:4px}
+.opo.cx{opacity:.55}
+.opod summary{font-size:12.5px;font-weight:800;color:#5A5353;cursor:pointer;padding:6px 0;list-style:none}
+.opod summary::-webkit-details-marker{display:none}
+.opod summary:after{content:' ›';color:#9A9393}
+.opod[open] summary:after{content:' ‹'}
+.opod .ogl{font-size:12px;font-weight:800;color:var(--mute,#7A7373);margin:8px 0 2px}
+.opod .oln{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid #F5F2F0;font-size:13.5px}
+.opoa{display:flex;gap:8px;justify-content:flex-end;margin-top:6px;flex-wrap:wrap}
+.orq{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0 10px 38px;font-size:13px;font-weight:700;color:#4A4444}
+.orq .ofield{width:80px;margin:0;text-align:center}
+.orxf{display:grid;gap:8px}
+.orxf label.obtn{cursor:pointer;min-height:48px}
+.orxf1{display:flex;align-items:center;gap:12px;border:1px solid #ECE8E5;border-radius:14px;padding:10px}
+.orxf1 .g{flex:1;min-width:0}.orxf1 .n{font-size:13.5px;font-weight:800;word-break:break-all}
+.orxp{width:64px;height:64px;object-fit:cover;border-radius:10px;background:#F4F1EE;flex:none}
+.orxdoc{width:64px;height:64px;border-radius:10px;background:#EAF1FF;color:#156DFF;display:grid;place-items:center;font-weight:900;font-size:13px;flex:none}
+@media (min-width:768px){.oit .opx{font-size:12px}.oit.blk .oblk{justify-self:end}}
+#oscart .ogl{font-size:12.5px;font-weight:800;color:var(--mute,#7A7373);margin:14px 0 2px}
+#oscart .oln{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-top:1px solid #F2EFEC;font-size:14px}
+#oscart .oln>span{min-width:0;flex:1}
+#oscart .oln .ost{height:36px}#oscart .oln .ost button{width:36px;height:36px;font-size:17px}#oscart .oln .oq{width:36px;height:30px;font-size:14px}
