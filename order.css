@@ -177,3 +177,38 @@ textarea.ofield{min-height:56px;resize:vertical}
   .oleft .ocard.bud .obg{margin-top:12px}
   .oleft .osteps div{font-size:10px;letter-spacing:-.05em}
 }
+
+/* ═══ 와인 엑셀로 담기 (2026-11-18 BETA) ═══ */
+.wxbtn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#F1F6FF;border:1.5px solid #CFE0FF;border-radius:16px;padding:11px 14px;margin:2px 0 10px;cursor:pointer;color:var(--ink)}
+.wxbtn .wxic{flex:none;width:38px;height:38px;border-radius:11px;background:#156DFF;color:#fff;font-size:11px;font-weight:900;letter-spacing:.04em;display:flex;align-items:center;justify-content:center}
+.wxbtn b{display:block;font-size:15px;font-weight:800}.wxbtn small{display:block;font-size:12px;color:var(--mute);font-weight:600;margin-top:1px}
+.wxbtn .wxgo{margin-left:auto;font-size:22px;color:#156DFF;font-weight:700}
+.osheet.wxs{max-width:640px}
+.wxdrop{display:block;border:2px dashed #D9D2CC;border-radius:16px;padding:18px 12px;text-align:center;cursor:pointer;background:#fff}
+.wxdrop b{display:block;font-size:15px;font-weight:800;color:#156DFF}.wxdrop span{font-size:12px;color:var(--mute);font-weight:600}
+.wxleg{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;font-weight:700;color:#5A5353;margin-top:10px}
+.wxleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.wxleg i.g{background:#12A150}.wxleg i.o{background:#F08A00}.wxleg i.r{background:#E5322D}
+.wxinfo{font-size:12px;color:var(--mute);font-weight:600;line-height:1.6;margin-top:8px}
+.wxinfo select{font-size:12px;border:1px solid var(--line);border-radius:8px;padding:2px 4px;background:#fff;max-width:160px}
+.wxsum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.wxsum button{border-radius:14px;padding:10px;border:2px solid transparent;text-align:left;font-size:12px;font-weight:800;cursor:pointer}
+.wxsum button b{display:block;font-size:22px;font-weight:900;letter-spacing:-.03em}
+.wxsum .g{background:#EAF8F0;color:#12A150}.wxsum .o{background:#FFF4E5;color:#B86500}.wxsum .r{background:#FDECEC;color:#E5322D}.wxsum .on{border-color:var(--ink)}
+.wxleft{font-size:14px;font-weight:800;margin:12px 2px 8px}
+.wxlink{background:none;border:0;padding:0;font:inherit;font-size:13px;color:var(--ink);text-decoration:underline;cursor:pointer}
+.wxi{background:#fff;border:1px solid #EFEAE6;border-left:6px solid #12A150;border-radius:14px;padding:12px;margin-bottom:8px}
+.wxi.o{border-left-color:#F08A00;background:#FFFCF7}.wxi.r{border-left-color:#E5322D;background:#FFFAFA}.wxi.x{opacity:.5}
+.wxt{display:flex;gap:10px;align-items:flex-start}
+.wxn{font-size:15px;font-weight:800;line-height:1.35}
+.wxraw{font-size:12px;color:var(--mute);font-weight:600;margin-top:2px}.wxraw em{font-style:normal;color:#5A5353;background:#F3F0ED;border-radius:5px;padding:0 4px}
+.wxtags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.otg.wxo{background:#FFF4E5;color:#B86500}.otg.wxr{background:#FDECEC;color:#C2283A}.otg.wxg{background:#EAF8F0;color:#12A150}
+.wxq{flex:none}.wxq input{width:40px;text-align:center;font-weight:800;font-size:15px;border:0;background:transparent}
+.wxask{margin-top:10px;background:#fff;border:1px solid #F4DDBB;border-radius:12px;padding:10px}.wxi.r .wxask{border-color:#F6CFCF}
+.wxq2{font-size:13px;font-weight:800;margin-bottom:4px}
+.wxc{display:flex;align-items:center;gap:8px;padding:8px 4px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700;flex-wrap:wrap}
+.wxc input{accent-color:#156DFF;width:18px;height:18px;flex:none}.wxc small{color:var(--mute);font-weight:600;font-size:11.5px;margin-left:auto}
+.wxs2{margin-top:6px;min-height:42px!important;font-size:14px}
+.wxacts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.wxacts .obtn{min-height:40px;font-size:13.5px}.obtn:disabled{background:#D9D5D2!important;color:#fff!important;border-color:#D9D5D2!important;cursor:not-allowed}

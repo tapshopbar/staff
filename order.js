@@ -115,7 +115,7 @@ function page(){
    <div class="omain"><div class="ocard">
      <div class="oseg" role="tablist">${cats().map(c=>`<button role="tab" aria-selected="${UI.cat===c.id}" data-cat="${c.id}" class="${UI.cat===c.id?'on':''}">${c.nm}</button>`).join('')}</div>
      <input class="osearch" id="oq" type="search" placeholder="${CATS.find(c=>c.id===UI.cat).nm} 검색 (이름 · 거래처)" value="${e(UI.q)}" autocomplete="off">
-     <div class="ofil"><button data-fil="usual" class="${UI.fil==='usual'?'on':''}">우리 지점 평소 품목</button><button data-fil="all" class="${UI.fil==='all'?'on':''}">전체</button></div>
+     ${UI.cat==='w'?`<button class="wxbtn" data-act="wxl"><span class="wxic">XLS</span><span><b>엑셀로 담기</b><small>점장님 발주 엑셀을 올리면 품목표와 맞춰 드려요</small></span><span class="wxgo">›</span></button>`:''}<div class="ofil"><button data-fil="usual" class="${UI.fil==='usual'?'on':''}">우리 지점 평소 품목</button><button data-fil="all" class="${UI.fil==='all'?'on':''}">전체</button></div>
      <div class="ohd"><span>품목 · 규격</span><span>거래처</span><span style="text-align:right">평소</span><span style="text-align:right">수량</span></div>
      <div id="olist">${listHTML()}</div>
      ${UI.cat!=='w'?`<button class="obtn line" data-act="custom" style="margin-top:12px;min-height:46px;font-size:14px">＋ 목록에 없는 것 담기</button>`:`<div class="osub" style="margin-top:10px">와인은 목록에 있는 것만 담을 수 있어요 (주류 거래 규정).</div>`}
@@ -224,7 +224,7 @@ function bind(v){
     if(t.dataset.d){const id=t.dataset.for||t.closest('[data-id]').dataset.id;setQ(id,(O.lines[id]||0)+(+t.dataset.d));return}
     if(t.dataset.rx){openRx(t.dataset.rx);return}
     const a=t.dataset.act;
-    if(a==='like')likeLast();else if(a==='cart')openCart();else if(a==='custom')openCustom();else if(a==='submit')submit();
+    if(a==='like')likeLast();else if(a==='cart')openCart();else if(a==='custom')openCustom();else if(a==='wxl')wxOpen();else if(a==='submit')submit();
     else if(a==='unsubmit'){O.status=0;oSave();draw()}
     else if(a==='mgrok'){O.mgrOk=1;O.at=Date.now();oSave();draw()}
     else if(a==='skip'){O.at=Date.now()-(stage()<3?T_HQ:T_SUP);oSave();draw()}
@@ -246,4 +246,138 @@ addEventListener('resize',()=>{if(location.hash.startsWith('#/order')&&O&&O.stat
 /* 넓은 화면: 담은 것 패널이 아래 메뉴에 가리지 않게 높이 맞춤 */
 let FR=0;function fitCart(){cancelAnimationFrame(FR);FR=requestAnimationFrame(()=>{const c=$o('.ocart');if(!c||innerWidth<768||getComputedStyle(c).display==='none')return;const t=Math.max(76,c.getBoundingClientRect().top);const nav=$o('.nav');const nb=nav?nav.getBoundingClientRect().height:80;c.style.maxHeight=Math.max(420,innerHeight-t-nb-16)+'px'})}
 addEventListener('scroll',()=>{if(location.hash.startsWith('#/order'))fitCart()},{passive:true});
+
+/* ── 와인 엑셀로 담기 (2026-11-18 BETA, TOM) ─────────────────────────────
+ * 점장님 발주 엑셀 → 와인 품목표와 맞춰서 담기.
+ *   초록 = 맞음 · 주황 = 비슷한 걸 찾음(맞아요 눌러야 담김) · 빨강 = 못 찾음(검색 · 빼기)
+ * - 엑셀은 이 기기 브라우저 안에서만 읽음(서버로 안 감).
+ * - 품목표 wx_wines.js 는 이름 · 거래처 · 상태만(금액 없음). SheetJS wx_xlsx.js. 둘 다 버튼 누를 때만 불러옴.
+ * - '맞아요'로 확인한 이름은 이 기기에 기억(tsb_wine_alias_v1) → 다음 엑셀부터 초록.
+ * - 되돌리기: 이 블록과 와인 탭의 data-act="wxl" 버튼 줄만 지우면 됨.
+ */
+const WM=(function(){
+  const SYN=[[/chateau|château|ch\.|샤토|샤떼|샤또/g,'샤또'],[/까베르네|카베르네|까쇼|카쇼|cabernet/g,'카베르네'],[/쇼비뇽|쏘비뇽|소비뇽|sauvignon/g,'소비뇽'],
+  [/시라즈|쉬라즈|shiraz/g,'쉬라즈'],[/샤르도네이|샤도네이|샤르도네|샤도네|chardonnay/g,'샤르도네'],[/피노누아르|피노누와|피노누아|pinotnoir/g,'피노누아'],
+  [/브륏|브룻|브뤼|brut/g,'브뤼'],[/리제르바|리저바|리져브|리저브|레제르바|reserva|reserve/g,'리저브'],[/뀌베|퀴베|cuvee|cuvée/g,'뀌베'],[/블랑|blanc/g,'블랑'],[/로제|rose|rosé/g,'로제'],
+  [/메를로|멀롯|메를롯|merlot/g,'메를로'],[/모스카토|모스까또|moscato/g,'모스카토'],[/프로세코|프로세꼬|prosecco/g,'프로세코'],[/샴페인|샹파뉴|champagne/g,'샴페인']];
+  function norm(s){s=String(s||'').normalize('NFC').toLowerCase();
+    s=s.replace(/\b(19[5-9]\d|20[0-4]\d)\b/g,' ').replace(/\(?\s*750\s*(ml)?\s*\)?/g,' ').replace(/nv\b/g,' ');
+    s=s.replace(/\s+/g,'');SYN.forEach(([r,t])=>{s=s.replace(r,t)});return s.replace(/[\s·.,\-_'"’`()\[\]/&+~]/g,'')}
+  function vol(s){s=String(s||'');const m=s.match(/(\d{3,4})\s*ml/i)||s.match(/\(\s*(\d{3,4})\s*\)/);return m?m[1]:''}
+  function clean(s){s=String(s||'').trim();const memo=[];s=s.replace(/\((고객\s*요청|요청|추가|급|긴급|샘플|행사)\)/g,(a,b)=>{memo.push(b);return ''});return {name:s.replace(/\s+/g,' ').trim(),memo:memo.join(', ')}}
+  function vint(s){const m=String(s||'').match(/\b(19[5-9]\d|20[0-4]\d)\b/);return m?m[1]:''}
+  function grams(s){const g=new Map();for(let i=0;i<s.length-1;i++){const k=s.slice(i,i+2);g.set(k,(g.get(k)||0)+1)}return g}
+  function dice(a,b){if(!a||!b)return 0;if(a===b)return 1;const A=grams(a),B=grams(b);let n=0,ta=0,tb=0;A.forEach(v=>ta+=v);B.forEach(v=>tb+=v);A.forEach((v,k)=>{n+=Math.min(v,B.get(k)||0)});return 2*n/(ta+tb||1)}
+  function score(q,c){let d=dice(q,c);if(q.length>=4&&(c.includes(q)||q.includes(c)))d=Math.max(d,0.6+0.4*Math.min(q.length,c.length)/Math.max(q.length,c.length));return d}
+  const RANK={'사용':0,'보류':1,'단종':2};
+  function index(rows,pref){return rows.map(a=>{const w={id:a[0],name:a[1],name_en:a[2]||'',supplier:a[3]||'',status:a[4]||'사용',inList:!!pref[a[0]]};return {w,n:norm(w.name),ne:w.name_en?norm(w.name_en):'',v:vint(w.name)}})}
+  const rk=x=>(RANK[x.w.status]||0)*2+(x.w.inList?0:1);
+  function match(name,idx,aliases,opt){
+    const q=norm(name),v=vint(name);if(!q)return{color:'red',reason:'품목 이름이 비어 있어요',cands:[]};
+    if(aliases[q]){const it=idx.find(x=>x.w.id===aliases[q]);if(it)return fin({color:'green',how:'alias',pick:it.w,cands:[it.w],reason:''},opt)}
+    const ex=idx.filter(x=>(x.n===q||x.ne===q)&&(!v||!x.v||x.v===v)).sort((a,b)=>rk(a)-rk(b));
+    if(ex.length===1||(ex.length>1&&rk(ex[0])<rk(ex[1])))return fin({color:'green',how:'exact',pick:ex[0].w,cands:ex.map(x=>x.w),reason:v&&!ex[0].v?'빈티지 '+v+' 적혀 있음':''},opt);
+    if(ex.length>1)return fin({color:'orange',reason:'같은 이름이 '+ex.length+'개 있어요',pick:ex[0].w,cands:ex.map(x=>x.w).slice(0,3)},opt);
+    const sc=idx.map(x=>({x,s:Math.max(score(q,x.n),x.ne?score(q,x.ne):0)-(RANK[x.w.status]||0)*0.03+(x.w.inList?0.02:0)+(opt.sup&&x.w.supplier.includes(opt.sup)?0.03:0)})).sort((a,b)=>b.s-a.s).slice(0,3);
+    const top=sc[0];if(!top||top.s<0.5)return{color:'red',reason:'품목표에서 못 찾았어요',cands:sc.filter(c=>c.s>0.3).map(c=>c.x.w)};
+    const r={color:'orange',pick:top.x.w,cands:sc.filter(c=>c.s>=0.4).map(c=>c.x.w),reason:'이름이 달라서 비슷한 걸 찾았어요'};
+    const qv=vol(name),cv=vol(top.x.w.name);
+    if(v&&top.x.v&&v!==top.x.v)r.reason='빈티지가 달라요 ('+v+' → '+top.x.v+')';
+    else if(qv&&cv&&qv!==cv)r.reason='용량이 달라요 ('+qv+'ml → '+cv+'ml)';
+    else if(!qv&&cv&&cv!=='750')r.reason='용량 확인 ('+cv+'ml 품목)';
+    return fin(r,opt)}
+  function fin(r,opt){const w=r.pick;r.flags=[];if(!w)return r;
+    if(w.status==='단종'&&r.color==='green'){r.color='orange';r.reason='단종으로 표시된 품목이에요'}
+    if(opt.sup&&w.supplier&&!w.supplier.includes(opt.sup)&&!opt.sup.includes(w.supplier))r.flags.push('엑셀엔 거래처 '+opt.sup);
+    return r}
+  return {norm,clean,match,index};
+})();
+const WX_BASE='https://tapshopbar.github.io/staff/',WX_AKEY='tsb_wine_alias_v1';
+const WXC={name:/품목|품명|와인|상품|제품|아이템|name|item|wine/i,qty:/수량|발주|병|qty|개수|주문/i,store:/지점|매장|store/i,sup:/거래처|업체|공급|supplier|vendor/i,memo:/비고|메모|note|요청/i,price:/단가|가격|금액|price/i};
+let WX={lines:[],filt:'all',info:'',wb:null,sn:null,err:''};let WXR=null,WIDX=null,WBY={};
+function wxAl(){try{return JSON.parse(localStorage.getItem(WX_AKEY)||'{}')}catch(_){return {}}}
+function wxJs(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=WX_BASE+src;s.onload=ok;s.onerror=()=>no(new Error(src));document.head.appendChild(s)})}
+function wxReady(){if(!WXR)WXR=Promise.all([window.XLSX?0:wxJs('wx_xlsx.js?v=1'),window.TSB_WINES?0:wxJs('wx_wines.js?v=1')]).then(()=>{
+  const pref={};IT.forEach(i=>{if(i.cat==='w')pref[i.id]=1});WIDX=WM.index(window.TSB_WINES,pref);WIDX.forEach(x=>WBY[x.w.id]=x.w)}).catch(er=>{WXR=null;throw er});return WXR}
+const wxSN=s=>String(s.nm||'').replace(/두타$/,'');
+function wxHead(rows){const SN=ST.map(wxSN);let best=null;for(let r=0;r<Math.min(rows.length,20);r++){const row=rows[r]||[];const m={};
+  row.forEach((v,c)=>{const t=String(v==null?'':v).trim();if(!t||t.length>20)return;for(const k in WXC){if(m[k]==null&&WXC[k].test(t)){if(k==='qty'&&WXC.price.test(t))continue;if(k==='name'&&/no\b|번호/i.test(t))continue;m[k]=c;break}}});
+  const wide=SN.map(s=>[s,row.findIndex(v=>String(v==null?'':v).replace(/\s/g,'').startsWith(s))]).filter(x=>x[1]>=0);
+  const sc=(m.name!=null?3:0)+(m.qty!=null?2:0)+(wide.length?2:0)+Object.keys(m).length*.1;if(m.name!=null&&(!best||sc>best.sc))best={r,m,wide,sc}}return best}
+function wxParse(wb,force){if(wb!==WX.wb)force=null;WX.wb=wb;let pick=null;const sn=wxSN(store());
+  for(const n of wb.SheetNames){if(force&&n!==force)continue;const rows=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:null,raw:true});const h=wxHead(rows);if(!h)continue;
+    const cnt=rows.slice(h.r+1).filter(r=>r&&r[h.m.name]).length;const sc=h.sc*100+cnt+(h.m.store!=null&&!h.wide.length?50:0)+(/발주|주문|order/i.test(n)?500:0)-(/이력|근거|요약|history|기록|참고/i.test(n)?1000:0);
+    if(!pick||sc>pick.sc)pick={n,rows,h,sc}}
+  if(!pick){WX.err='품목 이름 칸을 못 찾았어요. 맨 위 줄 근처에 "품목" 또는 "와인명" 제목이 있는지 봐 주세요.';WX.lines=[];return wxDraw()}
+  WX.err='';const {rows,h}=pick;WX.sn=pick.n;const raw=[];
+  for(const r of rows.slice(h.r+1)){if(!r)continue;const nm=r[h.m.name];if(!nm||/합계|소계|total/i.test(String(nm)))continue;
+    const b={name:String(nm),sup:h.m.sup!=null?String(r[h.m.sup]||''):'',memo:h.m.memo!=null?String(r[h.m.memo]||''):''};
+    if(h.wide.length){const c=h.wide.find(x=>x[0]===sn);if(!c)continue;const q=+r[c[1]]||0;if(q>0)raw.push({...b,qty:q})}
+    else{if(h.m.store!=null){const s=String(r[h.m.store]||'');if(s&&!s.includes(sn))continue}const q=h.m.qty!=null?+r[h.m.qty]||0:1;if(q>0)raw.push({...b,qty:q})}}
+  const col=i=>XLSX.utils.encode_col(i);
+  WX.info=`시트 '${e(pick.n)}' · ${raw.length}줄 · 품목 ${col(h.m.name)}열`+(h.wide.length?` · 수량 '${e(sn)}' 열`:h.m.qty!=null?` · 수량 ${col(h.m.qty)}열`:' · 수량 칸 없음(1병씩)')+(h.m.store!=null&&!h.wide.length?` · ${e(sn)}만`:'');
+  const al=wxAl();
+  WX.lines=raw.map((r,i)=>{const c=WM.clean(r.name);const sup=r.sup.replace(/㈜|\(주\)|주식회사/g,'').trim();const m=WM.match(c.name,WIDX,al,{sup});
+    return {i,raw:r.name,key:WM.norm(c.name),qty:Math.min(999,Math.round(r.qty)),memo:[r.memo,c.memo].filter(Boolean).join(' · '),m,color:m.color,sel:m.pick?m.pick.id:null,state:m.color==='green'?'ok':'ask',q:''}});
+  WX.filt='all';wxDraw()}
+function wxOpen(){WX={lines:[],filt:'all',info:'',wb:null,sn:null,err:''};
+  sheet(`<div id="wxb"></div>`,`<div id="wxf" style="display:flex;gap:8px;width:100%"></div>`);
+  const sh=$o('#osheet .osheet');if(sh)sh.classList.add('wxs');wxDraw();
+  wxReady().then(()=>{if($o('#wxb'))wxDraw()}).catch(()=>{WX.err='준비 파일을 못 불러왔어요. 인터넷 연결을 확인하고 다시 열어 주세요.';wxDraw()})}
+const wxPend=()=>WX.lines.filter(l=>l.state==='ask');
+function wxTag(w){return (w.status!=='사용'?`<span class="otg ${w.status==='단종'?'wxr':''}">${e(w.status)}</span>`:'')+(w.inList?'':'<span class="otg">발주 목록 밖</span>')}
+function wxItem(l){const w=l.sel?WBY[l.sel]:null;const cls=l.state==='drop'?'x':l.color==='green'?'g':l.color==='orange'?'o':'r';
+  let h=`<div class="wxi ${cls}" data-wi="${l.i}"><div class="wxt"><div style="min-width:0;flex:1">`;
+  if(l.state==='drop')h+=`<div class="wxn" style="text-decoration:line-through">${e(l.raw)}</div><div class="wxraw">이번엔 뺐어요 · <button class="wxlink" data-wa="undo">되돌리기</button></div>`;
+  else if(!w)h+=`<div class="wxn">${e(l.raw)}</div><div class="wxraw">품목표에 없는 이름이에요</div>`;
+  else{h+=`<div class="wxn">${e(w.name)}</div>`+(w.name!==l.raw.trim()?`<div class="wxraw">엑셀: <em>${e(l.raw)}</em></div>`:'');
+    h+=`<div class="wxtags">`+(l.state==='ok'&&l.color!=='green'?'<span class="otg wxg">확인함 · 다음부터 자동</span>':'')+(l.m.how==='alias'?'<span class="otg wxg">전에 확인한 이름</span>':'')
+      +(l.state==='ask'&&l.m.reason?`<span class="otg ${l.color==='red'?'wxr':'wxo'}">${e(l.m.reason)}</span>`:'')+(l.state==='ok'&&l.color==='green'&&l.m.reason?`<span class="otg">${e(l.m.reason)}</span>`:'')
+      +(w.supplier?`<span class="otg">${e(w.supplier)}</span>`:'')+wxTag(w)+(l.m.flags||[]).map(f=>`<span class="otg">${e(f)}</span>`).join('')+(l.memo?`<span class="otg">메모: ${e(l.memo)}</span>`:'')+`</div>`}
+  h+=`</div>`+(l.state!=='drop'?`<div class="ost wxq"><button data-wa="m" aria-label="빼기">−</button><input class="wxqi" inputmode="numeric" value="${l.qty}" aria-label="수량"><button data-wa="p" aria-label="더하기">＋</button></div>`:'')+`</div>`;
+  if(l.state==='ask'){const cs=l.m.cands||[];
+    h+=`<div class="wxask"><div class="wxq2">${l.color==='red'?'비슷한 이름을 찾아 주세요':'이 품목이 맞나요?'}</div>`
+     +cs.map(c=>`<label class="wxc"><input type="radio" name="wxc${l.i}" value="${e(c.id)}" ${c.id===l.sel?'checked':''}><span>${e(c.name)}</span>${wxTag(c)}<small>${e(c.supplier)}</small></label>`).join('')
+     +`<input class="ofield wxs2" data-wa="s" placeholder="품목표에서 찾기 (예: 클라우디)" value="${e(l.q)}">`;
+    if(l.q){const qn=WM.norm(l.q);const rs=WIDX.filter(x=>x.n.includes(qn)||(x.ne&&x.ne.includes(qn))).sort((a,b)=>((a.w.status==='사용'?0:2)+(a.w.inList?0:1))-((b.w.status==='사용'?0:2)+(b.w.inList?0:1))).slice(0,6);
+      h+=rs.map(x=>`<label class="wxc"><input type="radio" name="wxc${l.i}" value="${e(x.w.id)}" ${x.w.id===l.sel?'checked':''}><span>${e(x.w.name)}</span>${wxTag(x.w)}<small>${e(x.w.supplier)}</small></label>`).join('')||'<div class="wxraw" style="padding:6px">검색 결과가 없어요</div>'}
+    h+=`<div class="wxacts"><button class="obtn sm" data-wa="ok" ${l.sel?'':'disabled'}>맞아요</button><button class="obtn sm line" data-wa="drop">이번엔 빼기</button></div></div>`}
+  return h+`</div>`}
+function wxDraw(){const b=$o('#wxb'),f=$o('#wxf');if(!b)return;const osb=b.closest('.osb'),sy=osb?osb.scrollTop:0;
+  const head=`<div class="oh">와인 엑셀로 담기 <small>BETA</small></div><div class="osub" style="margin:4px 0 10px">점장님이 쓰던 발주 엑셀을 그대로 올리면 와인 품목표와 맞춰서 담아 드려요. 엑셀은 이 기기 안에서만 읽어요.</div>`;
+  if(!WIDX&&!WX.err){b.innerHTML=head+`<div class="oempty">준비하는 중…</div>`;f.innerHTML=`<button class="obtn line" data-wa="close">닫기</button>`;return}
+  const up=`<label class="wxdrop"><input type="file" id="wxfile" accept=".xlsx,.xls,.csv" hidden><b>${WX.lines.length?'다른 엑셀 올리기':'엑셀 파일 고르기'}</b><span>.xlsx · .xls · .csv · ${e(store().nm)} 기준</span></label>`;
+  const legend=`<div class="wxleg"><span><i class="g"></i>초록 맞음</span><span><i class="o"></i>주황 비슷한 걸 찾음 · 확인</span><span><i class="r"></i>빨강 못 찾음</span></div>`;
+  let body=head+up+(WX.err?`<div class="onote r">${e(WX.err)}</div>`:'');
+  if(WX.info){const ss=WX.wb&&WX.wb.SheetNames.length>1?` · <select id="wxsh">${WX.wb.SheetNames.map(n=>`<option ${n===WX.sn?'selected':''}>${e(n)}</option>`).join('')}</select>`:'';body+=`<div class="wxinfo">${WX.info}${ss}</div>`}
+  if(!WX.lines.length){b.innerHTML=body+legend;f.innerHTML=`<button class="obtn line" data-wa="close">닫기</button>`;wxBind();return}
+  const c={g:0,o:0,r:0};WX.lines.forEach(l=>{if(l.state!=='drop')c[l.color==='green'?'g':l.color==='orange'?'o':'r']++});const p=wxPend().length;
+  body+=`<div class="wxsum"><button data-wf="green" class="g ${WX.filt==='green'?'on':''}"><b>${c.g}</b>초록 · 맞음</button><button data-wf="orange" class="o ${WX.filt==='orange'?'on':''}"><b>${c.o}</b>주황 · 확인</button><button data-wf="red" class="r ${WX.filt==='red'?'on':''}"><b>${c.r}</b>빨강 · 못 찾음</button></div>`;
+  body+=`<div class="wxleft">${WX.filt!=='all'?'<button class="wxlink" data-wf="all">← 전체 보기</button>':p?`확인할 것 <b style="color:#B86500">${p}개</b> 남았어요`:'모두 확인했어요'}</div>`;
+  const ord={ask:0,ok:1,drop:2};const L=WX.lines.filter(l=>WX.filt==='all'||l.color===WX.filt).sort((a,b)=>(ord[a.state]-ord[b.state])||((a.color==='red'?0:1)-(b.color==='red'?0:1))||a.i-b.i);
+  b.innerHTML=body+L.map(wxItem).join('');
+  const ok=WX.lines.filter(l=>l.state==='ok'&&l.qty>0),n=new Set(ok.map(l=>l.sel)).size,bt=ok.reduce((s,l)=>s+l.qty,0);
+  f.innerHTML=`<button class="obtn line" data-wa="close" style="flex:1">닫기</button><button class="obtn" data-wa="add" style="flex:2" ${p||!n?'disabled':''}>${p?`확인할 것 ${p}개 남음`:`${n}개 · ${bt}병 담기`}</button>`;
+  if(osb)osb.scrollTop=sy;wxBind()}
+function wxBind(){const fi=$o('#wxfile');if(fi)fi.onchange=async ev=>{const fl=ev.target.files[0];if(!fl)return;try{await wxReady();wxParse(XLSX.read(await fl.arrayBuffer(),{type:'array'}))}catch(er){WX.err='엑셀을 못 읽었어요. 파일이 열리는지 확인해 주세요.';wxDraw()}};
+  const sh=$o('#wxsh');if(sh)sh.onchange=()=>wxParse(WX.wb,sh.value)}
+document.addEventListener('click',ev=>{const box=ev.target.closest&&ev.target.closest('#osheet');if(!box||!$o('#wxb'))return;
+  const wf=ev.target.closest('[data-wf]');if(wf){WX.filt=WX.filt===wf.dataset.wf?'all':wf.dataset.wf;wxDraw();return}
+  const t=ev.target.closest('[data-wa]');if(!t)return;const a=t.dataset.wa;
+  if(a==='close'){closeSheet();return}
+  if(a==='add'){wxAdd();return}
+  const card=t.closest('[data-wi]');if(!card)return;const l=WX.lines[+card.dataset.wi];
+  if(a==='m')l.qty=Math.max(0,l.qty-1);else if(a==='p')l.qty=Math.min(999,l.qty+1);
+  else if(a==='ok'&&l.sel){l.state='ok';const al=wxAl();al[l.key]=l.sel;localStorage.setItem(WX_AKEY,JSON.stringify(al));otoast('기억했어요 · 다음 엑셀부터 자동으로 맞춰요')}
+  else if(a==='drop'){l.prev=l.state;l.state='drop'}else if(a==='undo'){l.state=l.prev||'ask'}else return;wxDraw()});
+document.addEventListener('change',ev=>{const t=ev.target;if(!$o('#wxb')||!t.closest)return;const card=t.closest('[data-wi]');if(!card)return;const l=WX.lines[+card.dataset.wi];
+  if(t.type==='radio'){l.sel=t.value;wxDraw()}else if(t.classList.contains('wxqi')){l.qty=Math.max(0,Math.min(999,+t.value.replace(/[^0-9]/g,'')||0));wxDraw()}});
+document.addEventListener('input',ev=>{const t=ev.target;if(!$o('#wxb')||!t.classList||!t.classList.contains('wxs2'))return;const card=t.closest('[data-wi]');const l=WX.lines[+card.dataset.wi];l.q=t.value;
+  const pos=t.selectionStart;card.outerHTML=wxItem(l);const ni=$o(`[data-wi="${l.i}"] .wxs2`);if(ni){ni.focus();try{ni.setSelectionRange(pos,pos)}catch(_){}}});
+function wxAdd(){const ok=WX.lines.filter(l=>l.state==='ok'&&l.qty>0);if(!ok.length)return;const prev=JSON.stringify(O);const sum={};
+  ok.forEach(l=>{sum[l.sel]=(sum[l.sel]||0)+l.qty});
+  Object.entries(sum).forEach(([id,q])=>{if(!ITEM[id]&&!O.custom[id]){const w=WBY[id];const sid=Object.keys(OD.sups).find(k=>OD.sups[k][0]===w.supplier)||w.supplier||'CU';O.custom[id]={id,cat:'w',name:w.name,spec:'엑셀로 담음',unit:'병',sup:sid,supn:w.supplier||'직접 추가',usual:{},tap:[],st:'1234',cu:1}}O.lines[id]=Math.min(999,q)});
+  const merged=Object.keys(sum).length<ok.length;
+  oSave();closeSheet();UI.cat='w';UI.q='';uiSave();draw();otoast(`와인 ${Object.keys(sum).length}개 담았어요${merged?' (같은 품목은 합쳤어요)':''}`,prev,7000)}
+
 })();
