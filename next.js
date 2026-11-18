@@ -105,7 +105,7 @@ function renderLogin(step='email',email=''){
 }
 function splash(ms){return new Promise(res=>{const d=document.createElement('div');d.className='welcome';
   d.innerHTML=`<div class="wbg"></div><div class="wshade"></div>
-   <div class="wtop"><img src="${LOGO}" alt="TAP SHOP BAR"><span class="new">PEOPLE</span></div>
+   <div class="wtop"><img src="${LOGO}" alt="TAP SHOP BAR"><span class="new">CREW</span></div>
    <div class="wbot"><span class="tag"><i class="new">NEW</i> 직원 전용 앱</span><h1>함께 일하는<br>탭샵바인의 공간.</h1><p>출퇴근, 스케줄, 휴가, 경비까지. 폰 하나로 끝내요.</p></div>`;
   d.style.setProperty('--wdur',ms+'ms');
   document.body.appendChild(d);requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add('on')));
@@ -158,7 +158,7 @@ function brLabel(b){return b==='본사'||b==='서포트센터'?'전 지점':b}
 
 /* ── BETA 표시 + TSB music (2026-11-10) ── */
 const APP_V='BETA 0.12';
-function betaInfo(){openSheet(`<h2>지금은 베타 버전이에요</h2><div style="font-size:15px;line-height:1.75;font-weight:500;margin-top:10px;word-break:keep-all">매장에서 쓰면서 매주 고치고 있어요. 지금이 <b>12번째 업데이트(BETA 0.12)</b>예요.<br><b>12월 25일까지</b> 의견을 받고 베타를 마쳐요. 그리고 <b>2027년 1월, 정식 버전 1.0</b>으로 시작해요.<br><br>아주 작은 것도 좋아요. 고칠 것, 있으면 좋겠는 것, 좋았던 것까지 알려 주세요. 서포트센터가 전부 읽어요.</div><a class="pill wine full" href="#/feedback" data-close style="margin-top:18px">의견 보내기</a><p class="note" style="margin-top:12px;text-align:center">TSB People ${APP_V}</p>`)}
+function betaInfo(){openSheet(`<h2>지금은 베타 버전이에요</h2><div style="font-size:15px;line-height:1.75;font-weight:500;margin-top:10px;word-break:keep-all">매장에서 쓰면서 매주 고치고 있어요. 지금이 <b>12번째 업데이트(BETA 0.12)</b>예요.<br><b>12월 25일까지</b> 의견을 받고 베타를 마쳐요. 그리고 <b>2027년 1월, 정식 버전 1.0</b>으로 시작해요.<br><br>아주 작은 것도 좋아요. 고칠 것, 있으면 좋겠는 것, 좋았던 것까지 알려 주세요. 서포트센터가 전부 읽어요.</div><a class="pill wine full" href="#/feedback" data-close style="margin-top:18px">의견 보내기</a><p class="note" style="margin-top:12px;text-align:center">TSB CREW ${APP_V}</p>`)}
 const RADIO='https://tsb.wine/radio/';
 const MU_STORES=[['청계','cg'],['상암','sa'],['마곡','mg'],['동대문','dd']];
 ROUTES.music=function(v){const me=(S.data&&S.data.me)||{};
@@ -287,7 +287,7 @@ function card(p){return `<article class="crp ${p.top?'top':''}" data-id="${esc(p
   <div class="cra"><span class="crbtns"><button type="button" class="crc ${p.cheered?'on':''}" data-cheer>♥ 응원해요 <em>${p.cheers||''}</em></button><button type="button" class="crs" data-share>동료에게 보내기</button></span>${p.canDel?'<button type="button" class="crd" data-del>지우기</button>':''}</div></article>`}
 /* 동료에게 보내기: 글 내용은 빼고 링크만 보낸다(로그인한 직원만 열림). 카톡 등 휴대폰 공유 창, 안 되면 링크 복사 */
 async function shareStory(id){const url=location.origin+location.pathname+'#/crew/'+encodeURIComponent(id);
-  const text='탭샵바 매장 이야기에 같이 보고 싶은 글이 있어요. People 앱에서 열어 보세요.';
+  const text='탭샵바 매장 이야기에 같이 보고 싶은 글이 있어요. CREW 앱에서 열어 보세요.';
   if(navigator.share){try{await navigator.share({title:'TSB 매장 이야기',text,url});return}catch(e){if(e&&e.name==='AbortError')return}}
   try{await navigator.clipboard.writeText(text+'\n'+url);toast('링크를 복사했어요. 카톡에 붙여 넣어 주세요')}
   catch(e){openSheet(`<h2>링크 복사</h2><p class="note" style="padding:4px 0 10px">아래 주소를 길게 눌러 복사해 주세요.</p><input class="in" readonly value="${esc(url)}" onfocus="this.select()">`)}}
@@ -878,7 +878,7 @@ const FALLBACK={groups:[
  {key:'store',title:'매장 · 시설',items:[
   {key:'repair',icon:'fix',title:'고장 · 수리',desc:'누수 · 전기 · 냉장고 · 디스펜서',examples:['[마곡] 2번 디스펜서 온도 오류'],mode:'ticket',team:'시설팀',fields:[T('what','무엇이 문제인가요','textarea','예) 2번 디스펜서 온도가 18도로 떠요',{req:1}),T('since','언제부터','text','예) 오늘 오픈 때부터'),T('where','어디서','text','기계 번호 · 위치'),P()]},
   {key:'supply',icon:'box',title:'비품 · 소모품',desc:'떨어진 것 · 새로 필요한 것',examples:['[상암] 냅킨 · 와인잔 보충'],mode:'ticket',team:'구매원가팀',fields:[T('items','필요한 것과 수량','textarea','예) 와인잔 12개, 냅킨 2박스',{req:1}),T('when','언제까지','date'),P()]},
-  {key:'it',icon:'wifi',title:'POS · 기기 · 앱 오류',desc:'포스 · 와이파이 · 프린터 · People 앱',examples:['[청계] 2번 포스 결제 오류'],mode:'ticket',team:'IT팀',fields:[T('what','어떤 오류인가요','textarea','화면에 뜬 문구 그대로 적어 주세요',{req:1}),T('since','언제부터','text'),P()]}]},
+  {key:'it',icon:'wifi',title:'POS · 기기 · 앱 오류',desc:'포스 · 와이파이 · 프린터 · CREW 앱',examples:['[청계] 2번 포스 결제 오류'],mode:'ticket',team:'IT팀',fields:[T('what','어떤 오류인가요','textarea','화면에 뜬 문구 그대로 적어 주세요',{req:1}),T('since','언제부터','text'),P()]}]},
  {key:'guest',title:'고객',items:[
   {key:'refund',icon:'refund',title:'고객 충전금 환불',desc:'남은 잔액 환불 요청 전달',examples:['[마곡] 홍길동 고객 충전금 환불'],mode:'ticket',team:'재무팀',fields:[T('name','고객 이름','text','',{req:1}),T('phone','앱 가입 번호','text','010-',{req:1}),T('charged','충전일 · 금액','text','예) 2024.7.28 30,000원'),T('remain','남은 잔액','money','숫자만',{req:1}),T('account','환불 계좌','text','은행 / 번호 / 예금주'),T('why','사유','textarea')]},
   {key:'claim',icon:'alert',title:'고객 클레임 · 사고 보고',desc:'바로 보고 화면으로 가요',mode:'link',link:'#/incident/new'},
@@ -897,7 +897,7 @@ const FALLBACK={groups:[
   {key:'expense',icon:'receipt',title:'개인경비 청구',desc:'영수증 찍고 1분이면 끝',mode:'link',link:'#/exp/new'},
   {key:'settle',icon:'won',title:'결제 · 정산 문의',desc:'정산 금액 · 이체 확인',mode:'ticket',team:'재무팀',fields:[T('what','무엇이 궁금한가요','textarea','',{req:1}),T('amount','금액','money')]}]},
  {key:'voice',title:'의견',items:[
-  {key:'idea',icon:'bulb',title:'앱 개선 아이디어',desc:'People · crew를 더 편하게',examples:['근무표에서 다음 주 바로 보기'],mode:'ticket',team:'IT팀',fields:[T('what','무엇을 바꾸면 좋을까요','textarea','',{req:1}),P()]},
+  {key:'idea',icon:'bulb',title:'앱 개선 아이디어',desc:'CREW 앱을 더 편하게',examples:['근무표에서 다음 주 바로 보기'],mode:'ticket',team:'IT팀',fields:[T('what','무엇을 바꾸면 좋을까요','textarea','',{req:1}),P()]},
   {key:'ask',icon:'chat',title:'질문 · 제안 · 불편 · 칭찬',desc:'익명으로도 보낼 수 있어요',mode:'link',link:'#/ask'}]},
  {key:'etc',title:'기타',items:[
   {key:'other',icon:'more',title:'그 밖의 요청',desc:'어디로 보낼지 모를 때',mode:'ticket',team:'전략기획팀',fields:[T('what','내용','textarea','무엇이 / 언제부터 / 어디서 / 원하는 것',{req:1}),P()]}]}

@@ -105,7 +105,7 @@ async function openFile(id,label){
 /* ── login ── */
 function renderLogin(step='email',email=''){
   document.body.classList.remove('wide');
-  $('#root').innerHTML = `<div class="login"><div class="top"><img src="${LOGO}" alt="TAP SHOP BAR"><span class="new">PEOPLE</span></div>
+  $('#root').innerHTML = `<div class="login"><div class="top"><img src="${LOGO}" alt="TAP SHOP BAR"><span class="new">CREW</span></div>
    <div class="bot"><span class="tag"><i class="new">NEW</i> 직원 전용 앱</span>
     <h1>${step==='email'?'함께 일하는<br>탭샵바인의 공간.':'메일로 받은<br>6자리 코드.'}</h1>
     <p>${step==='email'?'출퇴근, 스케줄, 휴가, 경비까지. 폰 하나로 끝내요.':esc(email)+' 으로 코드를 보냈어요.'}</p>
@@ -143,7 +143,7 @@ async function onGoogle(resp){
   catch(e){const gb=$('#gbtn');if(gb)busy(gb,false);if(er){er.innerHTML=/직원 이메일이 아니/.test(e.message)?`<b>탭샵바 직원 이메일이 아니에요.</b><br>${esc(e.message.replace(/^.*\(/,'(').replace(/\)$/,')'))} 등록된 회사 계정으로 로그인하거나, 점장님께 등록을 요청해 주세요.`:esc(e.message);er.style.display='block'}else toast(e.message)}
 }
 function renderRegister(me,pending){
-  $('#root').innerHTML = `<div class="login"><div class="top"><img src="${LOGO}" alt="TAP SHOP BAR"><span class="new">PEOPLE</span></div><div class="bot">
+  $('#root').innerHTML = `<div class="login"><div class="top"><img src="${LOGO}" alt="TAP SHOP BAR"><span class="new">CREW</span></div><div class="bot">
    <h1>${pending?'승인을<br>기다리고 있어요.':'처음 오셨네요!'}</h1>
    <p>${pending?'점장님 또는 서포트센터가 확인하면 바로 쓸 수 있어요. 승인되면 메일로 알려드릴게요.':'간단한 정보만 알려 주세요. 점장님 확인 후 바로 시작해요.'}</p>
    ${pending?`<button class="pill" id="rf">새로고침</button><button class="pill line" style="color:#fff;margin-top:10px" id="lo">로그아웃</button>`:`
@@ -173,7 +173,7 @@ function shell(keep){
   const d=S.data, unread=d.notis.filter(n=>!n.read).length;
   const h=routeKey();
   const html = `${d.testMode?'<div class="test">테스트 모드 · 알림 메일은 hello@ 로만 가요</div>':''}
-   <header class="hdr ${h===''?'dark':''}" id="hdr"><button class="hback" id="hback" type="button" onclick="goBack()" style="${h===''?'display:none':''}">${I('back',18)}<span>뒤로</span></button><a class="brand" href="#/" style="${h===''?'':'display:none'}"><img class="logo" src="${LOGO}" alt="TAP SHOP BAR"><small>People</small></a><button class="beta" type="button" onclick="betaInfo()" style="${h===''?'':'display:none'}">BETA</button>
+   <header class="hdr ${h===''?'dark':''}" id="hdr"><button class="hback" id="hback" type="button" onclick="goBack()" style="${h===''?'display:none':''}">${I('back',18)}<span>뒤로</span></button><a class="brand" href="#/" style="${h===''?'':'display:none'}"><img class="logo" src="${LOGO}" alt="TAP SHOP BAR"><small>CREW</small></a><button class="beta" type="button" onclick="betaInfo()" style="${h===''?'':'display:none'}">BETA</button>
    <div class="r">${d.x&&d.x.isHQ?`<a class="ic" href="#/console" title="운영 콘솔">${I('grid',20)}</a>`:''}<a class="ic" href="#/notis">${I('bell',21)}${unread?`<span class="dot">${unread}</span>`:''}</a></div></header>
    <main id="view"></main>
    <nav class="nav">
@@ -500,7 +500,7 @@ ROUTES.more=function(v){
     ${localStorage.getItem('tsbp_admin_token')&&S.token!==localStorage.getItem('tsbp_admin_token')?`<div class="li" id="unimp"><div class="m"><div class="t1">내 계정으로 돌아가기</div><div class="t2">테스트 보기 종료</div></div></div>`:''}
     <div class="li" onclick="logout()"><div class="m"><div class="t1">로그아웃</div></div></div>
    </div>
-   <div class="verline" onclick="betaInfo()">TSB People <b>BETA</b> · ${typeof APP_V!=='undefined'?APP_V:''} · 정식 1.0은 2027년 1월</div>
+   <div class="verline" onclick="betaInfo()">TSB CREW <b>BETA</b> · ${typeof APP_V!=='undefined'?APP_V:''} · 정식 1.0은 2027년 1월</div>
    <div class="note" style="text-align:center;padding:30px 0;letter-spacing:.06em">wine is second americano</div>`;
   $('#a2h').onclick=()=>openSheet(`<h2>홈 화면에 추가</h2><div style="font-size:15px;line-height:1.8;font-weight:500;margin-top:8px"><b>iPhone (Safari)</b><br>아래 공유 버튼 → 홈 화면에 추가<br><br><b>Android (Chrome)</b><br>오른쪽 위 ⋮ → 홈 화면에 추가 또는 앱 설치</div>`);
   if($('#unimp'))$('#unimp').onclick=()=>{S.token=localStorage.getItem('tsbp_admin_token');localStorage.setItem('tsbp_token',S.token);localStorage.removeItem('tsbp_admin_token');location.hash='#/';boot()};
