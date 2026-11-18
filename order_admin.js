@@ -213,9 +213,9 @@ const MDS=['정상','쇼트','판매중지','단종','보류'];
 async function vMd(){OA.tab='md';if(!OA.cat){shell(loading());try{const j=await call('order.catalog',{cat:'wine'});OA.cat=(j.items||[]).map(i=>({key:i.key,row:i.row,name:i.name,sup:i.supplier,imp:i.importer,md:Object.assign({status:'정상',forceSupplier:'',minUnit:'',memo:''},i.md||{})}))}catch(e){shell(errBox(e.message,'OA.go()'));return}}
  drawMd()}
 function drawMd(){const q=OA.mdQ.replace(/\s/g,'');const all=OA.cat;
- const list=all.filter(i=>(!OA.mdOnly||q||i.md.status!=='정상'||i.md.forceSupplier||i.md.minUnit||i.md.memo)&&(!q||String(i.name).replace(/\s/g,'').includes(q)||String(i.key)===OA.mdQ||String(i.sup).includes(OA.mdQ)));
+ const list=all.filter(i=>(!OA.mdOnly||q||(i.md.status&&i.md.status!=='정상')||i.md.forceSupplier||(N(i.md.minUnit)||1)>1)&&(!q||String(i.name).replace(/\s/g,'').includes(q)||String(i.key)===OA.mdQ||String(i.sup).includes(OA.mdQ)));
  const cnt={};all.forEach(i=>{cnt[i.md.status]=(cnt[i.md.status]||0)+1});
- shell(`<div class="oa-card"><div class="oa-row"><input class="oa-in" id="oa_mq" placeholder="와인 이름, 품목키, 거래처" value="${E(OA.mdQ)}" oninput="OA.mq(this.value)"><label class="oa-tg"><input type="checkbox" ${OA.mdOnly?'checked':''} onchange="OA.mdOnly=this.checked;OA.drawMdKeep()"><span>설정된 것만</span></label></div>
+ shell(`<div class="oa-card"><div class="oa-row"><input class="oa-in" id="oa_mq" placeholder="와인 이름, 품목키, 거래처" value="${E(OA.mdQ)}" oninput="OA.mq(this.value)"><label class="oa-tg"><input type="checkbox" ${OA.mdOnly?'checked':''} onchange="OA.mdOnly=this.checked;OA.drawMdKeep()"><span>정상 아닌 것만</span></label></div>
   <div class="oa-mut">${all.length}품목 · ${MDS.map(s=>`${s} ${cnt[s]||0}`).join(' · ')} · 쇼트·판매중지·단종이면 점장 발주가 '보류'로 들어와요.</div></div>
   <div class="oa-card oa-tw"><table class="oa-t md"><thead><tr><th>품목</th><th>발주 상태</th><th>강제 거래처</th><th>최소 단위</th><th>메모</th><th></th></tr></thead><tbody>
   ${list.slice(0,80).map(i=>`<tr id="md_${E(i.key)}"><td class="l" data-l="품목"><div class="oa-nm">${E(i.name)}</div><div class="oa-mut">${E(i.sup||'')}${i.imp?' · '+E(i.imp):''} · ${E(i.key)}</div></td>
