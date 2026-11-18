@@ -1,4 +1,5 @@
 /* ═══ CREW 발주 탭 · BETA 서버 연결 (2026-11-18, TOM) · 처음 2026-11-16 연습 모드
+ * - 11/18 밤: 크루 제출 → '점장확인' → 점장(매니저 이상)이 '크루 발주 확인' 카드에서 수량 고쳐 승인(order.approve) / 돌려보내기(order.reject, 사유 필수). 크루는 반려 사유 보고 '다시 담기'.
  * - 담는 중엔 이 기기 localStorage에 자동 저장. 제출 = People API order.submit(reqId 멱등) · 낸 발주 = order.mine · 취소 = order.cancel · 입고 = order.receive(+거래명세표 사진/엑셀/PDF).
  * - 공개 저장소라 금액 데이터(단가 · 판매가 · 마진)는 파일에 없음. 가격은 order.catalog 응답(v2 사용자만)에서 받아 메모리에만 둠.
  * - 아래 메뉴: 홈 · 스케줄 · ＋요청 · 발주 · 결재 (더보기는 헤더 ☰ 로 이동)
@@ -102,7 +103,7 @@ function loadMine(force){const s=store();if(SV.st===1&&SV.sid===s.id)return SV.p
   if(SV.sid!==s.id)SV.pos=[];SV.st=1;SV.sid=s.id;SV.err='';
   const p=SV.p=call('order.mine',{store:s.nm,weeks:4}).then(j=>{if(SV.p!==p)return;SV.pos=(j.pos||[]).map(normPo).sort((a,b)=>String(b.submittedAt||'').localeCompare(String(a.submittedAt||'')));SV.st=2;SV.at=Date.now()})
    .catch(er=>{if(SV.p!==p)return;SV.st=3;SV.err=emsg(er)}).then(()=>softDraw());return p}
-function stOf(po){const s=String(po.status||'');if(/취소/.test(s))return {k:-1,lab:'취소됨',c:'s0'};if(/입고|완료/.test(s)||po.received)return {k:5,lab:'입고 끝',c:'s5'};
+function stOf(po){const s=String(po.status||'');if(/반려/.test(s))return {k:-2,lab:'돌려보냄',c:'rj'};if(/취소/.test(s))return {k:-1,lab:'취소됨',c:'s0'};if(/점장/.test(s))return {k:1,lab:'점장님 확인 대기',c:'s1'};if(/입고|완료/.test(s)||po.received)return {k:5,lab:'입고 끝',c:'s5'};
   if(/확정|입금|출고|배송/.test(s))return {k:4,lab:'오는 중',c:'s3'};if(/단가확인|취합|발주|거래처|회신|링크|vpo/i.test(s))return {k:3,lab:'거래처 확인 중',c:'s3'};return {k:2,lab:'서포트센터 확인 중',c:'s2'}}
 const livePos=()=>SV.pos.filter(p=>p.week===WK.iso&&stOf(p).k>0);
 const isTest=po=>/TEST/i.test(po.memo||'');
@@ -151,7 +152,7 @@ const BETA=`<div class="obeta"><i>BETA</i><span>제출하면 서포트센터에 
 
 /* ── 화면 ── */
 let VIEW=null;
-ROUTES.order=function(v){VIEW=v;uiLoad();oLoad();draw();loadMine();loadCat().then(()=>softDraw());admProbe()};
+ROUTES.order=function(v){VIEW=v;uiLoad();oLoad();draw();loadMine();loadPend();loadCat().then(()=>softDraw());admProbe()};
 function draw(){const v=VIEW;if(!v||!document.body.contains(v)||!O)return;const sy=scrollY;v.innerHTML=page();bind(v);if(mode()==='cart')refreshSide();window.scrollTo(0,sy);fitCart()}
 function stepsHTML(cur){return `<div class="osteps">${STEPS.map((s,i)=>`<div class="${i+1<cur?'d':i+1===cur?'c':''}"><i></i>${s}</div>`).join('')}</div>`}
 function top(){const s=store(),m=mode(),n=livePos().length;
@@ -175,7 +176,7 @@ function sentCard(){const L=livePos();if(!L.length)return '';return `<div class=
 function page(){
   if(mode()==='status') return statusPage();
   const n=Object.keys(O.lines).length,v2w=UI.cat==='w'&&CAT.v2;
-  return `<div class="ord ${n?'hasbar':''}">${top()}<div class="ogrid">
+  return `<div class="ord ${n?'hasbar':''}">${top()}${pendCard()}<div class="ogrid">
    <div class="oleft">${heroCard()}${sentCard()}${budgetCard()}${dueCard()}${fbCard()}</div>
    <div class="omain"><div class="ocard">
      <div class="oseg" role="tablist">${cats().map(c=>`<button role="tab" aria-selected="${UI.cat===c.id}" data-cat="${c.id}" class="${UI.cat===c.id?'on':''}">${c.nm}</button>`).join('')}</div>
@@ -255,36 +256,40 @@ async function submit(){if(SUB.busy)return;const over=overCats();const w=$o('#ow
   const m=$o('#omemo');if(m)O.memo=m.value.trim();oSave();
   const s=store(),memo=[over.length&&O.why?`이번 주만 늘려 주세요(${over.map(c=>c.nm).join('·')}): ${O.why}`:'',O.memo].filter(Boolean).join(' / ');
   const by={};Object.keys(O.lines).forEach(id=>{const it=lineItem(id);if(!it)return;(by[it.cat]=by[it.cat]||[]).push(id)});
-  SUB.busy=1;SUB.err='';refreshSide();let holds=0,okN=0;
+  SUB.busy=1;SUB.err='';refreshSide();let holds=0,okN=0,toMgr=0;
   for(const c of ['f','s','w']){const ids=by[c];if(!ids||!ids.length)continue;
     const lines=ids.map(id=>{const it=lineItem(id);return {key:keyOf(id),name:it.name,qty:O.lines[id],memo:it.cu&&it.spec?it.spec:'',supplier:it.supn||SUPN(it.sup)||'',cat:CATKO[c]}});
-    try{const r=await call('order.submit',{store:s.nm,week:WK.iso,cat:CATKO[c],reqId:`${O.did}-${c}${O.rq[c]||''}`,memo,lines});
-      O.rq[c]=(O.rq[c]||0)+1;holds+=(r.holds||[]).length;okN++;ids.forEach(id=>{delete O.lines[id]});oSave()}
+    try{const d={store:s.nm,week:WK.iso,cat:CATKO[c],reqId:`${O.did}-${c}${O.rq[c]||''}`,memo,lines};if(mgrRole()&&!isMgr()&&isAdm())d._testCrew=true;const r=await call('order.submit',d);
+      if(/점장/.test(r.status||''))toMgr=1;O.rq[c]=(O.rq[c]||0)+1;holds+=(r.holds||[]).length;okN++;ids.forEach(id=>{delete O.lines[id]});oSave()}
     catch(er){SUB.err=emsg(er)||'연결이 불안정해요';break}}
   SUB.busy=0;
   if(SUB.err){oSave();draw();otoast('아직 못 보냈어요 · 담은 건 그대로 있어요',null,5000);return}
   O=newDraft();oSave();closeSheet();UI.mode='status';draw();scrollTo(0,0);
-  otoast(`제출했어요 · 서포트센터로 갔어요${holds?` · 보류 ${holds}개는 서포트센터가 확인해요`:''}`,null,6000);loadMine(1)}
+  otoast(toMgr?'점장님께 보냈어요 · 점장님이 확인하면 서포트센터로 가요':`제출했어요 · 서포트센터로 갔어요${holds?` · 보류 ${holds}개는 서포트센터가 확인해요`:''}`,null,6000);loadMine(1)}
 
 /* 낸 발주 화면 (order.mine) */
 function poRow(po){const st=stOf(po),n=po.lines.length,t=po.totals||{},old=po.week!==WK.iso;const g={};po.lines.forEach(l=>{(g[l.sup||'거래처 미정']=g[l.sup||'거래처 미정']||[]).push(l)});
-  return `<div class="opo ${st.k<0?'cx':''}"><div class="osup"><div class="g"><div class="n">${e(po.cat||'발주')} · ${n}개 품목${isTest(po)?' <span class="otg">TEST</span>':''}</div>
+  return `<div class="opo ${st.k===-1?'cx':''}"><div class="osup"><div class="g"><div class="n">${e(po.cat||'발주')} · ${n}개 품목${isTest(po)?' <span class="otg">TEST</span>':''}</div>
     <div class="d">${old?`${e(po.week)} · `:''}제출 ${e(fmtAt(po.submittedAt))}${po.memo?` · ${e(po.memo)}`:''}</div></div><span class="ost2 ${st.c}">${st.lab}</span></div>
+   ${st.k===1?`<div class="onote">점장님이 확인하면 서포트센터로 가요. 확인 전에는 취소하고 고칠 수 있어요.</div>`:''}
+   ${st.k===-2?`<div class="onote r"><b>점장님이 돌려보냈어요</b>${po.reason?` · ${e(po.reason)}`:''}</div>`:''}
    ${CAT.v2&&t.supply?`<div class="opx"><span>공급가 ${won(t.supply)}</span><span>VAT 포함 ${won(t.total||t.supply*1.1)}</span>${t.sale?`<span>판매가 ${won(t.sale)}</span>`:''}</div>`:''}
    <details class="opod"><summary>품목 보기</summary>${Object.entries(g).map(([sp,L])=>`<div class="ogl">${e(sp)}</div>${L.map(l=>`<div class="oln"><span>${e(l.name)}${/보류|품절|빠짐/.test(l.status)?` <span class="otg wxo">${e(l.status)}</span>`:''}</span><b>${l.qty}</b></div>`).join('')}`).join('')}</details>
-   ${st.k>0&&st.k<5?`<div class="opoa">${st.k===2?`<button class="obtn sm line" data-cx="${e(po.poId)}">취소하고 고치기</button>`:''}<button class="obtn sm ${st.k===4?'':'line'}" data-rx="${e(po.poId)}">도착 확인</button></div>`:''}</div>`}
+   ${st.k>0&&st.k<5?`<div class="opoa">${st.k<=2?`<button class="obtn sm line" data-cx="${e(po.poId)}">취소하고 고치기</button>`:''}${st.k>=2?`<button class="obtn sm ${st.k===4?'':'line'}" data-rx="${e(po.poId)}">도착 확인</button>`:''}</div>`:''}
+   ${st.k===-2?`<div class="opoa">${redone(po.poId)?'<span class="osub">다시 담았어요</span>':`<button class="obtn sm" data-redo="${e(po.poId)}">다시 담기</button>`}</div>`:''}</div>`}
 function statusPage(){const L=livePos(),wk=SV.pos.filter(p=>p.week===WK.iso),prev=SV.pos.filter(p=>p.week!==WK.iso&&stOf(p).k>0&&stOf(p).k<5);
   const cur=L.length?Math.min(...L.map(p=>stOf(p).k)):0,all=L.length&&L.every(p=>stOf(p).k===5);
   const head=SV.st===1&&!SV.pos.length?`<div class="osub">불러오는 중…</div><div class="obig">낸 발주를<br>가져오고 있어요</div>`
    :all?`<div class="odone">✓</div><div class="obig oc">이번 주 입고 끝</div><div class="osub oc">다르게 온 건 서포트센터가 거래처에 챙겨요</div>`
    :!L.length?`<div class="osub">${store().nm} · 이번 주</div><div class="obig">이번 주 낸 발주가<br>아직 없어요</div>`
-   :`<div class="osub">${store().nm} · 발주 ${L.length}건 · ${L.reduce((a,p)=>a+p.lines.length,0)}개 품목</div><div class="obig">${cur<=2?'제출했어요.<br>서포트센터가 확인하고 있어요':cur===3?'서포트센터가 확인했어요.<br>거래처 확인을 기다려요':'물건이 오고 있어요.<br>도착하면 눌러 주세요'}</div>`;
+   :`<div class="osub">${store().nm} · 발주 ${L.length}건 · ${L.reduce((a,p)=>a+p.lines.length,0)}개 품목</div><div class="obig">${cur===1?'점장님 확인을<br>기다리고 있어요':cur<=2?'제출했어요.<br>서포트센터가 확인하고 있어요':cur===3?'서포트센터가 확인했어요.<br>거래처 확인을 기다려요':'물건이 오고 있어요.<br>도착하면 눌러 주세요'}</div>`;
   const sup={};L.forEach(p=>p.lines.forEach(l=>{const k=l.sup||'거래처 미정';(sup[k]=sup[k]||[]).push(l)}));
-  return `<div class="ord">${top()}<div class="ogrid"><div class="oleft">
+  return `<div class="ord">${top()}${pendCard()}<div class="ogrid"><div class="oleft">
    <div class="ocard ${all?'':'pine'}">${head}${L.length?stepsHTML(all?6:cur+1):''}
     <button class="obtn ${all?'line':'w'}" data-mode="cart" style="margin-top:12px">${L.length?'더 담기 (추가 발주)':'담으러 가기'}</button></div></div>
    <div class="omain">
     ${SV.st===3?`<div class="onote r"><b>진행 상황을 못 불러왔어요.</b> 인터넷을 확인하고 다시 시도해 주세요.<small class="oerr">${e(SV.err)}</small><button class="obtn sm line" data-act="reload" style="margin-top:8px">다시 시도</button></div>`:''}
+    ${wk.some(p=>stOf(p).k===-2&&!redone(p.poId))?`<div class="onote r" style="margin:0 0 12px"><b>점장님이 돌려보낸 발주가 있어요.</b> 사유를 보고 다시 담아 주세요.</div>`:''}
     <div class="ocard"><div class="oh">이번 주 발주 <button class="olink" data-act="reload">${SV.st===1?'불러오는 중…':'새로고침'}</button></div>
      ${wk.length?wk.map(poRow).join(''):`<div class="oempty" style="padding:20px 0">${SV.st===1?'불러오는 중…':'이번 주에 낸 발주가 없어요'}</div>`}</div>
     ${prev.length?`<div class="ocard"><div class="oh">지난 발주 <small>아직 도착 확인 전</small></div>${prev.map(poRow).join('')}</div>`:''}
@@ -294,10 +299,54 @@ function statusPage(){const L=livePos(),wk=SV.pos.filter(p=>p.week===WK.iso),pre
 function idOfLine(l,c){if(c==='w'){if(CAT.v2&&CAT.by['K'+l.key]){ensureCustom('K'+l.key);return 'K'+l.key}const loc=locN()[WM.norm(l.name)];if(loc)return loc.id}
   if(ITEM[l.key])return l.key;const f=IT.find(i=>i.cat===c&&i.name===l.name);if(f)return f.id;
   const id='C'+Date.now()+Math.random().toString(36).slice(2,5);O.custom[id]={id,cat:c,name:l.name,spec:'',unit:'',sup:'CU',supn:'직접 추가',usual:{},tap:[],st:'1234',cu:1};return id}
+const RDK='tsb_ord_redone';function redone(id){try{return (JSON.parse(localStorage.getItem(RDK)||'[]')).includes(id)}catch(_){return false}}
+function redoPo(poId){const po=SV.pos.find(p=>p.poId===poId);if(!po)return;const c=CATID[po.cat]||'f';po.lines.forEach(l=>{if(!(+l.qty>0))return;const id=idOfLine(l,c);O.lines[id]=Math.min(999,(O.lines[id]||0)+l.qty)});oSave();
+  try{const a=JSON.parse(localStorage.getItem(RDK)||'[]');a.push(poId);localStorage.setItem(RDK,JSON.stringify(a.slice(-50)))}catch(_){}
+  UI.mode='cart';draw();scrollTo(0,0);otoast('담기 화면으로 돌려놨어요 · 고쳐서 다시 제출해 주세요')}
 async function cancelPo(poId){const po=SV.pos.find(p=>p.poId===poId);if(!po)return;if(!confirm('이 발주를 취소할까요?\n담은 품목은 담기 화면으로 돌아와요.'))return;
   try{await call('order.cancel',{poId});const c=CATID[po.cat]||'f';po.lines.forEach(l=>{const id=idOfLine(l,c);O.lines[id]=Math.min(999,(O.lines[id]||0)+l.qty)});if(po.memo&&!O.memo)O.memo=po.memo;oSave();
     po.status='취소';UI.mode='cart';draw();otoast('취소했어요 · 담기 화면으로 돌려놨어요');loadMine(1)}
   catch(er){otoast('취소하지 못했어요 · '+emsg(er),null,5000)}}
+
+/* 크루 발주 → 점장 확인 (order.pending / approve / reject) */
+const PD2={st:0,pos:[],sid:'',p:null,no:0};
+function loadPend(force){if(!mgrRole()||!isMgr())return Promise.resolve();const s=store();if(PD2.st===1&&PD2.sid===s.id)return PD2.p;if(!force&&PD2.st===2&&PD2.sid===s.id&&Date.now()-PD2.at<3e4)return Promise.resolve();
+  if(PD2.sid!==s.id)PD2.pos=[];PD2.st=1;PD2.sid=s.id;
+  const p=PD2.p=call('order.pending',{store:s.nm}).then(j=>{if(PD2.p!==p)return;PD2.pos=(j.pos||[]).map(normPo);PD2.st=2;PD2.at=Date.now();PD2.no=0})
+   .catch(er=>{if(PD2.p!==p)return;PD2.st=3;PD2.pos=[];if(/FORBID|권한/i.test(String(er&&er.message||'')))PD2.no=1}).then(()=>softDraw());return p}
+function pendCard(){if(!mgrRole()||!isMgr()||PD2.sid!==store().id||!PD2.pos.length)return '';const L=PD2.pos;
+  return `<div class="ocard opk"><div class="oh"><span><i class="opkd"></i>크루 발주 확인 ${L.length}건</span><small>확인하면 서포트센터로 가요</small></div>
+   ${L.map(p=>`<button class="opkr" data-pk="${e(p.poId)}"><div class="g"><div class="n">${e(p.cat||'발주')} · ${p.lines.length}개 품목${isTest(p)?' <span class="otg">TEST</span>':''}</div><div class="d">${e(p.submittedBy||'크루')} · ${e(fmtAt(p.submittedAt))}${p.memo?` · ${e(p.memo)}`:''}</div></div><span class="obtn sm">확인</span></button>`).join('')}</div>`}
+let PK={};
+function openPk(poId){const po=PD2.pos.find(p=>p.poId===poId);if(!po)return;PK={po,q:{},rej:0,reason:'',memo:'',busy:0,err:''};po.lines.forEach(l=>PK.q[l.lineId]=+l.qty||0);drawPk()}
+function drawPk(){const po=PK.po;if(!po)return;const left=po.lines.filter(l=>PK.q[l.lineId]>0).length,ch=po.lines.filter(l=>PK.q[l.lineId]!==(+l.qty||0)).length;
+  const g={};po.lines.forEach(l=>{(g[l.sup||'거래처 미정']=g[l.sup||'거래처 미정']||[]).push(l)});
+  const body=`<div class="oh">크루 발주 확인${isTest(po)?' <small>TEST</small>':''}</div><div class="osub" style="margin:4px 0 6px">${e(po.submittedBy||'크루')} · ${e(fmtAt(po.submittedAt))} · ${e(po.cat||'')} ${po.lines.length}개 품목</div>
+   ${po.memo?`<div class="onote" style="margin:4px 0 8px">남긴 말 · ${e(po.memo)}</div>`:''}
+   <div class="osub" style="margin:2px 0 4px">수량을 고칠 수 있어요. 0으로 하면 빠져요.</div>
+   <div id="opkl">${Object.entries(g).map(([sp,L])=>`<div class="ogl">${e(sp)}</div>${L.map(l=>{const q=PK.q[l.lineId],o=+l.qty||0;return `<div class="oln ${q?'':'off'}"><span>${e(l.name)}${q!==o?`<small class="ocp">${q?`원래 ${o} → ${q}`:'빼기'}</small>`:''}</span><div class="ost"><button data-pq="-1" data-for="${e(l.lineId)}" aria-label="빼기">−</button><input class="opq" inputmode="numeric" value="${q}" data-pqi="${e(l.lineId)}" aria-label="${e(l.name)} 수량"><button data-pq="1" data-for="${e(l.lineId)}" aria-label="더하기">+</button></div></div>`}).join('')}`).join('')}</div>
+   ${PK.rej?`<div class="olbl">돌려보내는 이유 (꼭 적어 주세요)</div><input class="ofield" id="opkr" placeholder="예: 깐마늘은 이번 주 재고 있어요" value="${e(PK.reason)}">`
+     :`<div class="olbl">서포트센터에 남길 말 (선택)</div><input class="ofield" id="opkm" placeholder="예: 수량 줄였어요" value="${e(PK.memo)}">`}
+   ${!left&&!PK.rej?`<div class="onote r">모두 빼면 보낼 수 없어요. 돌려보내기를 써 주세요.</div>`:''}
+   ${PK.err?`<div class="onote r">${e(PK.err)}</div>`:''}`;
+  const foot=PK.rej?`<button class="obtn line" id="pk_back" style="flex:1" ${PK.busy?'disabled':''}>이전</button><button class="obtn opkx" id="pk_rej" style="flex:2" ${PK.busy?'disabled':''}>${PK.busy?'보내는 중…':'돌려보내기'}</button>`
+    :`<button class="obtn line" id="pk_rj" style="flex:1" ${PK.busy?'disabled':''}>돌려보내기</button><button class="obtn" id="pk_ok" style="flex:2" ${PK.busy||!left?'disabled':''}>${PK.busy?'보내는 중…':ch?`고쳐서 보내기 (${ch}줄)`:'확인하고 보내기'}</button>`;
+  sheet(body,foot);const sh=$o('#osheet');
+  sh.querySelectorAll('[data-pq]').forEach(b=>b.onclick=()=>{const id=b.dataset.for;PK.q[id]=Math.max(0,Math.min(999,(PK.q[id]||0)+(+b.dataset.pq)));keepPk();drawPk()});
+  sh.querySelectorAll('[data-pqi]').forEach(i=>i.onchange=()=>{PK.q[i.dataset.pqi]=Math.max(0,Math.min(999,+i.value.replace(/[^0-9]/g,'')||0));keepPk();drawPk()});
+  const m=$o('#opkm');if(m)m.oninput=()=>PK.memo=m.value;const r=$o('#opkr');if(r){r.oninput=()=>PK.reason=r.value;setTimeout(()=>r.focus(),30)}
+  const ok=$o('#pk_ok');if(ok)ok.onclick=approvePk;const rj=$o('#pk_rj');if(rj)rj.onclick=()=>{PK.rej=1;PK.err='';drawPk()};
+  const bk=$o('#pk_back');if(bk)bk.onclick=()=>{PK.rej=0;PK.err='';drawPk()};const rx=$o('#pk_rej');if(rx)rx.onclick=rejectPk}
+function keepPk(){const m=$o('#opkm');if(m)PK.memo=m.value;const r=$o('#opkr');if(r)PK.reason=r.value}
+const pkErr=er=>{const m=String(er&&er.message||'');return /EMPTY/.test(m)?'모두 빼면 보낼 수 없어요. 돌려보내기를 써 주세요.':/STATE/.test(m)?'이미 처리된 발주예요. 새로고침했어요.':'아직 못 보냈어요. 다시 눌러 주세요. ('+emsg(er)+')'};
+async function approvePk(){if(PK.busy)return;keepPk();const po=PK.po;const ch=po.lines.filter(l=>PK.q[l.lineId]!==(+l.qty||0)).map(l=>({lineId:l.lineId,qty:PK.q[l.lineId]}));
+  PK.busy=1;PK.err='';drawPk();const d={poId:po.poId};if(ch.length)d.lines=ch;if(PK.memo.trim())d.memo=PK.memo.trim();
+  try{await call('order.approve',d);PK={};closeSheet();PD2.pos=PD2.pos.filter(p=>p.poId!==po.poId);draw();otoast('확인했어요 · 서포트센터로 보냈어요',null,5000);loadPend(1);loadMine(1)}
+  catch(er){PK.busy=0;PK.err=pkErr(er);if(/STATE/.test(String(er&&er.message)))loadPend(1);drawPk()}}
+async function rejectPk(){if(PK.busy)return;keepPk();const why=PK.reason.trim();if(!why){PK.err='돌려보내는 이유를 적어 주세요.';drawPk();return}const po=PK.po;
+  PK.busy=1;PK.err='';drawPk();
+  try{await call('order.reject',{poId:po.poId,reason:why});PK={};closeSheet();PD2.pos=PD2.pos.filter(p=>p.poId!==po.poId);draw();otoast('돌려보냈어요 · 크루 화면에 이유가 보여요',null,5000);loadPend(1);loadMine(1)}
+  catch(er){PK.busy=0;PK.err=pkErr(er);if(/STATE/.test(String(er&&er.message)))loadPend(1);drawPk()}}
 
 /* 입고 확인: 다 맞아요 / 차이 → 거래명세표 사진 · 엑셀 · PDF(선택) → order.receive */
 let RX={};
@@ -344,15 +393,17 @@ async function sendRx(){if(RX.busy||!RX.po)return;RX.busy=1;RX.err='';drawRx();c
 /* ── 이벤트 ── */
 function bind(v){
   v.onclick=ev=>{const t=ev.target.closest('button,[data-act]');if(!t||!v.contains(t))return;
-    if(t.dataset.st){UI.store=t.dataset.st;UI.mode=null;SUB.err='';uiSave();oLoad();draw();loadMine(1);return}
+    if(t.dataset.st){UI.store=t.dataset.st;UI.mode=null;SUB.err='';uiSave();oLoad();draw();loadMine(1);loadPend(1);return}
     if(t.dataset.mode){UI.mode=t.dataset.mode;draw();scrollTo(0,0);if(UI.mode==='status')loadMine();return}
-    if(t.dataset.view){UI.view=t.dataset.view;if(UI.view==='crew'&&UI.cat==='w')UI.cat='f';uiSave();draw();return}
+    if(t.dataset.view){UI.view=t.dataset.view;if(UI.view==='crew'&&UI.cat==='w')UI.cat='f';uiSave();draw();if(UI.view==='mgr')loadPend(1);return}
     if(t.dataset.cat){UI.cat=t.dataset.cat;UI.q='';uiSave();draw();return}
     if(t.dataset.fil){UI.fil=t.dataset.fil;uiSave();$o('#olist').innerHTML=listHTML();v.querySelectorAll('[data-fil]').forEach(b=>b.classList.toggle('on',b.dataset.fil===UI.fil));return}
     if(t.dataset.add){setQ(t.dataset.add,1);const r=v.querySelector(`.oit[data-id="${CSS.escape(t.dataset.add)}"] .oq`);if(r&&innerWidth>=768)r.focus();return}
     if(t.dataset.d){const id=t.dataset.for||t.closest('[data-id]').dataset.id;setQ(id,(O.lines[id]||0)+(+t.dataset.d));return}
     if(t.dataset.rx){openRx(t.dataset.rx);return}
     if(t.dataset.cx){cancelPo(t.dataset.cx);return}
+    if(t.dataset.redo){redoPo(t.dataset.redo);return}
+    if(t.dataset.pk){openPk(t.dataset.pk);return}
     const a=t.dataset.act;
     if(a==='like')likeLast();else if(a==='cart')openCart();else if(a==='custom')openCustom();else if(a==='wxl')wxOpen();else if(a==='submit')submit();
     else if(a==='reload'){loadMine(1);draw()}};
