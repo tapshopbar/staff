@@ -88,7 +88,7 @@ function pr(id){if(!CAT.v2)return null;const c=catOf(lineItem(id)||{});if(!c)ret
 function mdTag(p){return p&&p.md&&p.md!=='정상'?`<span class="otg ${p.block?'wxr':'wxo'}">${e(p.md)}</span>`:''}
 function supTxt(c){const s=c.srv||{};const deal=c.force?`(도매) ${c.force}`:(s.deal||s.type||(/^(대정|진성|서영|삼정)/.test(c.supn)?`(도매) ${c.supn}`:c.supn));return [deal,s.importer].filter(Boolean).join(' · ')}
 function pxLine(p){if(!p)return '';if(!p.cost&&!p.price)return `<div class="opx"><span>단가 정보 없음</span></div>`;
-  return `<div class="opx"><span>단가 ${p.cost?won(p.cost):'-'}<small> VAT별도</small></span><span>판매가 ${p.price?won(p.price):'-'}</span><span class="${p.low?'lo':''}">마진 ${p.m!=null?Math.round(p.m*100)+'%':'-'}</span>${p.low?'<span class="otg wxo">보류</span>':''}</div>`}
+  return `<div class="opx"><span>단가 ${p.cost?won(p.cost):'-'}<small> VAT별도</small></span><span>판매가 ${p.price?won(p.price):'-'}</span><span class="${p.low?'lo':''}">마진 ${p.m!=null?Math.floor(p.m*100)+'%':'-'}</span>${p.low?'<span class="otg wxo">보류</span>':''}</div>`}
 function wineTot(){let n=0,b=0,sup=0,sale=0,miss=0,hold=0;Object.keys(O.lines).forEach(id=>{const it=lineItem(id);if(!it||it.cat!=='w')return;const q=O.lines[id],p=pr(id);n++;b+=q;
   if(p&&p.cost)sup+=p.cost*q;else miss++;if(p&&p.price)sale+=p.price*q;if(p&&p.hold)hold++});return {n,b,sup,vat:Math.round(sup*0.1),sale,miss,hold}}
 function totHTML(t){if(!CAT.v2||!t.n)return '';return `<div class="otot"><div class="oth">와인 합계 <small>대관 견적용</small></div>
@@ -212,7 +212,7 @@ function cartHTML(editable){const ids=Object.keys(O.lines);
   const over=overCats();
   return `<div class="oh">담은 것 ${ids.length}개 <small>거래처별로 나눠서 보내요</small></div><div class="ocitems">
   ${sups().map(sid=>`<div class="ogl">${e(SUPN(sid))}${OD.sups[sid]&&OD.sups[sid][1]?` · ${e(OD.sups[sid][1])}`:''}</div>${ids.filter(id=>(lineItem(id)||{}).sup===sid).map(id=>{const it=lineItem(id),p=pr(id);
-    return `<div class="oln"><span>${e(it.name)}${p?`<small class="ocp">${p.cost?won(p.cost):'단가 없음'}${p.m!=null?` · 마진 ${Math.round(p.m*100)}%`:''}${p.hold?` · <b>보류</b>`:''}</small>`:''}</span>${editable?`<div class="ost"><button data-d="-1" data-for="${e(id)}" aria-label="빼기">−</button><input class="oq" inputmode="numeric" value="${O.lines[id]}" data-q="${e(id)}" aria-label="${e(it.name)} 수량"><button data-d="1" data-for="${e(id)}" aria-label="더하기">+</button></div>`:`<b>${O.lines[id]}</b>`}</div>`}).join('')}`).join('')}</div>
+    return `<div class="oln"><span>${e(it.name)}${p?`<small class="ocp">${p.cost?won(p.cost):'단가 없음'}${p.m!=null?` · 마진 ${Math.floor(p.m*100)}%`:''}${p.hold?` · <b>${p.low?'보류':e(p.md)}</b>`:''}</small>`:''}</span>${editable?`<div class="ost"><button data-d="-1" data-for="${e(id)}" aria-label="빼기">−</button><input class="oq" inputmode="numeric" value="${O.lines[id]}" data-q="${e(id)}" aria-label="${e(it.name)} 수량"><button data-d="1" data-for="${e(id)}" aria-label="더하기">+</button></div>`:`<b>${O.lines[id]}</b>`}</div>`}).join('')}`).join('')}</div>
   ${totHTML(wineTot())}
   ${editable?`<div class="ocfoot">${submitForm(over)}</div>`:''}`}
 function submitForm(over){return `${over.length?(isMgr()?`<div class="onote r"><b>평소보다 많이 담았어요.</b> 막지 않아요. 이유 한 줄을 적으면 서포트센터가 보고 정해요.</div><div class="olbl">이유 한 줄 (${over.map(c=>c.nm).join(' · ')})</div><input class="ofield" id="owhy" placeholder="예: 토요일 대관 60명" value="${e(O.why||'')}">`
