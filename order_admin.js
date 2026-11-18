@@ -56,36 +56,40 @@ const errBox=(m,retry)=>`<div class="oa-card oa-err"><b>불러오지 못했어�
 
 /* ═══ 보드 ═══ */
 function normBoard(j){
- const pos=(j.pos||j.orders||[]).map(p=>({poId:p.poId||p.id,store:p.store||p.지점||'',cat:p.cat||p.분류||'',status:p.status||p.상태||'',lines:N(p.lineCount??p.items??(Array.isArray(p.lines)?p.lines.length:p.lines))||0,bottles:N(p.bottles??p.병수)||0,supply:N(p.totals?p.totals.supply:p.supply),holds:N(p.holds??p.보류수)||0,at:p.submittedAt||p.제출시각||''}));
+ const pos=(j.pos||j.orders||[]).map(p=>({poId:p.poId||p.id,store:p.store||p.지점||'',cat:p.cat||p.분류||'',status:p.status||p.상태||'',lines:N(p.count??p.lineCount??p.items??(Array.isArray(p.lines)?p.lines.length:p.lines))||0,bottles:N(p.bottles??p.병수)||0,supply:N(p.totals?p.totals.supply:p.supply),holds:N(p.holds??p.보류수)||0,at:p.submittedAt||p.제출시각||''}));
  if(!pos.length&&j.byStatus){Object.entries(j.byStatus).forEach(([st,arr])=>(arr||[]).forEach(p=>pos.push({poId:p.poId,store:p.store,cat:p.cat,status:st,lines:N(p.lines)||0,bottles:N(p.bottles)||0,supply:N(p.totals&&p.totals.supply),holds:N(p.holds)||0,at:p.submittedAt||''})))}
  const sups=(j.suppliers||[]).map(s=>{
   let stores=[];
-  if(Array.isArray(s.stores)&&s.stores.length&&typeof s.stores[0]==='object')stores=s.stores.map(x=>({store:x.store,bottles:N(x.bottles)||0,supply:N(x.supply)||0,lines:N(x.lines)||0}));
-  else{const m={};const src=Array.isArray(s.lines)?s.lines:(s.pos||[]);src.forEach(x=>{const st=x.store||x.지점||'?';m[st]=m[st]||{store:st,bottles:0,supply:0,lines:0};const q=N(x.qty??x.bottles)||0;m[st].bottles+=q;m[st].supply+=N(x.supply)??((N(x.price??x.ourPrice)||0)*q);m[st].lines+=Array.isArray(s.lines)?1:(N(x.lines)||0)});stores=Object.values(m)}
+  if(Array.isArray(s.stores)&&s.stores.length&&typeof s.stores[0]==='string')stores=s.stores.map(x=>({store:x,bottles:null,supply:null,lines:null}));
+  else if(Array.isArray(s.stores)&&s.stores.length&&typeof s.stores[0]==='object')stores=s.stores.map(x=>({store:x.store,bottles:N(x.bottles)||0,supply:N(x.supply)||0,lines:N(x.lines)||0}));
+  else{const m={};const src=Array.isArray(s.lines)?s.lines:(s.pos||[]).filter(x=>typeof x==='object');src.forEach(x=>{const st=x.store||x.지점||'?';m[st]=m[st]||{store:st,bottles:0,supply:0,lines:0};const q=N(x.qty??x.bottles)||0;m[st].bottles+=q;m[st].supply+=N(x.supply)??((N(x.price??x.ourPrice)||0)*q);m[st].lines+=Array.isArray(s.lines)?1:(N(x.lines)||0)});stores=Object.values(m)}
   const poIds=(s.poIds||(s.pos||[]).map(p=>p.poId||p)).filter(Boolean);
-  return {supplier:s.supplier||s.name,lines:Array.isArray(s.lines)?s.lines.length:(N(s.lines)||stores.reduce((a,x)=>a+x.lines,0)),bottles:N(s.bottles)??stores.reduce((a,x)=>a+x.bottles,0),supply:N(s.supply)??stores.reduce((a,x)=>a+x.supply,0),stores,poIds,vpos:(s.vpos||[]),open:s.open!==false}});
- const vpos=(j.vpos||[]).map(v=>({vpoId:v.vpoId||v.id,supplier:v.supplier,status:v.status,expires:v.expires,repliedAt:v.repliedAt||v.회신시각,total:N(v.total??v.확정합계)}));
- sups.forEach(s=>{const extra=vpos.filter(v=>v.supplier===s.supplier&&!s.vpos.some(x=>(x.vpoId||x.id)===v.vpoId));s.vpos=s.vpos.map(v=>({vpoId:v.vpoId||v.id,supplier:s.supplier,status:v.status,expires:v.expires,repliedAt:v.repliedAt,total:N(v.total)})).concat(extra)});
+  return {supplier:s.supplier||s.name,lines:Array.isArray(s.lines)?s.lines.length:(N(s.lines)||stores.reduce((a,x)=>a+x.lines,0)),bottles:N(s.bottles)??stores.reduce((a,x)=>a+(x.bottles||0),0),supply:N(s.supply)??stores.reduce((a,x)=>a+(x.supply||0),0),holds:N(s.holds)||0,stores,poIds,vpos:(s.vpos||[]),open:s.open!==false}});
+ const vpos=(j.vpos||[]).map(v=>({vpoId:v.vpoId||v.id,supplier:v.supplier,status:v.status,expires:v.expires,createdAt:v.createdAt,repliedAt:v.repliedAt||v.회신시각,shipDate:v.shipDate,supply:N(v.supply),total:N(v.total??v.확정합계),paidAt:v.paidAt,shippedAt:v.shippedAt,poIds:v.poIds||[]}));
+ sups.forEach(s=>{s.vpos=[]});
  return {pos,sups,vpos,week:j.week||OA.week}}
 async function vBoard(){OA.tab='board';shell(loading());
- let j;try{j=OA.boardCache&&OA.boardCache.__w===OA.week?OA.boardCache:await call('order.admin.board',{week:OA.week});j.__w=OA.week;OA.boardCache=null}catch(e){shell(errBox(e.message,'OA.go()'));return}
- const b=normBoard(j);OA.board=b;
- const cnt={};b.pos.forEach(p=>{cnt[p.status]=(cnt[p.status]||0)+1});
+ let j,vl;try{[j,vl]=await Promise.all([OA.boardCache&&OA.boardCache.__w===OA.week?OA.boardCache:call('order.admin.board',{week:OA.week}),call('order.admin.vpo.list',{}).catch(()=>({vpos:[]}))]);j.__w=OA.week;OA.boardCache=null}catch(e){shell(errBox(e.message,'OA.go()'));return}
+ j.vpos=(vl&&vl.vpos)||[];const b=normBoard(j);OA.board=b;
+ const cnt=Object.assign({},j.counts||{});if(!j.counts)b.pos.forEach(p=>{cnt[p.status]=(cnt[p.status]||0)+1});
  const others=Object.keys(cnt).filter(k=>!ST_PO.includes(k));
  const stores=[...new Set(['청계','상암','마곡','동대문'].concat(b.pos.map(p=>p.store)).filter(Boolean))];
  const strip=`<div class="oa-strip">${ST_PO.concat(others).map(s=>`<div class="${cnt[s]?'on':''}"><small>${E(s)}</small><b>${cnt[s]||0}</b></div>`).join('')}</div>`;
  const grid=`<div class="oa-card"><div class="oa-ch"><h3>지점 발주</h3><span class="oa-mut">${b.pos.length}건</span></div>
   <div class="oa-stores">${stores.map(st=>{const ps=b.pos.filter(p=>p.store===st);return `<div class="oa-srow"><b>${E(st)}</b><div class="oa-pos">${ps.length?ps.map(p=>`<span class="oa-po">${chipS(p.status)} ${E(p.cat)} ${p.lines}품목 · ${p.bottles}${p.cat==='와인'||!p.cat?'병':'개'}${p.holds?` · <em class="oa-w">보류 ${p.holds}</em>`:''}</span>`).join(''):'<span class="oa-mut">이번 주 발주 없음</span>'}</div></div>`}).join('')}</div></div>`;
  const cards=b.sups.length?b.sups.map(s=>supCard(s)).join(''):`<div class="oa-card"><b>이번 주 거래처별 묶음이 없어요</b><div class="oa-mut">지점 발주가 제출되면 여기 거래처별로 모여요.</div></div>`;
- shell(`${strip}${grid}<div class="oa-sec"><h2>거래처별 묶음</h2><button class="oa-lk" onclick="OA.go()">새로고침</button></div><div class="oa-grid">${cards}</div>`);
+ const act=b.vpos.filter(v=>OA.showAll||!/취소|입고완료/.test(v.status)).sort((x,y)=>String(y.createdAt).localeCompare(String(x.createdAt)));
+ const vsec=`<div class="oa-sec"><h2>거래처 발주 진행</h2><button class="oa-lk" onclick="OA.showAll=!OA.showAll;OA.go()">${OA.showAll?'진행 중만':'취소·완료도 보기'}</button></div><div class="oa-card">${act.length?`<div class="oa-vps">${act.map(v=>vRow(v)).join('')}</div>`:'<div class="oa-mut">진행 중인 거래처 발주가 없어요. 아래 거래처 묶음에서 단가 확인 링크를 만들어 주세요.</div>'}</div>`;
+ shell(`${strip}${grid}${vsec}<div class="oa-sec"><h2>거래처별 묶음 <span class="oa-mut">아직 링크 안 만든 줄</span></h2><button class="oa-lk" onclick="OA.go()">새로고침</button></div><div class="oa-grid">${cards}</div>`);
 }
+function vRow(v){const lk=OA.links[v.vpoId];return `<a class="oa-vrow" href="#/order-admin/vpo/${encodeURIComponent(v.vpoId)}">${chipS(v.status)}<b>${E(v.supplier)}</b><span class="oa-mut">${E(v.vpoId)}</span><span class="oa-mut">${v.shippedAt?'출고 '+md(v.shippedAt):v.paidAt?'입금 '+md(v.paidAt):v.repliedAt?'회신 '+md(v.repliedAt):v.expires?'만료 '+md(v.expires):''}</span>${v.total?`<span class="oa-mut">${W(v.total)}원</span>`:''}${v.status==='회신'?'<em class="oa-new">회신 왔어요</em>':''}<span class="oa-ar">&rsaquo;</span></a>${lk&&v.status!=='회신'?linkBox(lk):''}`}
 function supCard(s){const id=encodeURIComponent(s.supplier);
  const lk=Object.values(OA.links).filter(x=>x.supplier===s.supplier).pop();
  const vp=s.vpos.map(v=>`<a class="oa-vrow" href="#/order-admin/vpo/${encodeURIComponent(v.vpoId)}">${chipS(v.status)}<span>${E(v.vpoId)}</span><span class="oa-mut">${v.repliedAt?'회신 '+md(v.repliedAt):v.expires?'~'+md(v.expires):''}</span>${v.status==='회신'?'<em class="oa-new">회신 왔어요</em>':''}<span class="oa-ar">&rsaquo;</span></a>`).join('');
  const canMake=s.poIds.length>0&&s.open;
- return `<div class="oa-card oa-sup" id="sup_${id}"><div class="oa-ch"><h3>${E(s.supplier)}</h3><span class="oa-mut">${s.lines}품목 · ${s.bottles}병</span></div>
+ return `<div class="oa-card oa-sup" id="sup_${id}"><div class="oa-ch"><h3>${E(s.supplier)}</h3><span class="oa-mut">${s.lines}품목 · ${s.bottles}병${s.holds?` · <em class="oa-w">보류 ${s.holds}</em>`:''}</span></div>
  <div class="oa-amt"><small>시트 기준 공급가</small><b>${W(s.supply)}</b><span>원</span></div>
- <table class="oa-mini"><tbody>${s.stores.map(x=>`<tr><td>${E(x.store)}</td><td>${x.lines?x.lines+'품목':''}</td><td>${x.bottles}병</td><td>${W(x.supply)}</td></tr>`).join('')}</tbody></table>
+ <table class="oa-mini"><tbody>${s.stores.map(x=>`<tr><td>${E(x.store)}</td><td>${x.lines?x.lines+'품목':''}</td><td>${x.bottles!=null?x.bottles+'병':''}</td><td>${x.supply!=null?W(x.supply):''}</td></tr>`).join('')}</tbody></table>
  ${vp?`<div class="oa-vps">${vp}</div>`:''}
  ${lk?linkBox(lk):''}
  ${canMake&&!lk?`<button class="oa-btn p" onclick="OA.make('${E(s.supplier).replace(/'/g,'&#39;')}',this)">단가 확인 링크 만들기</button>`:''}
@@ -100,7 +104,7 @@ function linkBox(lk){const k=lk.vpoId;return `<div class="oa-link"><div class="o
 OA.cp=(what,k,btn)=>{const lk=OA.links[k];if(!lk)return;copy(what==='url'?lk.url:kakao(lk),btn)};
 OA.make=async(sup,btn)=>{const s=OA.board.sups.find(x=>x.supplier===sup);if(!s)return;btn.disabled=true;btn.textContent='만드는 중...';
  try{const j=await call('order.admin.vpo.create',{supplier:sup,poIds:s.poIds,week:OA.week});
-  OA.links[j.vpoId]={vpoId:j.vpoId,url:j.url,expires:j.expires,supplier:sup,lines:j.lines??s.lines,bottles:j.bottles??s.bottles,stores:s.stores.map(x=>x.store).join('·')};
+  OA.links[j.vpoId]={vpoId:j.vpoId,url:j.url,expires:j.expires,supplier:sup,lines:typeof j.lines==='number'?j.lines:(Array.isArray(j.lines)?j.lines.length:s.lines),bottles:typeof j.bottles==='number'?j.bottles:s.bottles,stores:s.stores.map(x=>x.store).join('·')};
   s.vpos.push({vpoId:j.vpoId,supplier:sup,status:j.status||'링크생성',expires:j.expires});s.poIds=[];
   const el=document.getElementById('sup_'+encodeURIComponent(sup));if(el)el.outerHTML=supCard(s);
  }catch(e){tst(e.message);btn.disabled=false;btn.textContent='단가 확인 링크 만들기'}};
@@ -111,23 +115,23 @@ function normVpo(j){const v=j.vpo||j;const reps=j.replies||v.replies||[];
  const lines=(j.lines||v.lines||[]).map(l=>{const r=reps.find(x=>x.lineId===l.lineId)||l.reply||null;
   return {lineId:l.lineId,key:l.key||l.품목키,row:l.row,name:l.name||l.품목명,store:l.store||l.지점||'',qty:N(l.qty??l.수량)||0,our:N(l.ourPrice??l.price??l.단가),sale:N(l.salePrice??l.sale??l.판매가),
    reply:r?{price:N(r.price??r.회신단가),qty:N(r.qty??r.회신수량),soldOut:!!(r.soldOut===true||r.soldOut==='Y'||r.soldOut==='TRUE'||r.품절===true||r.품절==='Y'),alt:r.alt||r.대체품||'',memo:r.memo||r.메모||''}:null,
-   conf:N(l.confirmedPrice??l.확정단가),confSale:N(l.confirmedSale),sugSale:N(l.suggestSale??l.suggestedSale),nego:N(l.negoTarget)}});
+   conf:N(l.confirmedPrice??l.확정단가),lst:l.status||'',confSale:N(l.confirmedSale),sugSale:N(l.suggestSale??l.suggestedSale),nego:N(l.negoTarget)}});
  const t=v.totals||j.totals||{};
- return {vpoId:v.vpoId||v.id,supplier:v.supplier,status:v.status||'',expires:v.expires,linkAt:v.linkAt||v.링크생성시각,repliedAt:v.repliedAt||v.회신시각,shipDate:v.shipDate||v.출고예정일||'',memo:v.vendorMemo||v.memo||v.메모||'',
-  confSupply:N(t.supply??v.confirmedSupply??v.확정공급가),confTotal:N(t.total??v.confirmedTotal??v.확정합계),paidAt:v.paidAt||v.입금시각||'',paidAmt:N(v.paidAmount??v.입금액),shippedAt:v.shippedAt||v.출고시각||'',lines,settings:j.settings||{}}}
-function stage(v){if(v.shippedAt||v.status==='출고')return 'shipped';if(v.paidAt||/입금완료|^입금$/.test(v.status))return 'paid';if(v.status==='확정'||v.confTotal)return 'confirmed';if(v.repliedAt||v.status==='회신'||v.lines.some(l=>l.reply))return 'replied';if(v.status==='만료')return 'expired';return 'waiting'}
+ return {vpoId:v.vpoId||v.id,supplier:v.supplier,status:v.status||'',expires:v.expires,linkAt:v.linkAt||v.createdAt||v.링크생성시각,repliedAt:v.repliedAt||v.회신시각,shipDate:v.shipDate||v.출고예정일||'',memo:v.vendorMemo||v.memo||v.메모||'',
+  confSupply:N(t.supply??v.confirmedSupply??v.확정공급가),confTotal:N(t.total??v.confirmedTotal??v.확정합계),confVat:N(t.vat),paidAt:v.paidAt||v.입금시각||'',paidAmt:N(v.paidAmount??v.입금액),shippedAt:v.shippedAt||v.출고시각||'',lines,settings:j.settings||{}}}
+function stage(v){if(v.shippedAt||v.status==='출고')return 'shipped';if(v.paidAt||/입금완료|^입금$/.test(v.status))return 'paid';if(v.status==='취소')return 'cancelled';if(v.status==='확정')return 'confirmed';if(v.repliedAt||v.status==='회신'||v.lines.some(l=>l.reply))return 'replied';if(v.status==='만료')return 'expired';return 'waiting'}
 async function vVpo(id){OA.tab='vpo';shell(loading());let j;try{j=await call('order.admin.vpo.get',{vpoId:id})}catch(e){shell(errBox(e.message,`OA.go()`));return}
  const v=normVpo(j);OA.vpo=v;if(v.settings.targetMargin)RULE.margin=+v.settings.targetMargin;if(v.settings.priceEnd)RULE.end=+v.settings.priceEnd;
- OA.ed={};v.lines.forEach(l=>{const r=l.reply;const price=l.conf??(r&&r.price!=null?r.price:l.our);const so=!!(r&&r.soldOut);
-  OA.ed[l.lineId]={acc:!so,price,qty:r&&r.qty!=null?r.qty:l.qty,sale:l.confSale??null}});
+ const stg=stage(v),done=/confirmed|paid|shipped/.test(stg);OA.ed={};v.lines.forEach(l=>{const r=l.reply;const price=l.conf??(r&&r.price!=null?r.price:l.our);const so=!!(r&&r.soldOut);
+  OA.ed[l.lineId]={acc:done?(l.conf!=null&&!/빠짐|품절/.test(l.lst||'')):!so,price,qty:r&&r.qty!=null?r.qty:l.qty,sale:l.confSale??null}});
  drawVpo()}
 function lineCalc(l){const e=OA.ed[l.lineId];const c=e.price;const m0=mg(l.our,l.sale),m1=mg(c,l.sale);const up=c!=null&&l.our!=null&&c>l.our;const was=m0!=null&&m0<RULE.margin;const need=up&&m1!=null&&m1<RULE.margin&&m0!=null&&!was;
- const sp=need?Math.max(l.sugSale??suggest(c),l.sale||0):null;const ns=e.sale??(need?sp:l.sale);
+ const sp=need?Math.max(suggest(c),l.sale||0):null;const ns=e.sale??(need?sp:l.sale);
  const r=l.reply;let cls='wait',lab='회신 대기';
  if(r){if(r.soldOut){cls=r.alt?'new':'bad';lab=r.alt?'대체품':'품절'}else{const d=(r.price??l.our)-l.our;cls=d===0?'same':d<0?'down':d<=RULE.small?'small':'up';lab=d===0?'같음':d<0?'인하':d<=RULE.small?'소폭 인상':'큰 인상'}}
- return {c,m0,m1,need,sp,was,ns,cls,lab,nego:need?(l.nego??target(l.sale)):null}}
+ return {c,m0,m1,need,sp,was,ns,cls,lab,nego:need?target(l.sale):null}}
 function vTotals(v){let sheet=0,sup=0,acc=0,wait=0,so=0;v.lines.forEach(l=>{const e=OA.ed[l.lineId];sheet+=(l.our||0)*l.qty;if(!l.reply)wait++;if(l.reply&&l.reply.soldOut)so++;if(e.acc){sup+=(e.price||0)*(e.qty||0);acc++}});const vat=Math.round(sup*0.1);return {sheet,sheetT:Math.round(sheet*1.1),sup,vat,total:sup+vat,acc,wait,so}}
-function drawVpo(){const v=OA.vpo,st=stage(v),T=vTotals(v),locked=st==='confirmed'||st==='paid'||st==='shipped';
+function drawVpo(){const v=OA.vpo,st=stage(v),T=vTotals(v),locked=st==='confirmed'||st==='paid'||st==='shipped'||st==='cancelled';
  const rows=v.lines.map(l=>{const k=lineCalc(l),e=OA.ed[l.lineId],r=l.reply,d=r&&r.price!=null&&!r.soldOut?r.price-l.our:null,qd=r&&r.qty!=null&&r.qty!==l.qty;
   return `<tr class="${e.acc?'':'off'} ${d?'chg':''}"><td class="l" data-l="품목"><div class="oa-nm"><a href="#/order-admin/prices/${encodeURIComponent(l.key||l.name)}" title="단가이력">${E(l.name)}</a></div><div class="oa-mut">${E(l.store)} · 주문 ${l.qty}${l.row?' · 시트 '+l.row+'행':''}</div>${r&&r.alt?`<div class="oa-alt">대체품: ${E(r.alt)}</div>`:''}${r&&r.memo?`<div class="oa-mut">메모: ${E(r.memo)}</div>`:''}</td>
   <td data-l="시트 단가">${W(l.our)}</td>
@@ -142,14 +146,14 @@ function drawVpo(){const v=OA.vpo,st=stage(v),T=vTotals(v),locked=st==='confirme
  const negos=v.lines.filter(l=>lineCalc(l).need&&OA.ed[l.lineId].acc);
  const permit=N(localStorage.getItem('tsb_oa_permit_'+OA.week));
  const amt=locked?(v.confTotal??T.total):T.total;
- const steps=[['waiting','링크 보냄'],['replied','회신'],['confirmed','확정'],['paid','입금'],['shipped','출고']];const si=steps.findIndex(x=>x[0]===st);
+ const steps=[['waiting','링크 보냄'],['replied','회신'],['confirmed','확정'],['paid','입금'],['shipped','출고']];const si=st==='cancelled'?-1:st==='expired'?0:steps.findIndex(x=>x[0]===st);
  V.innerHTML=`<div class="oa">${head('거래처 회신을 보고 줄마다 수락·수정한 뒤 확정해요.')}
  <a class="oa-back" href="#/order-admin/">&lsaquo; 보드</a>
  <div class="oa-card"><div class="oa-ch"><h2>${E(v.supplier)} <span class="oa-mut">${E(v.vpoId)}</span></h2>${chipS(v.status)}</div>
   <div class="oa-flow">${steps.map((x,i)=>`<span class="${i<=si?'on':''}">${x[1]}</span>`).join('<em>&rsaquo;</em>')}</div>
   <div class="oa-meta"><span>링크 ${v.linkAt?md(v.linkAt):'-'}${v.expires?' · 만료 '+md(v.expires):''}</span><span>회신 ${v.repliedAt?md(v.repliedAt):'아직'}</span><span>출고 가능일 ${E(v.shipDate||'-')}</span></div>
   ${v.memo?`<div class="oa-memo">거래처 메모: ${E(v.memo)}</div>`:''}
-  ${st==='waiting'||st==='expired'?`<div class="oa-btns"><button class="oa-btn" onclick="OA.relink(this)">새 링크 만들기 (예전 링크 막힘)</button></div>`:''}
+  <div class="oa-btns">${st==='waiting'||st==='expired'?`<button class="oa-btn" onclick="OA.relink(this)">새 링크 만들기 (예전 링크 막힘)</button>`:''}${st!=='shipped'&&st!=='cancelled'&&st!=='paid'?`<button class="oa-btn sm" onclick="OA.cancel(this)">이 거래처 발주 취소</button>`:''}${st==='cancelled'?'<span class="oa-mut">취소된 거래처 발주예요. 줄은 보드의 거래처 묶음으로 돌아가요.</span>':''}</div>
   ${OA.links[v.vpoId]&&(st==='waiting'||st==='expired')?linkBox(OA.links[v.vpoId]):''}</div>
  <div class="oa-kpis"><div><small>시트 기준 (VAT 포함)</small><b>${W(T.sheetT)}</b></div><div><small>${locked?'확정 합계':'확정 예정'} (VAT 포함)</small><b>${W(amt)}</b></div><div><small>차이</small><b class="${amt-T.sheetT>0?'bad':'good'}">${amt-T.sheetT>0?'+':''}${W(amt-T.sheetT)}</b></div><div><small>회신 대기 · 품절</small><b>${T.wait} · ${T.so}</b></div></div>
  <div class="oa-card oa-tw"><div class="oa-ch"><h3>차이 · 마진 · 판매가</h3><span class="oa-mut">마진 = (판매가 − 매입가×1.1) ÷ 판매가 · 목표 ${Math.round(RULE.margin*100)}% · 끝자리 ${RULE.end}</span></div>
@@ -157,7 +161,7 @@ function drawVpo(){const v=OA.vpo,st=stage(v),T=vTotals(v),locked=st==='confirme
   <div class="oa-mut" style="margin-top:8px">매입가가 올라서 ${Math.round(RULE.margin*100)}% 아래로 떨어진 줄만 판매가를 제안해요. 원래 ${Math.round(RULE.margin*100)}% 미만이던 줄은 표시만 해요. 단가는 모두 VAT 별도.</div></div>
  ${negos.length&&!locked?`<div class="oa-card"><div class="oa-ch"><h3>네고 요청 문구 ${negos.length}건</h3><button class="oa-btn sm" onclick="OA.cpNego(this)">복사</button></div><pre class="oa-pre" id="oa_nego">${E(negoText(negos))}</pre></div>`:''}
  <div class="oa-card"><div class="oa-ch"><h3>${locked?'확정 금액':'확정할 금액'}</h3><span class="oa-mut">수락 ${T.acc}/${v.lines.length}줄</span></div>
-  <table class="oa-sum"><tr><td>공급가</td><td>${W(locked?(v.confSupply??T.sup):T.sup)}</td></tr><tr><td>부가세</td><td>${W(locked?(v.confTotal!=null&&v.confSupply!=null?v.confTotal-v.confSupply:T.vat):T.vat)}</td></tr><tr class="t"><td>합계 (입금할 금액)</td><td>${W(amt)}</td></tr></table>
+  <table class="oa-sum"><tr><td>공급가</td><td>${W(locked?(v.confSupply??T.sup):T.sup)}</td></tr><tr><td>부가세</td><td>${W(locked?(v.confVat??(v.confTotal!=null&&v.confSupply!=null?v.confTotal-v.confSupply:T.vat)):T.vat)}</td></tr><tr class="t"><td>합계 (입금할 금액)</td><td>${W(amt)}</td></tr></table>
   ${st==='paid'||st==='shipped'?`<div class="oa-permit"><span class="oa-mut">이번 주 남은 허가 잔액 (이 기기 메모): ${permit!=null?W(permit)+'원':'입력 안 함'}</span></div>`:`<div class="oa-permit"><label>이번 주 허가 잔액 <em>(회생 2026회합1185 · 서포트센터 입력)</em></label><input class="oa-in" inputmode="numeric" id="oa_permit" placeholder="예: 5,000,000" value="${permit!=null?W(permit):''}" oninput="OA.permit(this.value,${amt})"><div id="oa_pres">${permitMsg(permit,amt)}</div></div>`}
   <div class="oa-btns">
    ${st==='replied'||st==='waiting'||st==='expired'?`<button class="oa-btn p" id="oa_conf" ${st!=='replied'?'disabled':''} onclick="OA.confirm(this)">${st!=='replied'?'회신이 오면 확정할 수 있어요':'확정'}</button>`:''}
@@ -171,7 +175,8 @@ function negoText(ls){return ls.map(l=>`${l.name}: 회신 ${W(OA.ed[l.lineId].pr
 OA.cpNego=btn=>copy(document.getElementById('oa_nego').innerText,btn);
 OA.permit=(val,amt)=>{const p=N(val);if(p==null)localStorage.removeItem('tsb_oa_permit_'+OA.week);else localStorage.setItem('tsb_oa_permit_'+OA.week,String(p));document.getElementById('oa_pres').innerHTML=permitMsg(p,amt);const b=document.getElementById('oa_conf');if(b&&b.dataset.two){delete b.dataset.two;b.textContent='확정'}};
 OA.set=(id,f,val)=>{const e=OA.ed[id];if(!e)return;if(f==='acc')e.acc=!!val;else e[f]=N(val);const y=window.scrollY;drawVpo();window.scrollTo(0,y)};
-OA.relink=async btn=>{const v=OA.vpo;btn.disabled=true;try{const j=await call('order.admin.vpo.relink',{vpoId:v.vpoId});const ls=v.lines;OA.links[v.vpoId]={vpoId:v.vpoId,url:j.url,expires:j.expires,supplier:v.supplier,lines:ls.length,bottles:ls.reduce((a,l)=>a+l.qty,0),stores:[...new Set(ls.map(l=>l.store))].join('·')};v.expires=j.expires||v.expires;if(v.status==='만료')v.status='링크생성';drawVpo()}catch(e){tst(e.message);btn.disabled=false}};
+OA.relink=async btn=>{const v=OA.vpo;btn.disabled=true;try{const j=await call('order.admin.vpo.relink',Object.assign({vpoId:v.vpoId},stage(v)==='expired'?{reopen:true}:{}));const ls=v.lines;OA.links[v.vpoId]={vpoId:v.vpoId,url:j.url,expires:j.expires,supplier:v.supplier,lines:ls.length,bottles:ls.reduce((a,l)=>a+l.qty,0),stores:[...new Set(ls.map(l=>l.store))].join('·')};v.expires=j.expires||v.expires;if(v.status==='만료')v.status='링크생성';drawVpo()}catch(e){tst(e.message);btn.disabled=false}};
+OA.cancel=async btn=>{const v=OA.vpo;if(!btn.dataset.two){btn.dataset.two='1';btn.textContent='한 번 더 누르면 취소돼요';btn.classList.add('bad');return}btn.disabled=true;try{await call('order.admin.vpo.cancel',{vpoId:v.vpoId});delete OA.links[v.vpoId];tst('취소했어요');vVpo(v.vpoId)}catch(e){tst(e.message);btn.disabled=false}};
 OA.confirm=async btn=>{const v=OA.vpo,T=vTotals(v);const p=N(localStorage.getItem('tsb_oa_permit_'+OA.week));
  if(!T.acc){tst('수락한 줄이 없어요');return}
  if(p!=null&&T.total>p&&!btn.dataset.two){btn.dataset.two='1';btn.textContent='허가 잔액 초과: 그래도 확정';btn.classList.add('bad');return}
