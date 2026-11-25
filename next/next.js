@@ -1270,7 +1270,7 @@ if(typeof markNav==='function'){const _m=markNav;markNav=function(){_m.apply(thi
 
 /* ── 공통 UI ── */
 function sheet(h,foot){closeSheet();const b=document.createElement('dialog');b.className='omask';b.id='osheet';b.onclick=ev=>{if(ev.target===b)closeSheet()};b.addEventListener('close',()=>closeSheet());
-  b.innerHTML=`<div class="osheet"><div class="grab"></div><div class="osb">${h}</div>${foot?`<div class="osf">${foot}</div>`:''}</div>`;if(typeof dlgOpen==='function')dlgOpen(b);else document.body.appendChild(b);
+  b.innerHTML=`<div class="osheet" tabindex="-1"><div class="grab"></div><div class="osb">${h}</div>${foot?`<div class="osf">${foot}</div>`:''}</div>`;if(typeof dlgOpen==='function')dlgOpen(b);else document.body.appendChild(b);
   const f=b.querySelector('input,textarea,button.obtn');if(f&&innerWidth>=768)setTimeout(()=>f.focus(),30)}
 function closeSheet(){const s=$o('#osheet');if(s)s.remove()}
 document.addEventListener('click',ev=>{const sh=ev.target.closest&&ev.target.closest('#oscart');if(!sh)return;const t=ev.target.closest('button');if(!t)return;

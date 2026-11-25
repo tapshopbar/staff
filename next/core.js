@@ -99,7 +99,7 @@ function prefetch(){
 }
 function logout(silent){try{localStorage.removeItem(MEMK())}catch(e){}S.mem={};api('logout').catch(()=>{});localStorage.removeItem('tsbp_token');S.token='';S.data=null;if(!silent)toast('로그아웃했어요');renderLogin()}
 function greet(){const h=new Date().getHours();return h<6?'늦은 밤까지 수고 많아요':h<11?'좋은 아침이에요':h<17?'좋은 오후예요':'좋은 저녁이에요'}
-function openSheet(html,onMount){const m=document.createElement('dialog');m.className='mask';m.innerHTML=`<div class="sheet"><button class="x" data-close>닫기</button>${html}</div>`;m.addEventListener('click',e=>{if(e.target===m||e.target.hasAttribute('data-close'))m.remove()});m.addEventListener('close',()=>m.remove());dlgOpen(m);onMount&&onMount(m);return m}
+function openSheet(html,onMount){const m=document.createElement('dialog');m.className='mask';m.innerHTML=`<div class="sheet" tabindex="-1"><button class="x" data-close>닫기</button>${html}</div>`;m.addEventListener('click',e=>{if(e.target===m||e.target.hasAttribute('data-close'))m.remove()});m.addEventListener('close',()=>m.remove());dlgOpen(m);onMount&&onMount(m);return m}
 const busy=(b,on,txt)=>{if(!b)return;if(on){b.dataset.t=b.innerHTML;b.classList.add('busy');b.innerHTML=txt||'<div class="spin"></div>'}else{b.classList.remove('busy');b.innerHTML=b.dataset.t||b.innerHTML}};
 const back = (href,label='뒤로')=>`<a class="back" href="${href||'javascript:history.back()'}">${I('back',16)} ${label}</a>`;
 const loading = ()=>`<div style="padding:20px var(--pad)"><div class="sk" style="height:120px"></div><div class="sk" style="height:220px;margin-top:8px"></div></div>`;

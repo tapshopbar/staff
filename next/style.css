@@ -261,6 +261,7 @@ dialog.mask:not([open]),dialog.omask:not([open]){display:none}
 dialog.mask::backdrop,dialog.omask::backdrop{background:transparent}
 html:has(dialog.mask[open]),html:has(dialog.omask[open]){overflow:hidden}
 .sheet,.osheet{overscroll-behavior:contain}
+.sheet:focus,.osheet:focus{outline:none}
 .toast[popover],.otoast[popover]{top:auto;right:auto;margin:0;border:0;overflow:visible}
 .ask .sheet{padding-top:24px}
 .askm{font-size:16px;line-height:1.6;font-weight:600;white-space:pre-line;word-break:keep-all;margin:0 0 18px}
