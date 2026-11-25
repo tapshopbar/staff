@@ -28,7 +28,7 @@ async function contractDetail(v,id){
   v.innerHTML=`${back(S.data.me.email===c.email?'#/contract':'#/contracts')}
    <div class="title"><h1>근로계약서.</h1><p>${esc(c.name)} · ${esc(c.branch)} · ${esc(c.id)} ${cchip(c.status)}</p></div>
    <div style="padding:0 var(--pad)"><div style="height:3px;width:56px;background:${PINE};margin-bottom:10px"></div>
-    <div id="docbox" style="max-height:62vh;overflow:auto;border:1.5px solid var(--ink);background:#fff;-webkit-overflow-scrolling:touch"></div>
+    <div id="docbox" style="max-height:62vh;max-height:62dvh;overflow:auto;border:1.5px solid var(--ink);background:#fff;-webkit-overflow-scrolling:touch"></div>
     <div id="readst" class="note" style="padding:8px 0 0;font-size:13px">${j.canSign?'↓ 끝까지 스크롤해서 읽어 주세요':''}</div></div>
    <div id="signarea"></div><div id="auditarea"></div>`;
   const box=$('#docbox');mountDoc(box,j.html);
@@ -81,7 +81,7 @@ ROUTES.contracts=async function(v,arg){
    <div class="list">${j.admin.map(c=>`<div class="li" style="flex-wrap:wrap"><div class="m" onclick="location.hash='#/contract/${c.id}'"><div class="t1">${esc(c.name)} · ${esc(c.branch)}</div><div class="t2">${esc(c.id)} · ${esc(c.tpl)} · ${c.signedAt?'서명 '+esc(String(c.signedAt).slice(5,16)):c.viewedAt?'열람 '+esc(String(c.viewedAt).slice(5,16)):'작성 '+esc(String(c.createdAt).slice(5,16))}</div></div>${cchip(c.status)}
      <div style="width:100%;display:flex;gap:8px;margin-top:8px">${c.status==='작성중'?`<button class="pill sm line" onclick="cAct('contract.send','${c.id}',this)">발송</button>`:''}${c.pdf?`<button class="pill sm line" onclick="openFile('${c.pdf}','근로계약서 ${esc(c.name)}')">PDF</button>`:''}${c.status!=='서명완료'&&c.status!=='취소'?`<button class="pill sm line" onclick="cAct('contract.cancel','${c.id}',this)">취소</button>`:''}</div></div>`).join('')||'<div class="empty" style="padding:30px 0;color:var(--mute)">아직 계약서가 없어요</div>'}</div><div style="height:30px"></div>`;
 };
-window.cAct=async(a,id,b)=>{if(a==='contract.cancel'){const r=prompt('취소 사유');if(r===null)return;busy(b,true);try{await api(a,{id,reason:r});toast('취소했어요');route()}catch(e){toast(e.message);busy(b,false)}return}
+window.cAct=async(a,id,b)=>{if(a==='contract.cancel'){const r=await askText('취소 사유');if(r===null)return;busy(b,true);try{await api(a,{id,reason:r});toast('취소했어요');route()}catch(e){toast(e.message);busy(b,false)}return}
   busy(b,true);try{await api(a,{id});toast('발송했어요');route()}catch(e){toast(e.message);busy(b,false)}};
 async function contractNew(v){
   v.innerHTML=`${back('#/contracts')}<div class="title"><h1>새 계약서.</h1></div>${loading()}`;
@@ -98,7 +98,7 @@ async function contractNew(v){
   $('#pv').onclick=async e=>{busy(e.currentTarget,true);try{const r=await api('contract.preview',{tpl:$('#ct').value,fields:fields()});busy(e.currentTarget,false);
     $('#calc').innerHTML=`통상시급 <b>${esc(r.calc.통상시급)}원</b> · 기본급 ${esc(r.calc.기본급)} · 연장 ${esc(r.calc.고정연장수당)} · 야간 ${esc(r.calc.고정야간수당)} ${r.calc.minWageOk?'':'<b style="color:#B3261E">· 최저시급 미달</b>'}`;
     openSheet(`<h2>미리보기</h2><div id="pvd" style="border:1.5px solid var(--ink);background:#fff;margin-top:10px"></div>`,m=>mountDoc(m.querySelector('#pvd'),r.html))}catch(er){toast(er.message);busy(e.currentTarget,false)}};
-  const save=send=>async e=>{if(send&&!confirm('직원에게 서명 요청을 보낼까요? (테스트모드면 hello@로만 가요)'))return;busy(e.currentTarget,true);try{const r=await api('contract.create',{email:$('#ce').value,tpl:$('#ct').value,fields:fields(),send,ua:navigator.userAgent});toast(send?'발송했어요':'저장했어요');location.hash='#/contract/'+r.id}catch(er){toast(er.message);busy(e.currentTarget,false)}};
+  const save=send=>async e=>{const ct=e.currentTarget;if(send&&!await ask('직원에게 서명 요청을 보낼까요? (테스트모드면 hello@로만 가요)'))return;busy(ct,true);try{const r=await api('contract.create',{email:$('#ce').value,tpl:$('#ct').value,fields:fields(),send,ua:navigator.userAgent});toast(send?'발송했어요':'저장했어요');location.hash='#/contract/'+r.id}catch(er){toast(er.message);busy(ct,false)}};
   $('#sv').onclick=save(false);$('#sd').onclick=save(true);
 }
 /* 오류 시 빈 화면 대신 다시 시도 */

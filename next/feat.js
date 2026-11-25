@@ -31,7 +31,7 @@ ROUTES.schedule=async function(v,arg){
     if(!j.canEdit)return;
     v.querySelectorAll('.addc').forEach(b=>b.onclick=()=>editShift({email:b.dataset.e,date:b.dataset.d,name:people.find(p=>p.email===b.dataset.e).name}));
     v.querySelectorAll('.sh[data-id]').forEach(b=>b.onclick=()=>editShift(st.shifts.find(s=>(s.id||s.tmp)===b.dataset.id)));
-    $('#cp').onclick=async e=>{busy(e.currentTarget,true,'<div class="spin d"></div>');try{const r=await api('schedule.copy',{branch,start,force:st.shifts.length>0&&confirm('이번 주 기존 근무 위에 지난주 근무를 더할까요?')});toast(`${r.copied}개 근무를 복사했어요`);ROUTES.schedule(v,arg)}catch(er){toast(er.message);draw()}};
+    $('#cp').onclick=async e=>{busy(e.currentTarget,true,'<div class="spin d"></div>');try{const r=await api('schedule.copy',{branch,start,force:st.shifts.length>0&&await ask('이번 주 기존 근무 위에 지난주 근무를 더할까요?')});toast(`${r.copied}개 근무를 복사했어요`);ROUTES.schedule(v,arg)}catch(er){toast(er.message);draw()}};
     if($('#sv'))$('#sv').onclick=e=>save(e.currentTarget,false);
     $('#pub').onclick=e=>save(e.currentTarget,true);
   };
@@ -97,7 +97,7 @@ async function expNew(v){
    <p class="note" style="padding:8px 0">계좌는 한 번 입력하면 기억해요. 30만원 이상은 서포트센터 팀장 승인까지 가요.</p></div>
    <div class="btnrow"><button class="pill wine" id="sb">청구하기</button></div>`;
   v.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{v.querySelectorAll('.seg button').forEach(x=>x.classList.remove('on'));b.classList.add('on');st.kind=b.dataset.k});
-  $('#pf').onchange=async e=>{const f=e.target.files[0];if(!f)return;st.receipt=await fileToDataUrl(f);$('#ph').innerHTML=`<img src="${st.receipt}"><input type="file" accept="image/*" capture="environment" id="pf" hidden>`;$('#ph').querySelector('input').onchange=$('#pf')?.onchange};
+  $('#pf').onchange=async e=>{const f=e.target.files[0];if(!f)return;st.receipt=await fileToDataUrl(f);$('#ph').innerHTML=`<img src="${st.receipt}" alt="영수증 사진"><input type="file" accept="image/*" capture="environment" id="pf" hidden>`;$('#ph').querySelector('input').onchange=$('#pf')?.onchange};
   $('#am').oninput=e=>{const n=e.target.value.replace(/[^\d]/g,'');e.target.value=n?Number(n).toLocaleString('ko-KR'):''};
   $('#sb').onclick=async e=>{if(!st.receipt)return toast('영수증 사진을 올려 주세요');const b=e.currentTarget;busy(b,true,'올리는 중…');
     try{const r=await api('exp.create',{kind:st.kind,amount:$('#am').value,item:$('#it').value,date:$('#dt').value,place:$('#pl').value,method:$('#mt').value,memo:$('#mm').value,bank:$('#bk').value,account:$('#ac').value,receipt:st.receipt});
@@ -208,7 +208,7 @@ ROUTES.onb=async function(v,email){
   v.innerHTML=loading();
   let j;try{j=await api('onb.get',email?{email}:{})}catch(e){v.innerHTML=`<div class="empty">${esc(e.message)}</div>`;return}
   const mine=!email||email===S.data.me.email;
-  v.innerHTML=`${back()}<section class="hero photo" style="background-image:url(../assets/loc_hall.jpg);padding-top:60px"><span class="tag"><i class="new">WELCOME</i></span><h1 style="margin:10px 0 8px">${mine?'탭샵바에 오신 걸<br>환영해요.':esc(j.name)+'님<br>온보딩'}</h1><div style="font-size:15px;font-weight:700">${j.done} / ${j.total} 완료</div><div class="meter"><i style="width:${j.done/j.total*100}%"></i></div></section>
+  v.innerHTML=`${back()}<section class="hero photo" style="background-image:url(assets/loc_hall.jpg);padding-top:60px"><span class="tag"><i class="new">WELCOME</i></span><h1 style="margin:10px 0 8px">${mine?'탭샵바에 오신 걸<br>환영해요.':esc(j.name)+'님<br>온보딩'}</h1><div style="font-size:15px;font-weight:700">${j.done} / ${j.total} 완료</div><div class="meter"><i style="width:${j.done/j.total*100}%"></i></div></section>
    <div class="list" style="margin-top:6px">${j.items.map(i=>`<div class="li" data-no="${i.no}"><span class="ck ${i.done?'on':''}">${i.done?'✓':''}</span><div class="m"><div class="t1" style="${i.done?'text-decoration:line-through;opacity:.55':''}">${esc(i.title)}</div><div class="t2 w">${esc(i.desc)}${i.by==='점장'?' · 점장 확인':''}${i.done?' · '+esc(i.checker)+' '+esc(String(i.at).slice(5,10)):''}</div>${i.link?`<a class="u" style="font-size:12.5px;margin-top:6px" href="${esc(i.link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">열기</a>`:''}</div></div>`).join('')}</div>
    <p class="note">본인 항목은 직접 체크하고, "점장 확인" 항목은 점장님이 체크해요.</p>`;
   v.querySelectorAll('[data-no]').forEach(el=>el.onclick=async()=>{try{await api('onb.check',{no:el.dataset.no,email:email||''});ROUTES.onb(v,email);refresh()}catch(e){toast(e.message)}});
@@ -238,15 +238,15 @@ ROUTES.close=async function(v,arg){
      <div class="two"><div><label class="f">출근</label><input class="in" type="time" id="fi" value="${esc((i.in||'').slice(0,5))}"></div><div><label class="f">퇴근</label><input class="in" type="time" id="fo" value="${esc((i.out||'').slice(0,5))}"></div></div>
      <label class="f">수정 사유 <em>(기록에 남아요)</em></label><input class="in" id="fn2" placeholder="예) 폰 배터리 방전, CCTV 확인"><button class="pill wine full" style="margin-top:18px" id="ok">저장</button>`,m=>{
       m.querySelector('#ok').onclick=async e=>{busy(e.currentTarget,true);try{await api('close.fix',{row:i.row,email:i.email,date:i.date,in:m.querySelector('#fi').value,out:m.querySelector('#fo').value,note:m.querySelector('#fn2').value});m.remove();toast('수정했어요');ROUTES.close(v,arg)}catch(er){toast(er.message);busy(e.currentTarget,false)}}})});
-  if($('#cf'))$('#cf').onclick=async e=>{if(issues&&!confirm(`이슈 ${issues}건이 남아 있어요. 그래도 확정할까요?`))return;busy(e.currentTarget,true);try{await api('close.confirm',{month,branch});toast('확정했어요. 서포트센터에 알렸어요');ROUTES.close(v,arg)}catch(er){toast(er.message);busy(e.currentTarget,false)}};
-  if($('#fn'))$('#fn').onclick=async e=>{if(!confirm(`${month} 전 지점 근태를 마감할까요?`))return;busy(e.currentTarget,true);try{const r=await api('close.finalize',{month});toast(`마감 완료 · "${r.sheet}" 탭에 ${r.rows}명`,4000);ROUTES.close(v,arg)}catch(er){toast(er.message);busy(e.currentTarget,false)}};
+  if($('#cf'))$('#cf').onclick=async e=>{const ct=e.currentTarget;if(issues&&!await ask(`이슈 ${issues}건이 남아 있어요. 그래도 확정할까요?`))return;busy(ct,true);try{await api('close.confirm',{month,branch});toast('확정했어요. 서포트센터에 알렸어요');ROUTES.close(v,arg)}catch(er){toast(er.message);busy(ct,false)}};
+  if($('#fn'))$('#fn').onclick=async e=>{const ct=e.currentTarget;if(!await ask(`${month} 전 지점 근태를 마감할까요?`))return;busy(ct,true);try{const r=await api('close.finalize',{month});toast(`마감 완료 · "${r.sheet}" 탭에 ${r.rows}명`,4000);ROUTES.close(v,arg)}catch(er){toast(er.message);busy(ct,false)}};
 };
 /* ── 본사 콘솔 ── */
 ROUTES.console=async function(v){
   v.innerHTML=`<div class="title"><h1>운영 콘솔</h1></div>${loading()}`;
   let j,ov;try{[j,ov]=await Promise.all([api('console'),api('schedule.overview',{start:monday(new Date())})])}catch(e){v.innerHTML=`<div class="title"><h1>운영 콘솔</h1><p>${esc(e.message)}</p></div>`;return}
   const p=j.pending, days=[...Array(7)].map((_,i)=>addD(ov.start,i)), today=ymd(new Date());
-  v.innerHTML=`<section class="hero photo" style="background-image:url(../assets/loc_hall.jpg);padding:40px var(--pad) 30px"><span class="tag"><i class="new">HQ</i> ${fmtDay(j.today)}</span><h1 style="font-size:44px;margin:12px 0 0">운영 콘솔.</h1><div style="font-size:15px;font-weight:600;opacity:.85;margin-top:6px">전 지점 근무 · 결재 · 경비 · 공지를 한 화면에서.</div></section>
+  v.innerHTML=`<section class="hero photo" style="background-image:url(assets/loc_hall.jpg);padding:40px var(--pad) 30px"><span class="tag"><i class="new">HQ</i> ${fmtDay(j.today)}</span><h1 style="font-size:44px;margin:12px 0 0">운영 콘솔.</h1><div style="font-size:15px;font-weight:600;opacity:.85;margin-top:6px">전 지점 근무 · 결재 · 경비 · 공지를 한 화면에서.</div></section>
    <div class="sec"><h2>오늘 매장</h2><a href="#/schedule">스케줄 편집</a></div>
    <div class="cgrid">${j.branches.filter(b=>b.branch!=='본사'&&b.branch!=='서포트센터').map(b=>`<div class="cbox"><h3>${esc(brLabel(b.branch))} ${b.missing.length?chip('반려','미출근 '+b.missing.length):b.scheduled?chip('정상','정상'):chip('미확정','스케줄 없음')}</h3>
      <div style="display:flex;gap:18px;margin-top:12px"><div><div class="n">${b.working}</div><div class="note" style="padding:0">근무 중</div></div><div><div class="n" style="color:var(--mute)">${b.scheduled}</div><div class="note" style="padding:0">오늘 스케줄</div></div><div><div class="n" style="color:var(--mute)">${b.done}</div><div class="note" style="padding:0">퇴근</div></div></div>

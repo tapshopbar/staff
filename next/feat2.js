@@ -34,17 +34,17 @@ ROUTES.check=async function(v,kind){
   const st=j.tpl.map(t=>({...t,done:false,photoData:'',note:''}));
   const draw=()=>{
     const n=st.filter(i=>i.done).length;
-    v.innerHTML=`${back()}<section class="hero ${kind==='마감'?'':'photo'}" style="${kind==='오픈'?'background-image:url(../assets/loc_hall.jpg);':'background:var(--navy);'}padding-top:50px"><span class="tag"><i class="new">${esc(brLabel(j.branch))}</i> ${fmtDay(j.date)}</span><h1 style="margin:10px 0 8px">${kind} 체크리스트.</h1><div style="font-size:15px;font-weight:700"><span id="cnt">${n}</span> / ${st.length}</div><div class="meter"><i id="bar" style="width:${n/st.length*100}%"></i></div></section>
+    v.innerHTML=`${back()}<section class="hero ${kind==='마감'?'':'photo'}" style="${kind==='오픈'?'background-image:url(assets/loc_hall.jpg);':'background:var(--navy);'}padding-top:50px"><span class="tag"><i class="new">${esc(brLabel(j.branch))}</i> ${fmtDay(j.date)}</span><h1 style="margin:10px 0 8px">${kind} 체크리스트.</h1><div style="font-size:15px;font-weight:700"><span id="cnt">${n}</span> / ${st.length}</div><div class="meter"><i id="bar" style="width:${n/st.length*100}%"></i></div></section>
      <div class="seg"><button class="${kind==='오픈'?'on':''}" onclick="location.hash='#/check/오픈'">오픈</button><button class="${kind==='마감'?'on':''}" onclick="location.hash='#/check/마감'">마감</button></div>
      ${j.record?`<div class="bn y" style="margin-top:12px"><div><b>오늘 ${esc(j.record.by)}님이 제출했어요 · ${j.record.done}/${j.record.total}</b><span>${esc(String(j.record.at).slice(11,16))} · 다시 제출하면 새 기록으로 남아요</span></div></div>`:''}
-     <div class="list" style="margin-top:8px">${st.map((i,k)=>`<div class="li" data-k="${k}" style="align-items:flex-start"><span class="ck ${i.done?'on':''}">${i.done?'✓':''}</span><div class="m"><div class="t1" style="${i.done?'opacity:.55':''}">${esc(i.title)}</div>${i.photo?`<label class="u" style="font-size:12.5px;margin-top:6px" onclick="event.stopPropagation()">${i.photoData?'사진 다시 찍기':'사진 찍기 (필수)'}<input type="file" accept="image/*" capture="environment" hidden data-p="${k}"></label>${i.photoData?`<img src="${i.photoData}" style="width:100%;margin-top:8px">`:''}`:''}</div></div>`).join('')}</div>
+     <div class="list" style="margin-top:8px">${st.map((i,k)=>`<div class="li" data-k="${k}" style="align-items:flex-start"><span class="ck ${i.done?'on':''}">${i.done?'✓':''}</span><div class="m"><div class="t1" style="${i.done?'opacity:.55':''}">${esc(i.title)}</div>${i.photo?`<label class="u" style="font-size:12.5px;margin-top:6px" onclick="event.stopPropagation()">${i.photoData?'사진 다시 찍기':'사진 찍기 (필수)'}<input type="file" accept="image/*" capture="environment" hidden data-p="${k}"></label>${i.photoData?`<img src="${i.photoData}" alt="체크 사진" style="width:100%;margin-top:8px">`:''}`:''}</div></div>`).join('')}</div>
      <div class="form"><label class="f">메모 <em>(특이사항)</em></label><textarea class="in" id="mm" placeholder="예) 3번 탭 노즐 물 샘, 내일 확인 필요"></textarea></div>
      <div class="btnrow"><button class="pill wine" id="sb">${kind} 체크 제출</button></div>
      <p class="note">못 한 항목이 있으면 점장님께 자동으로 알려요. 체크 항목은 시트 "체크템플릿"에서 지점별로 바꿀 수 있어요.</p>`;
     v.querySelectorAll('[data-k]').forEach(el=>el.onclick=()=>{const i=st[+el.dataset.k];if(i.photo&&!i.photoData&&!i.done)return toast('사진을 먼저 찍어 주세요');i.done=!i.done;draw()});
     v.querySelectorAll('[data-p]').forEach(inp=>inp.onchange=async e=>{const f=e.target.files[0];if(!f)return;const i=st[+inp.dataset.p];i.photoData=await fileToDataUrl(f,1200,.7);i.done=true;draw()});
-    $('#sb').onclick=async e=>{const miss=st.filter(i=>!i.done).length;if(miss&&!confirm(`${miss}개 항목이 남았어요. 이대로 제출할까요?`))return;busy(e.currentTarget,true,'올리는 중…');
-      try{const r=await api('check.submit',{kind,memo:$('#mm').value,items:st.map(i=>({no:i.no,title:i.title,done:i.done,photo:i.photoData||''}))});toast(`${kind} 체크 제출 · ${r.done}/${r.total}`);await refresh();ROUTES.check(v,kind)}catch(er){toast(er.message);busy(e.currentTarget,false)}};
+    $('#sb').onclick=async e=>{const ct=e.currentTarget;const miss=st.filter(i=>!i.done).length;if(miss&&!await ask(`${miss}개 항목이 남았어요. 이대로 제출할까요?`))return;busy(ct,true,'올리는 중…');
+      try{const r=await api('check.submit',{kind,memo:$('#mm').value,items:st.map(i=>({no:i.no,title:i.title,done:i.done,photo:i.photoData||''}))});toast(`${kind} 체크 제출 · ${r.done}/${r.total}`);await refresh();ROUTES.check(v,kind)}catch(er){toast(er.message);busy(ct,false)}};
   };
   draw();
 };
@@ -69,7 +69,7 @@ function incNew(v){
    <label class="f">고객 정보 <em>(연락이 필요할 때만 · 이름/연락처)</em></label><input class="in" id="cu">
    <label class="f">사진 <em>(선택)</em></label><label class="photo-in" id="ph"><input type="file" accept="image/*" capture="environment" id="pf" hidden><span style="font-size:26px">+</span><span>현장 사진</span></label></div>
    <div class="btnrow"><button class="pill wine" id="sb">보고하기</button></div>`;
-  $('#pf').onchange=async e=>{const f=e.target.files[0];if(!f)return;photo=await fileToDataUrl(f,1200,.72);$('#ph').innerHTML=`<img src="${photo}">`};
+  $('#pf').onchange=async e=>{const f=e.target.files[0];if(!f)return;photo=await fileToDataUrl(f,1200,.72);$('#ph').innerHTML=`<img src="${photo}" alt="사진">`};
   $('#sb').onclick=async e=>{if(!$('#bd').value.trim())return toast('내용을 적어 주세요');busy(e.currentTarget,true,'AI가 분류하는 중…');
     try{const r=await api('inc.create',{body:$('#bd').value,taken:$('#ac').value,type:$('#tp').value,severity:$('#sv').value,at:$('#at').value.replace('T',' '),customer:$('#cu').value,photo});toast(`접수했어요 · ${r.type} · ${r.severity}`,3500);location.hash='#/incident/'+r.id}catch(er){toast(er.message);busy(e.currentTarget,false)}};
 }
@@ -104,7 +104,7 @@ ROUTES.quiz=async function(v){
   v.innerHTML=`<div class="title"><h1>와인 퀴즈</h1></div>${loading()}`;
   let data=await api('quiz.get');
   const home=()=>{
-    v.innerHTML=`${back()}<section class="hero photo" style="background-image:url(../assets/americano.jpg);padding-top:70px"><span class="tag"><i class="new">QUIZ</i> 탭 와인 64가지</span><h1 style="margin:10px 0 6px">오늘의<br>와인 퀴즈.</h1><div style="font-size:14px;font-weight:600;opacity:.85">10문제 · 산지 · 품종 · 스타일 · 페어링 · 서비스</div>
+    v.innerHTML=`${back()}<section class="hero photo" style="background-image:url(assets/americano.jpg);padding-top:70px"><span class="tag"><i class="new">QUIZ</i> 탭 와인 64가지</span><h1 style="margin:10px 0 6px">오늘의<br>와인 퀴즈.</h1><div style="font-size:14px;font-weight:600;opacity:.85">10문제 · 산지 · 품종 · 스타일 · 페어링 · 서비스</div>
       <div class="meta" style="margin-top:18px"><span>내 레벨 <b>${esc(data.my.level)}</b></span><span>누적 정답 ${data.my.correct} · ${data.my.plays}회</span></div></section>
      <div class="btnrow"><button class="pill wine" id="go">시작하기</button></div>
      <div class="sec"><h2>이번 달 랭킹</h2></div><div class="list">${data.board.map((b,i)=>`<div class="li" style="cursor:default;${b.me?'background:#FFF6D6':''}"><b style="font-size:20px;width:28px">${i+1}</b><div class="m"><div class="t1">${esc(b.name)} <span style="color:var(--mute);font-weight:600;font-size:12.5px">${esc(brLabel(b.branch))}</span></div><div class="t2">${b.score}/${b.total} · ${b.secs}초 · ${b.tries}회 도전</div></div>${i===0?'<i class="new">1위</i>':''}</div>`).join('')||'<div class="empty">이번 달 첫 도전자가 되어 보세요</div>'}</div>
@@ -141,7 +141,7 @@ ROUTES.kudos=async function(v){
   const j=await api('kudos.list');
   let val=j.values[0], pub=true;
   const byBr={};j.people.forEach(p=>{const g=typeof peopleGroup==='function'?peopleGroup(p):p.branch;(byBr[g]=byBr[g]||[]).push(p)});if(typeof sortGroups==='function'){const o={};sortGroups(Object.keys(byBr)).forEach(k=>o[k]=byBr[k]);Object.keys(byBr).forEach(k=>delete byBr[k]);Object.assign(byBr,o)}
-  v.innerHTML=`${back()}<section class="hero photo" style="background-image:url(../assets/a26_men_B.jpg);background-position:50% 25%;padding-top:80px"><span class="tag"><i class="new">KUDOS</i> 받은 칭찬 ${j.received}장</span><h1 style="margin:10px 0 0">고마운 동료에게<br>한 장.</h1></section>
+  v.innerHTML=`${back()}<section class="hero photo" style="background-image:url(assets/a26_men_B.jpg);background-position:50% 25%;padding-top:80px"><span class="tag"><i class="new">KUDOS</i> 받은 칭찬 ${j.received}장</span><h1 style="margin:10px 0 0">고마운 동료에게<br>한 장.</h1></section>
    <div class="form"><label class="f">누구에게</label><select class="in" id="to"><option value="">동료 선택</option>${Object.keys(byBr).map(b=>`<optgroup label="${esc(b)}">${byBr[b].map(p=>`<option value="${esc(p.email)}">${esc(p.name)}</option>`).join('')}</optgroup>`).join('')}</select>
    <label class="f">어떤 점이 좋았나요?</label><div class="presets">${j.values.map((x,i)=>`<button data-v="${esc(x)}" class="${i===0?'on':''}">${esc(x)}</button>`).join('')}</div>
    <label class="f">메시지</label><textarea class="in" id="mg" placeholder="예) 바쁜 금요일 마감 끝까지 같이 해줘서 고마워요!"></textarea>
@@ -169,7 +169,7 @@ ROUTES.log=async function(v,arg){
    <div class="list" style="margin-top:12px">${j.items.map(i=>`<div class="li" style="cursor:default;align-items:flex-start">${ava(i.name,'직원',36)}<div class="m"><div class="t1" style="font-size:14.5px">${esc(i.name)} <span style="color:var(--mute);font-weight:600;font-size:12.5px">${esc(brLabel(i.branch))} · ${esc(String(i.at).slice(11,16))}</span> ${i.cat==='퇴근 한 줄'?'<i class="new">퇴근 한 줄</i>':`<span class="chip c-미확정">${esc(i.cat)}</span>`}</div><div style="font-size:15px;font-weight:500;margin-top:4px;line-height:1.55;white-space:pre-wrap">${esc(i.text)}</div>${i.photo?`<button class="u" style="font-size:12.5px;margin-top:6px" onclick="openFile('${i.photo}','업무일지 사진')">사진 보기</button>`:''}</div></div>`).join('')||'<div class="empty">아직 기록이 없어요</div>'}</div>`;
   if(date!==today)return;
   v.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{v.querySelectorAll('[data-c]').forEach(x=>x.classList.remove('on'));b.classList.add('on');cat=b.dataset.c});
-  $('#pf').onchange=async e=>{const f=e.target.files[0];if(!f)return;photo=await fileToDataUrl(f,1200,.72);$('#pv').innerHTML=`<img src="${photo}" style="width:120px;margin-top:10px">`};
+  $('#pf').onchange=async e=>{const f=e.target.files[0];if(!f)return;photo=await fileToDataUrl(f,1200,.72);$('#pv').innerHTML=`<img src="${photo}" alt="사진" style="width:120px;margin-top:10px">`};
   $('#sb').onclick=async e=>{const t=$('#tx').value.trim();if(!t)return toast('내용을 적어 주세요');busy(e.currentTarget,true);try{await api('log.add',{text:t,cat,photo});toast('남겼어요');ROUTES.log(v,arg)}catch(er){toast(er.message);busy(e.currentTarget,false)}};
 };
 
@@ -259,7 +259,7 @@ ROUTES.schedule=async function(v,arg){
     if($('#bsel'))$('#bsel').onchange=e=>location.hash=`#/schedule/${encodeURIComponent(e.target.value)}@${start}`;
     v.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{st.filter=b.dataset.f;draw()});
     v.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{st.color=b.dataset.c;draw()});
-    if($('#h3'))$('#h3').onclick=async e=>{const ws=j.horizon.map(h=>h.start).filter(w=>w>start).slice(0,3);if(!ws.length)return toast('이미 3주 앞이에요');if(!confirm(`지금 보는 주(${fmtDay(start)}) 근무를 기준으로 ${ws.length}주를 임시로 채울까요?\n이미 근무가 있는 주는 건너뛰어요. 확정 전까지 직원에게 안 보여요.`))return;busy(e.currentTarget,true,'<div class="spin d"></div>');let n=0,sk=0;for(const w of ws){try{const r=await api('schedule.copy',{branch,start:w,v2:1});n+=r.copied}catch(er){sk++}}toast(`근무 ${n}개를 채웠어요${sk?' · '+sk+'주는 이미 있어서 건너뜀':''}`);ROUTES.schedule(v,arg)};
+    if($('#h3'))$('#h3').onclick=async e=>{const ct=e.currentTarget;const ws=j.horizon.map(h=>h.start).filter(w=>w>start).slice(0,3);if(!ws.length)return toast('이미 3주 앞이에요');if(!await ask(`지금 보는 주(${fmtDay(start)}) 근무를 기준으로 ${ws.length}주를 임시로 채울까요?\n이미 근무가 있는 주는 건너뛰어요. 확정 전까지 직원에게 안 보여요.`))return;busy(ct,true,'<div class="spin d"></div>');let n=0,sk=0;for(const w of ws){try{const r=await api('schedule.copy',{branch,start:w,v2:1});n+=r.copied}catch(er){sk++}}toast(`근무 ${n}개를 채웠어요${sk?' · '+sk+'주는 이미 있어서 건너뜀':''}`);ROUTES.schedule(v,arg)};
     if(j.canEditStaff)v.querySelectorAll('td.nm[data-sp]').forEach(t=>t.onclick=()=>staffSheet(P(t.dataset.sp)));
     if(!j.canEdit)return;
     v.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{st.mode=b.dataset.m;if(st.mode==='paint'&&!st.paint){const f=j.presets.findIndex(x=>can(x.part));st.paint=f>=0?{t:'p',i:f}:{t:'off'}}draw()});
@@ -271,7 +271,7 @@ ROUTES.schedule=async function(v,arg){
       v.querySelectorAll('.sh[data-id]').forEach(b=>b.onclick=()=>{const s=st.shifts.find(x=>(x.id||x.tmp)===b.dataset.id);if(!can(s.part))return toast(`${s.part} 근무는 편집 권한이 없어요`);editShift(P(s.email),s.date,s)});
       v.querySelectorAll('.sh[data-off]').forEach(b=>b.onclick=()=>{const o=st.offs.find(x=>(x.id||x.tmp)===b.dataset.off);const p=P(o.email);if(!canOff(p))return toast('휴무는 편집 권한이 없어요');editShift(p,o.date)});
     }
-    $('#cp').onclick=async e=>{busy(e.currentTarget,true,'<div class="spin d"></div>');try{const r=await api('schedule.copy',{branch,start,v2:1,force:(st.shifts.length+st.offs.length)>0&&confirm('이번 주 기존 근무 위에 지난주 근무를 더할까요?')});toast(`근무 ${r.copied}개${r.offs?', 휴무 '+r.offs+'개':''}를 복사했어요`);ROUTES.schedule(v,arg)}catch(er){toast(er.message);draw()}};
+    $('#cp').onclick=async e=>{busy(e.currentTarget,true,'<div class="spin d"></div>');try{const r=await api('schedule.copy',{branch,start,v2:1,force:(st.shifts.length+st.offs.length)>0&&await ask('이번 주 기존 근무 위에 지난주 근무를 더할까요?')});toast(`근무 ${r.copied}개${r.offs?', 휴무 '+r.offs+'개':''}를 복사했어요`);ROUTES.schedule(v,arg)}catch(er){toast(er.message);draw()}};
     if($('#sv'))$('#sv').onclick=e=>save(e.currentTarget,false);
     $('#pub').onclick=e=>save(e.currentTarget,true);
     $('#pm').onclick=presetSheet;if($('#pm2'))$('#pm2').onclick=presetSheet;
@@ -286,7 +286,7 @@ ROUTES.schedule=async function(v,arg){
   const putOff=(p,ds)=>{clearCell(p,ds);st.offs.push({tmp:'o'+Math.random().toString(36).slice(2,8),email:p.email,date:ds,status:'임시'});st.dirty=true};
   const partOk=(p,part)=>{
     if(part==='하이브리드'&&!p.hybrid){toast(`${p.name}님은 Hybrid 배지가 없어요. 단독 근무는 Hybrid만 넣을 수 있어요`);return false}
-    if(part!==p.part&&part!=='하이브리드'&&!p.hybrid){if(sous||!can(p.part)){toast(`${p.name}님은 ${p.part} 직원이에요 (Hybrid 아님)`);return false}return confirm(`${p.name}님은 ${p.part} 직원이에요. 그래도 ${part} 근무로 넣을까요?`)}
+    if(part!==p.part&&part!=='하이브리드'&&!p.hybrid){if(sous||!can(p.part)){toast(`${p.name}님은 ${p.part} 직원이에요 (Hybrid 아님)`);return false}return ask(`${p.name}님은 ${p.part} 직원이에요. 그래도 ${part} 근무로 넣을까요?`)}
     if(!can(part)){toast(`${part} 근무는 편집 권한이 없어요`);return false}
     return true;
   };
@@ -297,7 +297,8 @@ ROUTES.schedule=async function(v,arg){
     if(t.t==='off'){if(!canOff(p))return toast('휴무는 편집 권한이 없어요');putOff(p,ds);return draw()}
     const x=j.presets[t.i];const part=x.part;
     const ex=st.shifts.find(s=>s.email===p.email&&s.date===ds&&s.start===x.start&&s.end===x.end&&s.part===part);if(ex)return;
-    if(!partOk(p,part))return;
+    const ok=partOk(p,part);if(ok instanceof Promise){ok.then(y=>{if(y){putShift(p,ds,{start:x.start,end:x.end,brk:x.brk,pos:x.name,part});draw()}});return}
+    if(!ok)return;
     putShift(p,ds,{start:x.start,end:x.end,brk:x.brk,pos:x.name,part});draw();
   };
 
@@ -340,9 +341,9 @@ ROUTES.schedule=async function(v,arg){
       m.querySelectorAll('[data-mm]').forEach(b=>b.onclick=()=>{const hh=cur[act]?cur[act].split(':')[0]:(act==='start'?'10':'19');cur[act]=hh+':'+pad(b.dataset.mm);if(act==='start'&&!cur.end)act='end';paint()});
       m.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{cur.brk=+b.dataset.b;brkManual=true;paint()});
       m.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>{cur.part=b.dataset.pp;paint()});
-      q('#ok').onclick=()=>{
+      q('#ok').onclick=async()=>{
         if(!cur.start||!cur.end)return toast('시작과 종료를 골라 주세요');
-        if(!partOk(p,cur.part))return;
+        if(!await partOk(p,cur.part))return;
         const o={start:cur.start,end:cur.end,brk:+cur.brk||0,pos:q('#ps').value.trim(),part:cur.part};
         if(s){const i=st.shifts.findIndex(x=>(x.id||x.tmp)===(s.id||s.tmp));const n={...s,...o,status:'임시',changed:true};n.hours=hrs(n);st.shifts[i]=n;st.offs=st.offs.filter(x=>{if(x.email===p.email&&x.date===ds){if(x.id)st.offDeletes.push(x.id);return false}return true});st.dirty=true}
         else putShift(p,ds,o);
@@ -352,7 +353,7 @@ ROUTES.schedule=async function(v,arg){
       q('#sp').onclick=async e=>{
         if(!cur.start||!cur.end)return toast('시간을 먼저 골라 주세요');
         const part=cur.part==='하이브리드'?(can('홀')?'홀':'주방'):cur.part;
-        const name=(prompt(`${part} 프리셋 이름 (예: 오픈, 마감, 롱)`,q('#ps').value.trim()||'')||'').trim();if(!name)return;
+        const name=((await askText(`${part} 프리셋 이름 (예: 오픈, 마감, 롱)`,q('#ps').value.trim()||''))||'').trim();if(!name)return;
         const used=j.presets.filter(x=>x.part===part).map(x=>x.color),color=(PAL[part]||PAL.홀).find(c=>!used.includes(c))||PAL[part][0];
         busy(e.currentTarget,true);try{const r=await api('preset.save',{branch,name,part,start:cur.start,end:cur.end,brk:+cur.brk||0,color});j.presets=r.presets;cur.pos=name;q('#ps').value=name;toast(`프리셋 '${name}' 저장했어요`)}catch(er){toast(er.message)}busy(e.currentTarget,false);paint()};
       paint();
@@ -391,7 +392,7 @@ ROUTES.schedule=async function(v,arg){
             try{const r=await api('preset.save',{branch,name:ed.name,part:ed.part,start:ed.start,end:ed.end,brk:ed.brk,color,old:ed.i>=0?ed.old:''});j.presets=r.presets;toast(`프리셋 '${ed.name}' 저장했어요`);ed=null;paint();draw()}
             catch(er){toast(er.message);busy(e.currentTarget,false)}};
         }
-        m.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{const x=j.presets[+b.dataset.del];if(!confirm(`'${x.name}' 프리셋을 지울까요? (이미 넣은 근무는 그대로예요)`))return;busy(b,true);try{await api('preset.save',{branch,name:x.name,part:x.part,start:x.start,end:x.end,brk:x.brk,color:x.color,old:x.name});/* 공용(전체) 프리셋을 쓰는 지점은 먼저 지점 것으로 복사해야 지워짐 */const r=await api('preset.delete',{branch,name:x.name,part:x.part});j.presets=r.presets;paint();draw()}catch(e){toast(e.message);busy(b,false)}})};
+        m.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{const x=j.presets[+b.dataset.del];if(!await ask(`'${x.name}' 프리셋을 지울까요? (이미 넣은 근무는 그대로예요)`))return;busy(b,true);try{await api('preset.save',{branch,name:x.name,part:x.part,start:x.start,end:x.end,brk:x.brk,color:x.color,old:x.name});/* 공용(전체) 프리셋을 쓰는 지점은 먼저 지점 것으로 복사해야 지워짐 */const r=await api('preset.delete',{branch,name:x.name,part:x.part});j.presets=r.presets;paint();draw()}catch(e){toast(e.message);busy(b,false)}})};
       paint();});
   };
 
@@ -410,7 +411,7 @@ ROUTES.schedule=async function(v,arg){
   };
 
   const save=async(btn,publish)=>{
-    if(publish){const ov=people().filter(p=>total(p)>52);if(ov.length&&!confirm(`주 52시간을 넘는 직원이 있어요:\n${ov.map(p=>p.name+' '+total(p).toFixed(1)+'h').join(', ')}\n\n법 위반이 될 수 있어요. 그래도 확정할까요?`))return}
+    if(publish){const ov=people().filter(p=>total(p)>52);if(ov.length&&!await ask(`주 52시간을 넘는 직원이 있어요:\n${ov.map(p=>p.name+' '+total(p).toFixed(1)+'h').join(', ')}\n\n법 위반이 될 수 있어요. 그래도 확정할까요?`))return}
     busy(btn,true);
     try{ if(st.dirty) await api('schedule.save',{branch,v2:1,shifts:st.shifts.filter(s=>s.changed).map(s=>({id:s.id,date:s.date,email:s.email,start:s.start,end:s.end,brk:s.brk,pos:s.pos,memo:s.memo,part:s.part})),deletes:st.deletes,offs:st.offs.filter(o=>o.tmp).map(o=>({email:o.email,date:o.date})),offDeletes:st.offDeletes});
       if(publish){const r=await api('schedule.publish',{branch,start,v2:1});toast(`확정! ${r.notified}명에게 알렸어요`)}else toast('임시 저장했어요');

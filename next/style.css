@@ -195,7 +195,7 @@ select.in{appearance:none;-webkit-appearance:none;background:transparent url("da
 .cal .p.pend{background:var(--yellow);color:var(--ink)}
 /* sheet */
 .mask{position:fixed;inset:0;background:rgba(14,14,14,.45);z-index:60;display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
-.sheet{background:var(--cream);width:100%;max-width:560px;padding:18px var(--pad) calc(24px + var(--safe-b));max-height:90vh;overflow:auto;animation:up .3s cubic-bezier(.2,.9,.3,1);border-top:3px solid var(--ink)}
+.sheet{background:var(--cream);width:100%;max-width:560px;padding:18px var(--pad) calc(24px + var(--safe-b));max-height:90vh;max-height:90dvh;overflow:auto;animation:up .3s cubic-bezier(.2,.9,.3,1);border-top:3px solid var(--ink)}
 .sheet h2{font-size:26px;font-weight:800;letter-spacing:-.04em;margin-bottom:4px;padding-right:50px}
 .sheet .x{float:right;font-size:13px;font-weight:800;border-bottom:2px solid;margin-top:6px}
 @keyframes up{from{transform:translateY(40px);opacity:.4}}@keyframes fade{from{opacity:0}}
@@ -235,7 +235,7 @@ select.in{appearance:none;-webkit-appearance:none;background:transparent url("da
 .tbl td b{font-weight:800}
 .tbl tr.hot td{background:#FFF8E3}
 /* login */
-.login{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:space-between;color:#fff;background:#2a0610 url(../assets/americano.jpg) center/cover;position:relative;max-width:560px;margin:0 auto}
+.login{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:space-between;color:#fff;background:#2a0610 url(assets/americano.jpg) center/cover;position:relative;max-width:560px;margin:0 auto}
 .login:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(74,11,24,.3) 0%,rgba(58,8,18,.6) 45%,rgba(20,6,10,.96) 100%)}
 .login>*{position:relative;z-index:1}
 .login:before{z-index:0;pointer-events:none}
@@ -254,3 +254,15 @@ select.in{appearance:none;-webkit-appearance:none;background:transparent url("da
 /* .line(결재선) 클래스와 겹치는 외곽선 버튼 보정 */
 .pill.line{display:inline-flex;align-items:center;justify-content:center;padding:0 24px;overflow:visible}
 .pill.sm.line{padding:0 16px}
+
+/* 11/25 웹지침: 시트·확인창 <dialog> (모양은 그대로, 브라우저 기본 dialog 꾸밈만 지움) */
+dialog.mask,dialog.omask{width:auto;height:auto;max-width:none;max-height:none;margin:0;padding:0;border:0;color:inherit;overflow:hidden}
+dialog.mask:not([open]),dialog.omask:not([open]){display:none}
+dialog.mask::backdrop,dialog.omask::backdrop{background:transparent}
+html:has(dialog.mask[open]),html:has(dialog.omask[open]){overflow:hidden}
+.sheet,.osheet{overscroll-behavior:contain}
+.toast[popover],.otoast[popover]{top:auto;right:auto;margin:0;border:0;overflow:visible}
+.ask .sheet{padding-top:24px}
+.askm{font-size:16px;line-height:1.6;font-weight:600;white-space:pre-line;word-break:keep-all;margin:0 0 18px}
+.aski{margin:-6px 0 18px}
+.askb{display:flex;gap:8px}.askb .pill{flex:1}
